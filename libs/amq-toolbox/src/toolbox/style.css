@@ -1,0 +1,37 @@
+@import '../button/style.css';
+@import '../option/style.css';
+@import '../table/style.css';
+@import '../window/style.css';
+
+#qpToolboxContainer {
+  max-width: 215px;
+  min-width: 208px;
+  width: calc(100% + 30px);
+  position: absolute;
+  border-radius: 5px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  margin-top: 10px;
+  left: 0px;
+  right: 0px;
+}
+#qpToolboxContainer h5 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+#amqtbSettingButton {
+  width: 30px;
+  height: 100%;
+}
+#qpAvatarRow {
+  width: 80%;
+}
+.collapsible:hover {
+  background-color: #555;
+}
+.amqtbPluginManageTableEnabledCell {
+  position: relative;
+  top: -10px;
+  left: -25px;
+  display: inline-block;
+}

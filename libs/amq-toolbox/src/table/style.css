@@ -1,0 +1,14 @@
+.amqtbTable {
+    border-collapse: separate;
+    padding: 0 15px;
+}
+.amqtbTable th, .amqtbTable td {
+    text-align: center;
+    vertical-align: middle !important;
+}
+.amqtbTable thead {
+    background-color: #000;
+}
+.amqtbTable tbody tr {
+    background-color: #424242 !important;
+}
