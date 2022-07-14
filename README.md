@@ -14,5 +14,5 @@ Customized buttons for answering quickly.
 ### [AMQ Force Skip (force-skip.user.js)](https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js)
 Force skip the answer phase without waiting buffering. Notice: you may not hear the next song where loading is not completed.
 
-### [AMQ No Avatar Snipe (quick-answer.user.js)](https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js)
+### [AMQ No Avatar Snipe (no-avatar-snipe.user.js)](https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js)
 Players' avatar wouldn't change when they answered so you can't snipe by that. Notice: other scripts may change this behavior.
