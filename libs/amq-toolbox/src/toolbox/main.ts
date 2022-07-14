@@ -243,6 +243,7 @@ export class AMQ_Toolbox {
         } 
         const savedOrder = this.oldPluginsInfo.findIndex(info => info.pluginName === plugin.name);
         if (savedOrder !== -1) {
+            newEntry.enabled = this.oldPluginsInfo[savedOrder].enabled;
             let added = false;
             for (let entry of this.manageTable.entries) {
                 const order = this.oldPluginsInfo.findIndex(info => info.pluginName === entry.pluginName.value);

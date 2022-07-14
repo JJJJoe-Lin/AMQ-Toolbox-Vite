@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         AMQ Quick Answer
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.0
+// @version      0.2.1
 // @author       JJJJoe
 // @description  AMQ Quick-Answer Buttons
+// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js
 // @match        https://animemusicquiz.com/*
 // @grant        unsafeWindow
 // @grant        GM_getValue
@@ -12,7 +13,7 @@
 // @grant        GM_deleteValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-13T14:34:50.962Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-14T18:39:59.496Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -585,6 +586,7 @@ var __publicField = (obj, key, value) => {
       };
       const savedOrder = this.oldPluginsInfo.findIndex((info) => info.pluginName === plugin.name);
       if (savedOrder !== -1) {
+        newEntry.enabled = this.oldPluginsInfo[savedOrder].enabled;
         let added = false;
         for (let entry of this.manageTable.entries) {
           const order = this.oldPluginsInfo.findIndex((info) => info.pluginName === entry.pluginName.value);

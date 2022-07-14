@@ -8,11 +8,22 @@ import {
     AMQ_Toolbox,
     Plugin,
 } from 'amq-toolbox';
+import { getAnimeImage, Image } from './cover';
 
 declare var amqToolbox: AMQ_Toolbox;
 declare var Listener: any;
 declare var quiz: any;
 declare var selfName: any;
+
+declare var MP3Tag: any;
+
+interface Mp3Info {
+    animeName: string;
+    songName: string;
+    type: string;
+    artist: string;
+    cover: Image | null;
+}
 
 class Downloader implements Plugin {
     name = 'Downloader';
@@ -205,10 +216,22 @@ class Downloader implements Plugin {
             alert(`Downloading song: ${fileName}`);
         }
         const response = await fetch(url);
-        const blob = await response.blob();
-        /* if (fileExt === 'mp3') {
-            await addMp3Tag(blob, songInfo);
-        } */
+        let blob: Blob;
+        if (fileExt === 'mp3') {
+            const mp3 = await response.arrayBuffer();
+            const info = await this.getMp3Info();
+            const taggedMp3 = addMp3Tag(mp3, info);
+            if (taggedMp3 === null) {
+                console.warn(`Failed to add mp3 tag, download origin mp3...`);
+                blob = new Blob([mp3], {type: 'audio/mpeg'});
+            } else {
+                console.log('Download tagged mp3');
+                blob = new Blob([taggedMp3], {type: 'audio/mpeg'});
+            }
+
+        } else {
+            blob = await response.blob();
+        }
         downloadBlob(blob, `${fileName}.${fileExt}`);
     }
 
@@ -225,6 +248,16 @@ class Downloader implements Plugin {
         const type = this.songType();
         const artist = this.currentSongInfo.artist;
         return `[${animeName}(${type})] ${songName} (${artist})`;
+    }
+
+    private async getMp3Info(): Promise<Mp3Info> {
+        return {
+            animeName: this.currentSongInfo.animeNames.romaji,
+            songName: this.currentSongInfo.songName,
+            type: this.songType(),
+            artist: this.currentSongInfo.artist,
+            cover: await getAnimeImage(this.currentSongInfo.annId),
+        }
     }
 
     private songType() {
@@ -248,6 +281,39 @@ function downloadBlob(blob: Blob, fileName: string) {
         .get(0)!
         .click();
     console.log(`Download: ${fileName}`);
+}
+
+function addMp3Tag(data: ArrayBuffer, info: Mp3Info): null | Buffer {
+    const mp3tag = new MP3Tag(data);
+    mp3tag.read();
+    if (mp3tag.error !== '') {
+        console.warn(`"${info.artist} - ${info.songName}" read tag fail`);
+        return null;
+    }
+    // mp3tag.remove();
+    mp3tag.tags.title = info.songName;
+    mp3tag.tags.artist = info.artist;
+    mp3tag.tags.album = info.animeName;
+    if (info.cover !== null) {
+        mp3tag.tags.v2.APIC = [{
+            format: info.cover.contentType,
+            type: 3,
+            description: 'anime cover from animenewsnetwork',
+            data: info.cover.data,
+        }]
+    }
+    const ret = mp3tag.save({
+        id3v1: { include: false },
+        id3v2: {
+            include: true,
+            version: 3,
+        },
+    }) as Buffer;
+    if (mp3tag.error !== '') {
+        console.warn(`"${info.artist} - ${info.songName}" write tag fail`);
+        return null;
+    }
+    return ret;
 }
 
 function setup() {

@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         AMQ Force Skip
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.0
+// @version      0.2.1
 // @author       JJJJoe
 // @description  Skip song without waiting buffering
+// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js
 // @match        https://animemusicquiz.com/*
 // @grant        unsafeWindow
 // @grant        GM_getValue
@@ -12,7 +13,7 @@
 // @grant        GM_deleteValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-13T14:34:42.310Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-14T18:39:51.231Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -585,6 +586,7 @@ var __publicField = (obj, key, value) => {
       };
       const savedOrder = this.oldPluginsInfo.findIndex((info) => info.pluginName === plugin.name);
       if (savedOrder !== -1) {
+        newEntry.enabled = this.oldPluginsInfo[savedOrder].enabled;
         let added = false;
         for (let entry of this.manageTable.entries) {
           const order = this.oldPluginsInfo.findIndex((info) => info.pluginName === entry.pluginName.value);

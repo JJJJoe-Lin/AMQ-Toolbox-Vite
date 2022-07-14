@@ -11,10 +11,11 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Quick Answer',
-                version: '0.2.0',
+                version: '0.2.1',
                 description: 'AMQ Quick-Answer Buttons',
                 author: 'JJJJoe',
                 match: 'https://animemusicquiz.com/*',
+                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js',
             },
         }),
     ],
