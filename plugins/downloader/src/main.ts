@@ -120,12 +120,12 @@ class Downloader implements Plugin {
         });
         videoDlBtn.self.on('click', () => {
             if (videoDlBtn.self.data("url") !== undefined) {
-                this.downloadSongData(videoDlBtn.self.data("url"));
+                this.downloadSongData(videoDlBtn.self.data("url"), !this.isAutoDlRunning);
             }
         });
         audioDlBtn.self.on('click', () => {
             if (audioDlBtn.self.data("url") !== undefined) {
-                this.downloadSongData(audioDlBtn.self.data("url"));
+                this.downloadSongData(audioDlBtn.self.data("url"), !this.isAutoDlRunning);
             }
         });
         infoDlBtn.self.on('click', () => {
@@ -275,12 +275,17 @@ class Downloader implements Plugin {
 }
 
 function downloadBlob(blob: Blob, fileName: string) {
+    const url = URL.createObjectURL(blob);
     $(`<a></a>`)
-        .attr('href', URL.createObjectURL(blob))
+        .attr('href', url)
         .attr("download", fileName)
         .get(0)!
         .click();
     console.log(`Download: ${fileName}`);
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+        console.log(`revoke url of ${fileName}`);
+    }, 1000);
 }
 
 function addMp3Tag(data: ArrayBuffer, info: Mp3Info): null | Buffer {

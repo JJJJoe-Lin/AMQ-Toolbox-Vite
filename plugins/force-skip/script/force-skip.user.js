@@ -1,19 +1,20 @@
 // ==UserScript==
 // @name         AMQ Force Skip
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.1
+// @version      0.2.2
 // @author       JJJJoe
 // @description  Skip song without waiting buffering
+// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js
 // @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js
 // @match        https://animemusicquiz.com/*
 // @grant        unsafeWindow
-// @grant        GM_getValue
-// @grant        GM_setValue
 // @grant        GM_addStyle
 // @grant        GM_deleteValue
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-14T18:39:51.231Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-16T06:47:30.954Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -516,6 +517,7 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "settingModal");
       __publicField(this, "viewBlocks");
       __publicField(this, "tabContainer");
+      __publicField(this, "settingButton");
       __publicField(this, "optionsTab");
       __publicField(this, "manageModal");
       __publicField(this, "manageTable");
@@ -537,6 +539,16 @@ var __publicField = (obj, key, value) => {
       });
       this.tabContainer.add(this.optionsTab);
       this.tabContainer.select(this.optionsTab);
+      this.settingButton = $(`<div></div>`).attr("id", "amqtbSettingButton").addClass("clickAble qpOption").append($(`<i></i>`).addClass("fa fa-wrench").addClass("qpMenuItem").attr("aria-hidden", "true")).on("click", () => {
+        this.settingModal.self.modal("show");
+      }).popover({
+        placement: "bottom",
+        content: "Toolbox Setting",
+        trigger: "hover"
+      });
+      const oldWidth = $("#qpOptionContainer").width();
+      $("#qpOptionContainer").width(oldWidth + 35);
+      $("#qpOptionContainer > div").append(this.settingButton);
       this.plugins = [];
       this.manageTable = new AmqtbTable({
         id: PluginManageTableId,

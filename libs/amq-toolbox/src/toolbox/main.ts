@@ -113,7 +113,7 @@ export class AMQ_Toolbox {
     private settingModal: AmqtbModal;
     private viewBlocks: JQuery<HTMLElement>;
     private tabContainer: AmqtbTabContainer;
-    // private settingButton: JQuery<HTMLElement>;
+    private settingButton: JQuery<HTMLElement>;
     private optionsTab: AmqtbTab;
     private manageModal: AmqtbModal;
     private manageTable: AmqtbTable<PluginManageTableSchema>;
@@ -160,7 +160,7 @@ export class AMQ_Toolbox {
         this.tabContainer.add(this.optionsTab);
         this.tabContainer.select(this.optionsTab);
 
-        /* this.settingButton = $(`<div></div>`)
+        this.settingButton = $(`<div></div>`)
             .attr('id', 'amqtbSettingButton')
             .addClass('clickAble qpOption')
             .append($(`<i></i>`)
@@ -168,12 +168,7 @@ export class AMQ_Toolbox {
                 .addClass('qpMenuItem')
                 .attr('aria-hidden', 'true'))
             .on('click', () => {
-                if(this.settingWindow.isVisible()) {
-                    this.settingWindow.close();
-                }
-                else {
-                    this.settingWindow.open();
-                }
+                this.settingModal.self.modal('show');
             })
             .popover({
                 placement: 'bottom',
@@ -182,7 +177,7 @@ export class AMQ_Toolbox {
             });
         const oldWidth = $('#qpOptionContainer').width()!;
         $("#qpOptionContainer").width(oldWidth + 35);
-        $("#qpOptionContainer > div").append(this.settingButton); */
+        $("#qpOptionContainer > div").append(this.settingButton);
 
         this.plugins = [];
         this.manageTable = new AmqtbTable<PluginManageTableSchema>({

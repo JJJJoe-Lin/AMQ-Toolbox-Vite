@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         AMQ Downloader
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.1
+// @version      0.2.2
 // @author       JJJJoe
 // @description  AMQ song downloader
+// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
 // @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
 // @match        https://animemusicquiz.com/*
 // @require      https://cdn.jsdelivr.net/npm/mp3tag.js@latest/dist/mp3tag.min.js
@@ -16,7 +17,7 @@
 // @grant        GM_deleteValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-14T18:39:47.068Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-16T06:47:27.038Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -718,6 +719,7 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "settingModal");
       __publicField(this, "viewBlocks");
       __publicField(this, "tabContainer");
+      __publicField(this, "settingButton");
       __publicField(this, "optionsTab");
       __publicField(this, "manageModal");
       __publicField(this, "manageTable");
@@ -739,6 +741,16 @@ var __publicField = (obj, key, value) => {
       });
       this.tabContainer.add(this.optionsTab);
       this.tabContainer.select(this.optionsTab);
+      this.settingButton = $(`<div></div>`).attr("id", "amqtbSettingButton").addClass("clickAble qpOption").append($(`<i></i>`).addClass("fa fa-wrench").addClass("qpMenuItem").attr("aria-hidden", "true")).on("click", () => {
+        this.settingModal.self.modal("show");
+      }).popover({
+        placement: "bottom",
+        content: "Toolbox Setting",
+        trigger: "hover"
+      });
+      const oldWidth = $("#qpOptionContainer").width();
+      $("#qpOptionContainer").width(oldWidth + 35);
+      $("#qpOptionContainer > div").append(this.settingButton);
       this.plugins = [];
       this.manageTable = new AmqtbTable({
         id: PluginManageTableId,
@@ -2487,12 +2499,12 @@ var __publicField = (obj, key, value) => {
       });
       videoDlBtn.self.on("click", () => {
         if (videoDlBtn.self.data("url") !== void 0) {
-          this.downloadSongData(videoDlBtn.self.data("url"));
+          this.downloadSongData(videoDlBtn.self.data("url"), !this.isAutoDlRunning);
         }
       });
       audioDlBtn.self.on("click", () => {
         if (audioDlBtn.self.data("url") !== void 0) {
-          this.downloadSongData(audioDlBtn.self.data("url"));
+          this.downloadSongData(audioDlBtn.self.data("url"), !this.isAutoDlRunning);
         }
       });
       infoDlBtn.self.on("click", () => {
@@ -2627,8 +2639,13 @@ var __publicField = (obj, key, value) => {
     }
   }
   function downloadBlob(blob, fileName) {
-    $(`<a></a>`).attr("href", URL.createObjectURL(blob)).attr("download", fileName).get(0).click();
+    const url = URL.createObjectURL(blob);
+    $(`<a></a>`).attr("href", url).attr("download", fileName).get(0).click();
     console.log(`Download: ${fileName}`);
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      console.log(`revoke url of ${fileName}`);
+    }, 1e3);
   }
   function addMp3Tag(data, info) {
     const mp3tag = new MP3Tag(data);
