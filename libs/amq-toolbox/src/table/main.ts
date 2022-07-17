@@ -13,6 +13,8 @@ interface AmqtbTableOptions<Schema extends AmqtbTableSchema> {
     movable: boolean;
     settable: boolean;
     newRow: () => AmqtbTableCells<Schema>;
+    onSave?: (data: AmqtbTableCellsData<Schema>[]) => void;
+    onLoad?: () => AmqtbTableCellsData<Schema>[] | undefined;
 }
 
 type AmqtbTableCells<Schema> = {
@@ -45,6 +47,8 @@ export class AmqtbTable<T> {
     private readonly body: JQuery<HTMLElement>;
     private readonly deletable: boolean;
     private readonly movable: boolean;
+    private readonly onSave?: (data: AmqtbTableCellsData<T>[]) => void;
+    private readonly onLoad?: () => AmqtbTableCellsData<T>[] | undefined;
 
     constructor (opt: AmqtbTableOptions<T>) {
         const cls = opt.class === undefined ? '' : opt.class;
@@ -95,7 +99,7 @@ export class AmqtbTable<T> {
                 style: 'success',
             });
             this.saveBtn.self.on('click', () => {
-                this.save();
+                this.dump();
             });
             this.resetBtn = new AmqtbButton({
                 label: 'Reset',
@@ -114,6 +118,9 @@ export class AmqtbTable<T> {
             }
             this.self.append(btnContainer.self);
         }
+
+        this.onSave = opt.onSave;
+        this.onLoad = opt.onLoad;
 
         this.reset();
     }
@@ -211,7 +218,7 @@ export class AmqtbTable<T> {
         }
     }
 
-    save () {
+    dump () {
         const datas = [];
         for (let row of this.entries) {
             const rowData: Partial<AmqtbTableCellsData<T>> = {};
@@ -220,16 +227,20 @@ export class AmqtbTable<T> {
                     rowData[fieldName] = (row as AmqtbTableCells<T>)[fieldName].value;
                 }
             }
-            datas.push(rowData);
+            datas.push(rowData as AmqtbTableCellsData<T>);
         }
         console.log(`Save table '${this.id}':`, datas);
-        GM_setValue(this.id, datas);
+        // GM_setValue(this.id, datas);
+        if (this.onSave) {
+            this.onSave(datas);
+        }
     }
 
     reset () {
         this.body.empty();
         this.entries.length = 0;
-        const datas = GM_getValue(this.id) as AmqtbTableCellsData<T>[] | undefined;
+        // const datas = GM_getValue(this.id) as AmqtbTableCellsData<T>[] | undefined;
+        const datas = this.onLoad !== undefined ? this.onLoad() : undefined;
         console.log(`Reset and load table '${this.id}':`, datas);
         if (datas !== undefined) {
             for (let rowData of datas) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Force Skip
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.2
+// @version      0.2.3
 // @author       JJJJoe
 // @description  Skip song without waiting buffering
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js
@@ -9,12 +9,9 @@
 // @match        https://animemusicquiz.com/*
 // @grant        unsafeWindow
 // @grant        GM_addStyle
-// @grant        GM_deleteValue
-// @grant        GM_getValue
-// @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-16T06:47:30.954Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-17T06:55:53.342Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -267,6 +264,8 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "body");
       __publicField(this, "deletable");
       __publicField(this, "movable");
+      __publicField(this, "onSave");
+      __publicField(this, "onLoad");
       const cls = opt.class === void 0 ? "" : opt.class;
       const title = opt.title === void 0 ? null : opt.title;
       this.id = opt.id;
@@ -307,7 +306,7 @@ var __publicField = (obj, key, value) => {
           style: "success"
         });
         this.saveBtn.self.on("click", () => {
-          this.save();
+          this.dump();
         });
         this.resetBtn = new AmqtbButton({
           label: "Reset",
@@ -326,6 +325,8 @@ var __publicField = (obj, key, value) => {
         }
         this.self.append(btnContainer.self);
       }
+      this.onSave = opt.onSave;
+      this.onLoad = opt.onLoad;
       this.reset();
     }
     createRow(rowData) {
@@ -415,7 +416,7 @@ var __publicField = (obj, key, value) => {
         this.entries.splice(idx, 0, newRow);
       }
     }
-    save() {
+    dump() {
       const datas = [];
       for (let row of this.entries) {
         const rowData = {};
@@ -427,12 +428,14 @@ var __publicField = (obj, key, value) => {
         datas.push(rowData);
       }
       console.log(`Save table '${this.id}':`, datas);
-      GM_setValue(this.id, datas);
+      if (this.onSave) {
+        this.onSave(datas);
+      }
     }
     reset() {
       this.body.empty();
       this.entries.length = 0;
-      const datas = GM_getValue(this.id);
+      const datas = this.onLoad !== void 0 ? this.onLoad() : void 0;
       console.log(`Reset and load table '${this.id}':`, datas);
       if (datas !== void 0) {
         for (let rowData of datas) {
@@ -442,6 +445,25 @@ var __publicField = (obj, key, value) => {
     }
   }
   var styles = ".amqtbButtonContainer {\n  display: flex;\n  flex-flow: row wrap;\n  justify-content: space-around;\n  align-content: space-around;\n  margin: 5px 0;\n}\n.amqtbButtonContainer button {\n  margin: 5px 0;\n}\n.customCheckboxContainer {\n  display: flex;\n}\n.customCheckboxContainer > div {\n  display: inline-block;\n  margin: 5px 0px;\n}\n.customCheckboxContainer > .customCheckboxContainerLabel {\n  margin-left: 5px;\n  margin-top: 5px;\n  font-weight: normal;\n}\n.amqtbRadio {\n  text-align: center;\n}\n.offset1 {\n  margin-left: 20px;\n}\n.offset2 {\n  margin-left: 40px;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n.amqtbWindow {\n  overflow-y: hidden;\n  top: 0px;\n  left: 0px;\n  margin: 0px;\n  background-color: #424242;\n  border: 1px solid rgba(27, 27, 27, 0.2);\n  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n  user-select: text;\n  display: none;\n}\n.draggableWindow {\n  cursor: move;\n}\n.amqtbWindowBody {\n  width: 100%;\n  overflow-y: auto;\n}\n.amqtbWindowContent {\n  width: 100%;\n  position: absolute;\n  top: 0px;\n}\n.amqtbWindow .close {\n  font-size: 32px;\n}\n.windowResizers {\n  width: 100%;\n  height: 100%;\n}\n.windowResizer {\n  width: 10px;\n  height: 10px;\n  position: absolute;\n  z-index: 100;\n}\n.windowResizer.top-left {\n  top: 0px;\n  left: 0px;\n  cursor: nwse-resize;\n}\n.windowResizer.top-right {\n  top: 0px;\n  right: 0px;\n  cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n  bottom: 0px;\n  left: 0px;\n  cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n  bottom: 0px;\n  right: 0px;\n  cursor: nwse-resize;\n}\n#qpToolboxContainer {\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  position: absolute;\n  border-radius: 5px;\n  padding-bottom: 5px;\n  padding-top: 5px;\n  margin-top: 10px;\n  left: 0px;\n  right: 0px;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  const attr = {
+    expires: 365,
+    Domain: "animemusicquiz.com",
+    secure: true
+  };
+  function saveToCookie(key, entry) {
+    Cookies.set(key, JSON.stringify(entry), attr);
+  }
+  function loadFromCookie(key, defaultVal) {
+    let val = Cookies.get(key);
+    if (val === void 0) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val);
+    }
+  }
+  function deleteCookie(key) {
+    Cookies.remove(key, attr);
+  }
   class AmqtbViewBlock {
     constructor(opt) {
       __publicField(this, "self");
@@ -562,6 +584,12 @@ var __publicField = (obj, key, value) => {
             pluginName: new PluginNameCell(),
             enabled: new EnabledCell(true)
           };
+        },
+        onSave: (data) => {
+          saveToCookie(PluginManageTableId, data);
+        },
+        onLoad: () => {
+          return loadFromCookie(PluginManageTableId);
         }
       });
       this.manageTable.saveBtn.self.on("click", () => {
@@ -569,8 +597,8 @@ var __publicField = (obj, key, value) => {
         this.refresh();
         this.manageModal.self.modal("hide");
       });
-      this.oldPluginsInfo = GM_getValue(PluginManageTableId, []);
-      GM_deleteValue(PluginManageTableId);
+      this.oldPluginsInfo = loadFromCookie(PluginManageTableId, []);
+      deleteCookie(PluginManageTableId);
       this.manageTable.reset();
       this.manageModal = new AmqtbModal({
         id: "amqtbManageModal",

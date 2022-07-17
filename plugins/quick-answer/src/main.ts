@@ -64,6 +64,12 @@ class QuickAnswer implements Plugin {
                     animeName: new TextInputCell(),
                 };
             },
+            onSave: (data) => {
+                GM_setValue('amqtbQuickAnsSettingTable', data);
+            },
+            onLoad: () => {
+                return GM_getValue('amqtbQuickAnsSettingTable');
+            }
         });
         this.settingTab.container.append(this.settingTable.self);
         this.settingTable.saveBtn!.self.on('click', () => {

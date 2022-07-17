@@ -1,9 +1,9 @@
 import styles from './style.css?inline';
-import { AmqtbWindow } from '../window/main';
 import { AmqtbTab, AmqtbTabContainer } from '../tab/main';
 import { AmqtbOptions } from '../option/main';
 import { AmqtbModal } from '../modal/main'
 import { AmqtbTable, AmqtbTableCell } from '../table/main';
+import { deleteCookie, loadFromCookie, saveToCookie } from '../utils/cookies';
 
 export interface Plugin {
     name: string;
@@ -125,25 +125,6 @@ export class AMQ_Toolbox {
             .attr('id', 'qpToolboxContainer')
             .addClass('container floatingContainer');
         this.viewBlocks.insertBefore($(`#qpCheatTestCommands`));
-
-        /* this.settingWindow = new AmqtbWindow({
-            id: 'amqtbSettingWindow',
-            title: 'Toolbox Setting',
-            width: 650,
-            height: 510,
-            minWidth: 480,
-            minHeight: 510,
-            zIndex: 1060,
-            resizable: true,
-            draggable: true,
-        });
-        this.settingWindow.close();
-        this.settingWindow.content.addClass('tab-modal');
-        this.settingWindow.body.css('text-align', 'center').css('padding', '15px'); */
-        
-        /* this.tabContainer = new AmqtbTabContainer();
-        this.settingWindow.body.append(this.tabContainer.contentContainer);
-        this.tabContainer.self.insertBefore(this.settingWindow.body); */
         
         this.tabContainer = new AmqtbTabContainer();
         this.settingModal = new AmqtbModal({
@@ -193,14 +174,22 @@ export class AMQ_Toolbox {
                     enabled: new EnabledCell(true),
                 };
             },
+            onSave: (data) => {
+                saveToCookie(PluginManageTableId, data);
+            },
+            onLoad: () => {
+                return loadFromCookie(PluginManageTableId);
+            },
         });
         this.manageTable.saveBtn!.self.on('click', () => {
             console.log('Refresh AMQ Toolbox');
             this.refresh();
             this.manageModal.self.modal('hide');
         });
-        this.oldPluginsInfo = GM_getValue(PluginManageTableId, []);
-        GM_deleteValue(PluginManageTableId);
+        // this.oldPluginsInfo = GM_getValue(PluginManageTableId, []);
+        // GM_deleteValue(PluginManageTableId);
+        this.oldPluginsInfo = loadFromCookie(PluginManageTableId, []);
+        deleteCookie(PluginManageTableId);
         this.manageTable.reset();
         this.manageModal = new AmqtbModal({
             id: 'amqtbManageModal',

@@ -11,7 +11,7 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Force Skip',
-                version: '0.2.2',
+                version: '0.2.3',
                 description: 'Skip song without waiting buffering',
                 author: 'JJJJoe',
                 match: 'https://animemusicquiz.com/*',

@@ -2,10 +2,11 @@ export interface AmqtbCheckboxOptions {
     id: string;
     name?: string;
     description?: string;
-    defaultChecked: boolean;
     label: string;
     offset: number;
     enables: string[];
+    onSave?: (data: boolean) => void;
+    onLoad?: () => boolean;
 }
 
 export class AmqtbCheckbox {
@@ -14,6 +15,8 @@ export class AmqtbCheckbox {
     readonly id: string;
     readonly name?: string;
     enables: string[];
+    private readonly onSave?: (data: boolean) => void;
+    private readonly onLoad?: () => boolean;
 
     constructor (opt: AmqtbCheckboxOptions) {
         this.id = opt.id;
@@ -45,8 +48,9 @@ export class AmqtbCheckbox {
                 .append(checkLabel)
             )
             .append(textLabel);
-        
-        this.checked = this.load(opt.defaultChecked);
+        this.onSave = opt.onSave;
+        this.onLoad = opt.onLoad;
+        this.checked = this.load();
     }
 
     get checked() {
@@ -69,11 +73,16 @@ export class AmqtbCheckbox {
         }
     }
 
-    load(defaultVal: boolean) {
-        return GM_getValue(this.id, defaultVal);
+    load() {
+        // return GM_getValue(this.id, defaultVal);
+        return this.onLoad !== undefined ? this.onLoad() : false;
+
     }
 
     save(val: boolean) {
-        GM_setValue(this.id, val);
+        // GM_setValue(this.id, val);
+        if (this.onSave) {
+            this.onSave(val);
+        }
     }
 }

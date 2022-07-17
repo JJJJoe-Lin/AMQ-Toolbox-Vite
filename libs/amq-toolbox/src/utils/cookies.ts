@@ -1,19 +1,24 @@
 declare var Cookies: any;
 
+const attr = {
+    expires: 365,
+    Domain: "animemusicquiz.com",
+    secure: true,
+};
+
 export function saveToCookie (key: string, entry: any) {
-    let attr = {
-        expires: 365,
-        Domain: "animemusicquiz.com",
-        secure: true,
-    };
     Cookies.set(key, JSON.stringify(entry), attr);
 }
 
-export function loadFromCookie (key: string) {
+export function loadFromCookie (key: string, defaultVal?: any) {
     let val = Cookies.get(key);
     if (val === undefined) {
-        return null;
+        return defaultVal;
     } else {
         return JSON.parse(val);
     }
+}
+
+export function deleteCookie (key: string) {
+    Cookies.remove(key, attr);
 }

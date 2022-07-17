@@ -46,16 +46,26 @@ class Downloader implements Plugin {
             name: 'autoDlOnWrong',
             label: 'Auto download only on wrong',
             offset: 0,
-            defaultChecked: false,
             enables: [],
+            onSave: (data) => {
+                GM_setValue('amqtbDownloaderAutoDlOnWrong', data);
+            },
+            onLoad: () => {
+                return GM_getValue('amqtbDownloaderAutoDlOnWrong', false);
+            }
         }));
         this.options.add(new AmqtbCheckbox({
             id: 'amqtbDownloaderAutoDlMedia',
             name: 'autoDlMedia',
             label: 'Auto download media',
             offset: 0,
-            defaultChecked: false,
             enables: ['autoDlMediaType'],
+            onSave: (data) => {
+                GM_setValue('amqtbDownloaderAutoDlMedia', data);
+            },
+            onLoad: () => {
+                return GM_getValue('amqtbDownloaderAutoDlMedia', false);
+            }
         }));
         const radio = new AmqtbRadio({
             id: 'amqtbDownloaderAutoDlMediaType',
@@ -71,7 +81,12 @@ class Downloader implements Plugin {
                     value: 'video',
                 },
             ],
-            defaultValue: 'video',
+            onSave: (data) => {
+                GM_setValue('amqtbDownloaderAutoDlMediaType', data);
+            },
+            onLoad: () => {
+                return GM_getValue('amqtbDownloaderAutoDlMediaType', 'video');
+            }
         });
         this.options.add(radio);
         this.options.add(new AmqtbCheckbox({
@@ -79,8 +94,13 @@ class Downloader implements Plugin {
             name: 'autoDlInfo',
             label: 'Auto download info',
             offset: 0,
-            defaultChecked: false,
             enables: [],
+            onSave: (data) => {
+                GM_setValue('amqtbDownloaderAutoDlInfo', data);
+            },
+            onLoad: () => {
+                return GM_getValue('amqtbDownloaderAutoDlInfo', false);
+            }
         }));
 
         this.btnContainer = new AmqtbButtonContainer({});

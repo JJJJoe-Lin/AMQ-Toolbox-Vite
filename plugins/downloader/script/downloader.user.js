@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Downloader
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.2
+// @version      0.2.3
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
@@ -9,15 +9,14 @@
 // @match        https://animemusicquiz.com/*
 // @require      https://cdn.jsdelivr.net/npm/mp3tag.js@latest/dist/mp3tag.min.js
 // @connect      cdn.animenewsnetwork.com
-// @grant        unsafeWindow
-// @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
+// @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
-// @grant        GM_deleteValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-16T06:47:27.038Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-17T06:55:49.173Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -257,6 +256,8 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "id");
       __publicField(this, "name");
       __publicField(this, "enables");
+      __publicField(this, "onSave");
+      __publicField(this, "onLoad");
       this.id = opt.id;
       this.name = opt.name;
       this.enables = opt.enables;
@@ -275,7 +276,9 @@ var __publicField = (obj, key, value) => {
         });
       }
       this.self = $(`<div class='customCheckboxContainer'></div>`).addClass(opt.offset !== 0 ? `offset${opt.offset}` : "").append($(`<div class='customCheckbox'></div>`).append(this.input).append(checkLabel)).append(textLabel);
-      this.checked = this.load(opt.defaultChecked);
+      this.onSave = opt.onSave;
+      this.onLoad = opt.onLoad;
+      this.checked = this.load();
     }
     get checked() {
       return this.input.prop("checked");
@@ -293,11 +296,13 @@ var __publicField = (obj, key, value) => {
         this.self.addClass("disabled");
       }
     }
-    load(defaultVal) {
-      return GM_getValue(this.id, defaultVal);
+    load() {
+      return this.onLoad !== void 0 ? this.onLoad() : false;
     }
     save(val) {
-      GM_setValue(this.id, val);
+      if (this.onSave) {
+        this.onSave(val);
+      }
     }
   }
   class AmqtbRadio {
@@ -308,6 +313,8 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "id");
       __publicField(this, "name");
       __publicField(this, "choices");
+      __publicField(this, "onSave");
+      __publicField(this, "onLoad");
       this.id = opt.id;
       this.name = opt.name;
       if (opt.choices.length > 10) {
@@ -329,23 +336,22 @@ var __publicField = (obj, key, value) => {
         }
         this.self.append(this.label);
       }
-      const defaultValue = GM_getValue(opt.id, opt.defaultValue);
-      let idx = this.choices.findIndex((c) => c.value === defaultValue);
-      idx = idx === -1 ? 0 : idx;
       this.input = $(`<input class='sliderInput' type='text'>`);
       this.self.append(this.input);
       this.input.bootstrapSlider({
         id: this.id,
-        ticks: this.choices.map((_, idx2) => idx2),
+        ticks: this.choices.map((_, idx) => idx),
         ticks_labels: this.choices.map((ch) => ch.label),
-        value: idx,
-        formatter: (idx2) => this.choices[idx2].label,
+        value: 0,
+        formatter: (idx) => this.choices[idx].label,
         selection: "none"
       });
       this.input.on("change", () => {
         this.save(this.value);
       });
-      this.value = this.load(opt.defaultValue);
+      this.onSave = opt.onSave;
+      this.onLoad = opt.onLoad;
+      this.value = this.load();
     }
     relayout() {
       this.input.bootstrapSlider("relayout");
@@ -358,7 +364,6 @@ var __publicField = (obj, key, value) => {
       const idx = this.choices.findIndex((c) => c.value === val);
       if (idx !== -1) {
         this.input.bootstrapSlider("setValue", idx);
-        this.save(val);
       }
     }
     get enabled() {
@@ -372,11 +377,13 @@ var __publicField = (obj, key, value) => {
         this.self.hide();
       }
     }
-    load(defaultVal) {
-      return GM_getValue(this.id, defaultVal);
+    load() {
+      return this.onLoad !== void 0 ? this.onLoad() : "";
     }
     save(val) {
-      GM_setValue(this.id, val);
+      if (this.onSave) {
+        this.onSave(val);
+      }
     }
   }
   class AmqtbOptions {
@@ -469,6 +476,8 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "body");
       __publicField(this, "deletable");
       __publicField(this, "movable");
+      __publicField(this, "onSave");
+      __publicField(this, "onLoad");
       const cls = opt.class === void 0 ? "" : opt.class;
       const title = opt.title === void 0 ? null : opt.title;
       this.id = opt.id;
@@ -509,7 +518,7 @@ var __publicField = (obj, key, value) => {
           style: "success"
         });
         this.saveBtn.self.on("click", () => {
-          this.save();
+          this.dump();
         });
         this.resetBtn = new AmqtbButton({
           label: "Reset",
@@ -528,6 +537,8 @@ var __publicField = (obj, key, value) => {
         }
         this.self.append(btnContainer.self);
       }
+      this.onSave = opt.onSave;
+      this.onLoad = opt.onLoad;
       this.reset();
     }
     createRow(rowData) {
@@ -617,7 +628,7 @@ var __publicField = (obj, key, value) => {
         this.entries.splice(idx, 0, newRow);
       }
     }
-    save() {
+    dump() {
       const datas = [];
       for (let row of this.entries) {
         const rowData = {};
@@ -629,12 +640,14 @@ var __publicField = (obj, key, value) => {
         datas.push(rowData);
       }
       console.log(`Save table '${this.id}':`, datas);
-      GM_setValue(this.id, datas);
+      if (this.onSave) {
+        this.onSave(datas);
+      }
     }
     reset() {
       this.body.empty();
       this.entries.length = 0;
-      const datas = GM_getValue(this.id);
+      const datas = this.onLoad !== void 0 ? this.onLoad() : void 0;
       console.log(`Reset and load table '${this.id}':`, datas);
       if (datas !== void 0) {
         for (let rowData of datas) {
@@ -644,6 +657,25 @@ var __publicField = (obj, key, value) => {
     }
   }
   var styles = ".amqtbButtonContainer {\n  display: flex;\n  flex-flow: row wrap;\n  justify-content: space-around;\n  align-content: space-around;\n  margin: 5px 0;\n}\n.amqtbButtonContainer button {\n  margin: 5px 0;\n}\n.customCheckboxContainer {\n  display: flex;\n}\n.customCheckboxContainer > div {\n  display: inline-block;\n  margin: 5px 0px;\n}\n.customCheckboxContainer > .customCheckboxContainerLabel {\n  margin-left: 5px;\n  margin-top: 5px;\n  font-weight: normal;\n}\n.amqtbRadio {\n  text-align: center;\n}\n.offset1 {\n  margin-left: 20px;\n}\n.offset2 {\n  margin-left: 40px;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n.amqtbWindow {\n  overflow-y: hidden;\n  top: 0px;\n  left: 0px;\n  margin: 0px;\n  background-color: #424242;\n  border: 1px solid rgba(27, 27, 27, 0.2);\n  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n  user-select: text;\n  display: none;\n}\n.draggableWindow {\n  cursor: move;\n}\n.amqtbWindowBody {\n  width: 100%;\n  overflow-y: auto;\n}\n.amqtbWindowContent {\n  width: 100%;\n  position: absolute;\n  top: 0px;\n}\n.amqtbWindow .close {\n  font-size: 32px;\n}\n.windowResizers {\n  width: 100%;\n  height: 100%;\n}\n.windowResizer {\n  width: 10px;\n  height: 10px;\n  position: absolute;\n  z-index: 100;\n}\n.windowResizer.top-left {\n  top: 0px;\n  left: 0px;\n  cursor: nwse-resize;\n}\n.windowResizer.top-right {\n  top: 0px;\n  right: 0px;\n  cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n  bottom: 0px;\n  left: 0px;\n  cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n  bottom: 0px;\n  right: 0px;\n  cursor: nwse-resize;\n}\n#qpToolboxContainer {\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  position: absolute;\n  border-radius: 5px;\n  padding-bottom: 5px;\n  padding-top: 5px;\n  margin-top: 10px;\n  left: 0px;\n  right: 0px;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  const attr = {
+    expires: 365,
+    Domain: "animemusicquiz.com",
+    secure: true
+  };
+  function saveToCookie(key, entry) {
+    Cookies.set(key, JSON.stringify(entry), attr);
+  }
+  function loadFromCookie(key, defaultVal) {
+    let val = Cookies.get(key);
+    if (val === void 0) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val);
+    }
+  }
+  function deleteCookie(key) {
+    Cookies.remove(key, attr);
+  }
   class AmqtbViewBlock {
     constructor(opt) {
       __publicField(this, "self");
@@ -764,6 +796,12 @@ var __publicField = (obj, key, value) => {
             pluginName: new PluginNameCell(),
             enabled: new EnabledCell(true)
           };
+        },
+        onSave: (data) => {
+          saveToCookie(PluginManageTableId, data);
+        },
+        onLoad: () => {
+          return loadFromCookie(PluginManageTableId);
         }
       });
       this.manageTable.saveBtn.self.on("click", () => {
@@ -771,8 +809,8 @@ var __publicField = (obj, key, value) => {
         this.refresh();
         this.manageModal.self.modal("hide");
       });
-      this.oldPluginsInfo = GM_getValue(PluginManageTableId, []);
-      GM_deleteValue(PluginManageTableId);
+      this.oldPluginsInfo = loadFromCookie(PluginManageTableId, []);
+      deleteCookie(PluginManageTableId);
       this.manageTable.reset();
       this.manageModal = new AmqtbModal({
         id: "amqtbManageModal",
@@ -2067,13 +2105,13 @@ var __publicField = (obj, key, value) => {
   function attr_to_str(attrMap, options) {
     let attrStr = "";
     if (attrMap && !options.ignoreAttributes) {
-      for (let attr in attrMap) {
-        let attrVal = options.attributeValueProcessor(attr, attrMap[attr]);
+      for (let attr2 in attrMap) {
+        let attrVal = options.attributeValueProcessor(attr2, attrMap[attr2]);
         attrVal = replaceEntitiesValue$1(attrVal, options);
         if (attrVal === true && options.suppressBooleanAttributes) {
-          attrStr += ` ${attr.substr(options.attributeNamePrefix.length)}`;
+          attrStr += ` ${attr2.substr(options.attributeNamePrefix.length)}`;
         } else {
-          attrStr += ` ${attr.substr(options.attributeNamePrefix.length)}="${attrVal}"`;
+          attrStr += ` ${attr2.substr(options.attributeNamePrefix.length)}="${attrVal}"`;
         }
       }
     }
@@ -2190,9 +2228,9 @@ var __publicField = (obj, key, value) => {
       } else if (jObj[key] instanceof Date) {
         val += this.buildTextNode(jObj[key], key, "", level);
       } else if (typeof jObj[key] !== "object") {
-        const attr = this.isAttribute(key);
-        if (attr) {
-          attrStr += this.buildAttrPairStr(attr, "" + jObj[key]);
+        const attr2 = this.isAttribute(key);
+        if (attr2) {
+          attrStr += this.buildAttrPairStr(attr2, "" + jObj[key]);
         } else {
           if (key === this.options.textNodeName) {
             let newval = this.options.tagValueProcessor(key, "" + jObj[key]);
@@ -2375,8 +2413,8 @@ var __publicField = (obj, key, value) => {
     const attrsText = headerText.split("\n");
     let ret = void 0;
     for (let attrText of attrsText) {
-      const [attr, value] = attrText.split(/\s*:\s*/);
-      if (attr === targetAttr) {
+      const [attr2, value] = attrText.split(/\s*:\s*/);
+      if (attr2 === targetAttr) {
         ret = value;
       }
     }
@@ -2426,16 +2464,26 @@ var __publicField = (obj, key, value) => {
         name: "autoDlOnWrong",
         label: "Auto download only on wrong",
         offset: 0,
-        defaultChecked: false,
-        enables: []
+        enables: [],
+        onSave: (data) => {
+          GM_setValue("amqtbDownloaderAutoDlOnWrong", data);
+        },
+        onLoad: () => {
+          return GM_getValue("amqtbDownloaderAutoDlOnWrong", false);
+        }
       }));
       this.options.add(new AmqtbCheckbox({
         id: "amqtbDownloaderAutoDlMedia",
         name: "autoDlMedia",
         label: "Auto download media",
         offset: 0,
-        defaultChecked: false,
-        enables: ["autoDlMediaType"]
+        enables: ["autoDlMediaType"],
+        onSave: (data) => {
+          GM_setValue("amqtbDownloaderAutoDlMedia", data);
+        },
+        onLoad: () => {
+          return GM_getValue("amqtbDownloaderAutoDlMedia", false);
+        }
       }));
       const radio = new AmqtbRadio({
         id: "amqtbDownloaderAutoDlMediaType",
@@ -2451,7 +2499,12 @@ var __publicField = (obj, key, value) => {
             value: "video"
           }
         ],
-        defaultValue: "video"
+        onSave: (data) => {
+          GM_setValue("amqtbDownloaderAutoDlMediaType", data);
+        },
+        onLoad: () => {
+          return GM_getValue("amqtbDownloaderAutoDlMediaType", "video");
+        }
       });
       this.options.add(radio);
       this.options.add(new AmqtbCheckbox({
@@ -2459,8 +2512,13 @@ var __publicField = (obj, key, value) => {
         name: "autoDlInfo",
         label: "Auto download info",
         offset: 0,
-        defaultChecked: false,
-        enables: []
+        enables: [],
+        onSave: (data) => {
+          GM_setValue("amqtbDownloaderAutoDlInfo", data);
+        },
+        onLoad: () => {
+          return GM_getValue("amqtbDownloaderAutoDlInfo", false);
+        }
       }));
       this.btnContainer = new AmqtbButtonContainer({});
       const autoDlBtn = new AmqtbButton({
