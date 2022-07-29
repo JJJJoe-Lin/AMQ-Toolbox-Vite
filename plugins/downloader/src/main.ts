@@ -158,6 +158,7 @@ class Downloader implements Plugin {
         });
 
         this.answerResultListener = new Listener("answer results", this.answerResultHanler.bind(this));
+        this.enabled = true;
     }
 
     get enabled() {

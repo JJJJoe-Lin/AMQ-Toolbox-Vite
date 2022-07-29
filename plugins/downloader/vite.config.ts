@@ -11,10 +11,10 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Downloader',
-                version: '0.2.3',
+                version: '0.2.4',
                 description: 'AMQ song downloader',
                 author: 'JJJJoe',
-                match: 'https://animemusicquiz.com/*',
+                include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',
                 updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js',
                 downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js',
                 connect: 'cdn.animenewsnetwork.com',

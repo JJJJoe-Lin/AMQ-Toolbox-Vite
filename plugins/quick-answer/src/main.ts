@@ -82,6 +82,7 @@ class QuickAnswer implements Plugin {
             content: this.btnContainer.self,
         });
         this.loadBtn();
+        this.enabled = true;
     }
 
     get enabled() {

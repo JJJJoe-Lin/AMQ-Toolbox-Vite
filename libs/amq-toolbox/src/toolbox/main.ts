@@ -3,7 +3,11 @@ import { AmqtbTab, AmqtbTabContainer } from '../tab/main';
 import { AmqtbOptions } from '../option/main';
 import { AmqtbModal } from '../modal/main'
 import { AmqtbTable, AmqtbTableCell } from '../table/main';
-import { deleteCookie, loadFromCookie, saveToCookie } from '../utils/cookies';
+import {
+    deleteLocalStorage,
+    loadFromLocalStorage,
+    saveToLocalStorage,
+} from '../utils/localStorage'; 
 
 export interface Plugin {
     name: string;
@@ -175,10 +179,10 @@ export class AMQ_Toolbox {
                 };
             },
             onSave: (data) => {
-                saveToCookie(PluginManageTableId, data);
+                saveToLocalStorage(PluginManageTableId, data);
             },
             onLoad: () => {
-                return loadFromCookie(PluginManageTableId);
+                return loadFromLocalStorage(PluginManageTableId);
             },
         });
         this.manageTable.saveBtn!.self.on('click', () => {
@@ -186,10 +190,8 @@ export class AMQ_Toolbox {
             this.refresh();
             this.manageModal.self.modal('hide');
         });
-        // this.oldPluginsInfo = GM_getValue(PluginManageTableId, []);
-        // GM_deleteValue(PluginManageTableId);
-        this.oldPluginsInfo = loadFromCookie(PluginManageTableId, []);
-        deleteCookie(PluginManageTableId);
+        this.oldPluginsInfo = loadFromLocalStorage(PluginManageTableId, []);
+        deleteLocalStorage(PluginManageTableId);
         this.manageTable.reset();
         this.manageModal = new AmqtbModal({
             id: 'amqtbManageModal',

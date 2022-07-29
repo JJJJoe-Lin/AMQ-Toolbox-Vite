@@ -13,6 +13,7 @@ class NoAvatarSnipe implements Plugin {
     constructor () {
         this.oldListener = quiz._playerAnswerListener;
         this.listener = new Listener("play next song", function(){});
+        this.enabled = true;
     }
     
     get enabled() {
