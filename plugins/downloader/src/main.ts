@@ -22,6 +22,7 @@ interface Mp3Info {
     songName: string;
     type: string;
     artist: string;
+    annId: number,
     cover: Image | null;
 }
 
@@ -233,6 +234,7 @@ class Downloader implements Plugin {
     private async downloadSongData(url: string, interactive=false) {
         const fileName = this.nameFromSongInfo();
         const fileExt = url.split('.').pop()!;
+        const mp3Info = this.getMp3Info();
         if (interactive) {
             alert(`Downloading song: ${fileName}`);
         }
@@ -240,8 +242,8 @@ class Downloader implements Plugin {
         let blob: Blob;
         if (fileExt === 'mp3') {
             const mp3 = await response.arrayBuffer();
-            const info = await this.getMp3Info();
-            const taggedMp3 = addMp3Tag(mp3, info);
+            mp3Info.cover = await getAnimeImage(mp3Info.annId);
+            const taggedMp3 = addMp3Tag(mp3, mp3Info);
             if (taggedMp3 === null) {
                 console.warn(`Failed to add mp3 tag, download origin mp3...`);
                 blob = new Blob([mp3], {type: 'audio/mpeg'});
@@ -271,13 +273,14 @@ class Downloader implements Plugin {
         return `[${animeName}(${type})] ${songName} (${artist})`;
     }
 
-    private async getMp3Info(): Promise<Mp3Info> {
+    private getMp3Info(): Mp3Info {
         return {
             animeName: this.currentSongInfo.animeNames.romaji,
             songName: this.currentSongInfo.songName,
             type: this.songType(),
             artist: this.currentSongInfo.artist,
-            cover: await getAnimeImage(this.currentSongInfo.annId),
+            annId: this.currentSongInfo.annId,
+            cover: null,
         }
     }
 

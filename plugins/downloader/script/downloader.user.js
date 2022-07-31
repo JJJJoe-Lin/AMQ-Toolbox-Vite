@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Downloader
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.4
+// @version      0.2.5
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
@@ -16,7 +16,7 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-29T10:11:26.898Z
+// use vite-plugin-monkey@0.2.14 at 2022-07-31T06:19:20.700Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -2636,6 +2636,7 @@ var __publicField = (obj, key, value) => {
     async downloadSongData(url, interactive = false) {
       const fileName = this.nameFromSongInfo();
       const fileExt = url.split(".").pop();
+      const mp3Info = this.getMp3Info();
       if (interactive) {
         alert(`Downloading song: ${fileName}`);
       }
@@ -2643,8 +2644,8 @@ var __publicField = (obj, key, value) => {
       let blob;
       if (fileExt === "mp3") {
         const mp3 = await response.arrayBuffer();
-        const info = await this.getMp3Info();
-        const taggedMp3 = addMp3Tag(mp3, info);
+        mp3Info.cover = await getAnimeImage(mp3Info.annId);
+        const taggedMp3 = addMp3Tag(mp3, mp3Info);
         if (taggedMp3 === null) {
           console.warn(`Failed to add mp3 tag, download origin mp3...`);
           blob = new Blob([mp3], { type: "audio/mpeg" });
@@ -2670,13 +2671,14 @@ var __publicField = (obj, key, value) => {
       const artist = this.currentSongInfo.artist;
       return `[${animeName}(${type})] ${songName} (${artist})`;
     }
-    async getMp3Info() {
+    getMp3Info() {
       return {
         animeName: this.currentSongInfo.animeNames.romaji,
         songName: this.currentSongInfo.songName,
         type: this.songType(),
         artist: this.currentSongInfo.artist,
-        cover: await getAnimeImage(this.currentSongInfo.annId)
+        annId: this.currentSongInfo.annId,
+        cover: null
       };
     }
     songType() {
