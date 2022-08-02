@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Downloader
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.5
+// @version      0.2.6
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
@@ -16,7 +16,7 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-31T06:19:20.700Z
+// use vite-plugin-monkey@0.2.14 at 2022-08-02T14:57:31.326Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -2616,7 +2616,7 @@ var __publicField = (obj, key, value) => {
           isCorrect = result.players[playerIdx].correct;
         }
         const autoDlOnWrong = this.options.get("autoDlOnWrong");
-        if (autoDlOnWrong.checked || isCorrect !== void 0 && !isCorrect) {
+        if (!autoDlOnWrong.checked || isCorrect !== void 0 && !isCorrect) {
           const autoDlMedia = this.options.get("autoDlMedia");
           const autoDlInfo = this.options.get("autoDlInfo");
           if (autoDlMedia.checked) {

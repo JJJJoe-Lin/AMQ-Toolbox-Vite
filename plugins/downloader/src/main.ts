@@ -213,7 +213,7 @@ class Downloader implements Plugin {
             }
             // auto download
             const autoDlOnWrong = this.options.get('autoDlOnWrong') as AmqtbCheckbox;
-            if (autoDlOnWrong.checked || (isCorrect !== undefined && !isCorrect)) {
+            if (!autoDlOnWrong.checked || (isCorrect !== undefined && !isCorrect)) {
                 const autoDlMedia = this.options.get('autoDlMedia') as AmqtbCheckbox;
                 const autoDlInfo = this.options.get('autoDlInfo') as AmqtbCheckbox; 
                 if (autoDlMedia.checked) {
