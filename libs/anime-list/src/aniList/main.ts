@@ -158,8 +158,9 @@ export class AniList extends AnimeList.AnimeList {
         return this.deleteEntries([entry.id]);
     }
 
-    public async getList(userName: string, statuses: AnimeList.Status[]): Promise<AnimeList.Entry[] | Error> {
-        const entries = await this.getEntries(userName, statuses);
+    public async getList(user: { id: number; } | { name: string; }, statuses: AnimeList.Status[])
+    : Promise<AnimeList.Entry[] | Error> {
+        const entries = await this.getEntries(user, statuses);
         if (entries instanceof Error) {
             return entries;
         }
@@ -201,7 +202,7 @@ export class AniList extends AnimeList.AnimeList {
         if (await this.getToken() === null) {
             return new Error('Invalid token');
         }
-        const entries = await this.getEntries(this.user!.name,
+        const entries = await this.getEntries({name: this.user!.name},
             ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
         if (entries instanceof Error) {
             return entries;
@@ -344,11 +345,30 @@ export class AniList extends AnimeList.AnimeList {
         };
     }
 
-    private async getEntries(userName: string, statuses: AnimeList.Status[]): Promise<AniListEntry[] | Error> {
+    private async getEntries(user: { id: number; } | { name: string; }, statuses: AnimeList.Status[])
+    : Promise<AniListEntry[] | Error> {
         const stats = statuses.map(stat => ToLocalStatus[stat]);
+        let varStr: string;
+        let paramStr: string;
+        let variables: GraphQLData['variables'];
+        if ('id' in user) {
+            varStr = '($userId: Int, $statuses: [MediaListStatus])';
+            paramStr = '(userId: $userId, type: ANIME, status_in: $statuses)';
+            variables = {
+                userId: user.id,
+                statuses: stats,
+            };
+        } else {
+            varStr = '($userName: String, $statuses: [MediaListStatus])';
+            paramStr = '(userName: $userName, type: ANIME, status_in: $statuses)';
+            variables = {
+                userName: user.name,
+                statuses: stats,
+            };
+        }
         const data: GraphQLData = {
-            query: `query getList ($userName: String, $statuses: [MediaListStatus]) {
-                query: MediaListCollection (userName: $userName, type: ANIME, status_in: $statuses) {
+            query: `query getList ${varStr} {
+                query: MediaListCollection ${paramStr} {
                     lists {
                         entries {
                             id
@@ -370,10 +390,7 @@ export class AniList extends AnimeList.AnimeList {
                     }
                 }
             }`,
-            variables: {
-                userName: userName,
-                statuses: stats,
-            }
+            variables: variables,
         }
         const resp = await async_GM_xmlhttpRequest({
             method: 'POST',

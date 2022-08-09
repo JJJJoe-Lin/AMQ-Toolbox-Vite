@@ -186,21 +186,26 @@ export class MyAnimeList extends AnimeList.AnimeList {
         return null;
     }
 
-    public async getList(userName: string, statuses: AnimeList.Status[]): Promise<AnimeList.Entry[] | Error> {
+    public async getList(user: { id: number; } | { name: string; }, statuses: AnimeList.Status[])
+    : Promise<AnimeList.Entry[] | Error> {
+        if (!('name' in user)) {
+            return new Error('Only support getting list by username');
+        }
         const malStatuses = statuses.map(stat => ToLocalStatus[stat]);
-        const token = await this.getToken();
         let headers: any;
         let query: string;
-        if (this.logined() && token !== null && this.user!.name === userName) {
+        const token = await this.getToken();
+        const selfName = (this.logined() && token !== null) ? this.user!.name : undefined;
+        if (user.name === selfName) {
             headers = {
-                'Authorization': `Bearer ${token.access_token}`,
+                'Authorization': `Bearer ${token!.access_token}`,
             };
             query = `https://api.myanimelist.net/v2/users/@me/animelist`;
         } else {
             headers = {
                 'X-MAL-CLIENT-ID': this.clientID,
             };
-            query = `https://api.myanimelist.net/v2/users/${userName}/animelist`;
+            query = `https://api.myanimelist.net/v2/users/${user.name}/animelist`;
         }
         query += `?` + new URLSearchParams({
             fields: `list_status,media_type,num_episodes`,
@@ -291,7 +296,7 @@ export class MyAnimeList extends AnimeList.AnimeList {
         }
         let retry = 3;
         while (retry--) {
-            const entries = await this.getList(this.user!.name,
+            const entries = await this.getList({name: this.user!.name},
                 ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (entries instanceof Error) {
                 return entries;

@@ -47,7 +47,7 @@ export abstract class AnimeList {
     public abstract logout(): Promise<null | Error>;
     public abstract updateAnime(id: number, status: Status): Promise<null | Error>;
     public abstract deleteAnime(id: number): Promise<null | Error>;
-    public abstract getList(userName: string, statuses: Status[]): Promise<Entry[] | Error>;
+    public abstract getList(user: { id: number; } | { name: string; }, statuses: Status[]): Promise<Entry[] | Error>;
     public abstract deleteList(): Promise<null | Error>;
     public abstract importList(entries: Entry[], overwrite: boolean): Promise<null | Error>;
     constructor () {

@@ -1,6 +1,7 @@
 export * from './animeList/main';
 export * from './myAnimeList/main';
 export * from './aniList/main';
+export * from './kitsu/main';
 export { redirectURLHandler } from './utils/oauth2';
 
 export const redirectPathName = '/amqToolbox/oauth2';

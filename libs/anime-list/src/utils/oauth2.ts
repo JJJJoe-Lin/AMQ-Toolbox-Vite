@@ -32,9 +32,11 @@ export function authoriationRequest(authURL: string): Promise<string | Error> {
 export function redirectURLHandler(): void {
     const path = new URL(document.URL);
     const authCode = path.searchParams.get('code');
-    if (authCode) {
-        GM_setValue(authCodeKeyName, authCode);
-    } else {
-        window.close();
+    if (GM_getValue(authCodeKeyName, undefined) !== undefined) {
+        if (authCode) {
+            GM_setValue(authCodeKeyName, authCode);
+        } else {
+            window.close();
+        }
     }
 }
