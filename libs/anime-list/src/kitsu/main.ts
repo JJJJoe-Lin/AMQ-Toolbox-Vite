@@ -58,6 +58,7 @@ export class KitsuFactory extends AnimeList.AnimeListFactory {
 }
 
 export class Kitsu extends AnimeList.AnimeList {
+    private user: AnimeList.User | null;
     private readonly clientID = 'dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd';
     private readonly clientSecret = '54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151';
     private readonly tokenBaseURL = 'https://kitsu.io/api/oauth/token';
@@ -65,10 +66,14 @@ export class Kitsu extends AnimeList.AnimeList {
 
     constructor() {
         super();
+        this.user = null;
     }
 
     public async login(opt: AuthOptions): Promise<Error | null> {
-        if (opt.grantTypes === 'Password' && opt.username !== undefined && opt.password !== undefined) {
+        if (opt.grantTypes !== 'Password' || opt.username === undefined || opt.password === undefined) {
+            return new Error('Not supported AuthOptions');
+        }
+        if (!this.logined()) {
             const authData = new URLSearchParams({
                 grant_type: 'password',
                 username: opt.username,
@@ -89,23 +94,13 @@ export class Kitsu extends AnimeList.AnimeList {
             const token: KitsuAccessToken = JSON.parse(resp.responseText);
             token.expires_in -= 86400;
             GM_setValue('Kitsu_accessToken', token);
-        } else {
-            return new Error('Not supported AuthOptions');
         }
-        // Get user info
-        const user = await this.getUser();
-        if (user instanceof Error) {
-            return user;
-        }
-        this.user = {
-            id: parseInt(user.id, 10),
-            name: user.name,
-        };
         return null;
     }
 
     public logined(): boolean {
-        if (this.user !== null && GM_getValue('Kitsu_accessToken') !== undefined) {
+        const token: KitsuAccessToken | undefined = GM_getValue('Kitsu_accessToken');
+        if (token && Date.now() < (token.created_at + token.expires_in) * 1000) {
             return true;
         } else {
             return false;
@@ -118,11 +113,28 @@ export class Kitsu extends AnimeList.AnimeList {
         return null;
     }
 
-    public async updateAnime(id: number, status: AnimeList.Status): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
+    public async getMyInfo(): Promise<AnimeList.User | Error> {
+        if (this.user) {
+            return this.user;
+        } else {
+            const user = await this.getUser();
+            if (user instanceof Error) {
+                return user;
+            }
+            this.user = {
+                id: parseInt(user.id, 10),
+                name: user.name,
+            };
+            return this.user;
         }
-        const entry = await this.getEntry({id: this.user!.id}, id);
+    }
+
+    public async updateAnime(id: number, status: AnimeList.Status): Promise<Error | null> {
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
+        }
+        const entry = await this.getEntry({id: user.id}, id);
         if (entry instanceof Error) {
             return entry;
         } else if (entry === null) {
@@ -133,10 +145,11 @@ export class Kitsu extends AnimeList.AnimeList {
     }
 
     public async deleteAnime(id: number): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
         }
-        const entry = await this.getEntry({id: this.user!.id}, id);
+        const entry = await this.getEntry({id: user.id}, id);
         if (entry instanceof Error) {
             return entry;
         } else if (entry === null) {
@@ -163,12 +176,6 @@ export class Kitsu extends AnimeList.AnimeList {
     }
 
     public async importList(entries: AnimeList.Entry[], overwrite: boolean): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
-        if (await this.getToken() === null) {
-            return new Error('Invalid token');
-        }
         if (overwrite) {
             const err = await this.deleteList();
             if (err) {
@@ -177,7 +184,11 @@ export class Kitsu extends AnimeList.AnimeList {
             console.log('[importList] delete all entries successfully');
         }
         // get exist entries
-        const existEntries = await this.getEntries({id: this.user!.id},
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
+        }
+        const existEntries = await this.getEntries({id: user.id},
             ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
         if (existEntries instanceof Error) {
             return existEntries;
@@ -217,15 +228,13 @@ export class Kitsu extends AnimeList.AnimeList {
     }
 
     public async deleteList(): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
-        if (await this.getToken() === null) {
-            return new Error('Invalid token');
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
         }
         let retry = 3;
         while (retry--) {
-            const entries = await this.getEntries({id: this.user!.id},
+            const entries = await this.getEntries({id: user.id},
                 ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (entries instanceof Error) {
                 return entries;
@@ -285,18 +294,12 @@ export class Kitsu extends AnimeList.AnimeList {
         return newToken;
     }
 
-    private async getToken(): Promise<KitsuAccessToken | null> {
+    private async getToken(): Promise<KitsuAccessToken | Error> {
         const token: KitsuAccessToken | undefined = GM_getValue('Kitsu_accessToken');
         if (token === undefined) {
-            return null;
+            return new Error('Not logined');
         } else if (Date.now() > (token.created_at + token.expires_in) * 1000) {
-            const result = await this.refreshToken();
-            if (result instanceof Error) {
-                console.error(result);
-                return null;
-            } else {
-                return result;
-            }
+            return this.refreshToken();
         } else {
             return token;
         }
@@ -305,17 +308,10 @@ export class Kitsu extends AnimeList.AnimeList {
     private async getUser(userName?: string): Promise<KitsuUser | Error> {
         let query: string;
         let resp: Tampermonkey.Response<any> | null;
-        const self = this.logined() ? this.user!.name : undefined;
-        
-        if (userName === self) {
-            if (!this.logined() && GM_getValue('Kitsu_accessToken') === undefined) {
-                // should not be here
-                return new Error('No username and not logined');
-            }
-            // get logined user (need auth)
+        if (userName === undefined || this.logined()) {
             const token = await this.getToken();
-            if (token === null) {
-                return new Error('Invalid token');
+            if (token instanceof Error) {
+                return token;
             }
             query = `https://kitsu.io/api/edge/users?` + kitsuCore.query({
                 filter: {
@@ -365,11 +361,9 @@ export class Kitsu extends AnimeList.AnimeList {
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
         };
-        if (this.logined()) {
-            const token = await this.getToken();
-            if (token !== null) {
-                headers['Authorization'] = `Bearer ${token.access_token}`;
-            }
+        const token = await this.getToken();
+        if (!(token instanceof Error)) {
+            headers['Authorization'] = `Bearer ${token.access_token}`;
         }
         // get user ID
         let userId: number;
@@ -451,11 +445,9 @@ export class Kitsu extends AnimeList.AnimeList {
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
         };
-        if (this.logined()) {
-            const token = await this.getToken();
-            if (token !== null) {
-                headers['Authorization'] = `Bearer ${token.access_token}`;
-            }
+        const token = await this.getToken();
+        if (!(token instanceof Error)) {
+            headers['Authorization'] = `Bearer ${token.access_token}`;
         }
         // get user ID
         let userId: number;
@@ -539,12 +531,9 @@ export class Kitsu extends AnimeList.AnimeList {
     }
 
     private async deleteEntry(entry: KitsuEntry): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const resp = await async_GM_xmlhttpRequest({
             method: 'DELETE' as any,
@@ -563,18 +552,19 @@ export class Kitsu extends AnimeList.AnimeList {
     }
 
     private async addEntry(animeId: number, status: AnimeList.Status): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
+        }
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
         }
         const data = {
             user: {
                 data: {
                     type: 'users',
-                    id: this.user!.id,
+                    id: user.id,
                 },
             },
             anime: {
@@ -604,12 +594,9 @@ export class Kitsu extends AnimeList.AnimeList {
     }
 
     private async updateEntry(entry: KitsuEntry, status: AnimeList.Status): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const data = {
             id: entry.id,
@@ -622,7 +609,6 @@ export class Kitsu extends AnimeList.AnimeList {
                 'Accept': 'application/vnd.api+json',
                 'Authorization': `Bearer ${token.access_token}`,
             },
-            // url: `https://kitsu.io/api/edge/library-entries/${id}`,
             url: entry.selfLink,
             data: JSON.stringify(kitsuCore.serialise('libraryEntries', data)),
         });

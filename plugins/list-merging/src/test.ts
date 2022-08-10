@@ -44,7 +44,25 @@ export function doTest() {
             return;
         }
 
-        err = await testGetList();
+        err = await testGetMyInfo();
+        if (err) {
+            console.error(err);
+            return;
+        }
+        
+        err = await testAddAnime();
+        if (err) {
+            console.error(err);
+            return;
+        }
+
+        err = await testDeleteAnime();
+        if (err) {
+            console.error(err);
+            return;
+        }
+
+        err = await testImportList();
         if (err) {
             console.error(err);
             return;
@@ -57,13 +75,28 @@ export function doTest() {
 
 async function testLogin() {
     console.log('[testLogin] Start Login test');
-    console.log('[testLogin] before logined: logined =', animeList.logined(), 'user =', animeList.user);
+    console.log('[testLogin] before logined: logined =', animeList.logined());
     let err = await animeList.login(LOGIN_OPT);
     if (err) {
         return err;
     }
-    console.log('[testLogin] after logined: logined =', animeList.logined(), 'user =', animeList.user);
+    console.log('[testLogin] after logined: logined =', animeList.logined());
     console.log('[testLogin] End Login test');
+    return null;
+}
+
+async function testGetMyInfo() {
+    console.log('[testGetMyInfo] Start GetMyInfo test');
+    if (animeList.logined()) {
+        const myInfo = await animeList.getMyInfo();
+        if (myInfo instanceof Error) {
+            return myInfo;
+        }
+        console.log('[testGetMyInfo] logined user:', myInfo);
+    } else {
+        console.log('[testGetMyInfo] Not logined');
+    }
+    console.log('[testGetMyInfo] End GetMyInfo test');
     return null;
 }
 
@@ -112,10 +145,12 @@ async function testImportList() {
     console.log('[testImportList] Start ImportList test');
     const input = GM_getValue('test') as AnimeList.Entry[];
     console.log('[testImportList] input entries:', input);
+    const start = Date.now();
     let err = await animeList.importList(input, true);
     if (err) {
         return err;
     }
+    console.log(`[testImportList] importList elapsed time=${(Date.now() - start) / 1000}`)
     let result = await animeList.getList(USER, ALL_SERIES_TYPE);
     if (result instanceof Error) {
         return result;
@@ -189,11 +224,12 @@ async function testDeleteList() {
 
 async function testLogout() {
     console.log('[testLogout] Start Logout test');
+    console.log('[testLogout] before logout: logined =', animeList.logined());
     let err = await animeList.logout();
     if (err) {
         return err;
     }
-    console.log('[testLogout] after logout: logined =', animeList.logined(), 'user =', animeList.user);
+    console.log('[testLogout] after logout: logined =', animeList.logined());
     console.log('[testLogout] End Logout test');
     return null;
 }

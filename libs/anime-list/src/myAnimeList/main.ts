@@ -51,6 +51,7 @@ export class MyAnimeListFactory extends AnimeList.AnimeListFactory {
 }
 
 export class MyAnimeList extends AnimeList.AnimeList {
+    private user: AnimeList.User | null;
     private readonly PKCECode: string;
     private readonly PKCEMethod = 'plain';
     private readonly clientID = '9c9b61db4efa44f989cf3dea37bff94d';
@@ -62,6 +63,7 @@ export class MyAnimeList extends AnimeList.AnimeList {
 
     constructor() {
         super();
+        this.user = null;
         // PKCE code should be 48 characters
         this.PKCECode = window.btoa(Math.random().toFixed(16).toString()) +
             window.btoa(Math.random().toFixed(16).toString());
@@ -71,7 +73,7 @@ export class MyAnimeList extends AnimeList.AnimeList {
         if (opt.grantTypes !== 'Authorization Code') {
             return new Error('Not supported grant type');
         }
-        if (await this.getToken() === null) {
+        if (!this.logined()) {
             const authReqParam = new URLSearchParams({
                 response_type: 'code',
                 client_id: this.clientID,
@@ -109,15 +111,6 @@ export class MyAnimeList extends AnimeList.AnimeList {
             token.expires_in = Date.now() + ((token.expires_in - 86400) * 1000);
             GM_setValue('MyAnimeList_accessToken', token);
         }
-        // Get user info
-        const user = await this.getUser();
-        if (user instanceof Error) {
-            return user;
-        }
-        this.user = {
-            id: user.id,
-            name: user.name,
-        };
         return null;
     }
 
@@ -128,20 +121,34 @@ export class MyAnimeList extends AnimeList.AnimeList {
     }
 
     public logined(): boolean {
-        if (this.user !== null && GM_getValue('MyAnimeList_accessToken') !== undefined) {
+        const token: MyAnimeListAccessToken | undefined = GM_getValue('MyAnimeList_accessToken');
+        if (token && Date.now() < token.expires_in) {
             return true;
         } else {
             return false;
         }
     }
 
-    public async updateAnime(id: number, status: AnimeList.Status): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
+    public async getMyInfo(): Promise<AnimeList.User | Error> {
+        if (this.user) {
+            return this.user;
+        } else {
+            const user = await this.getUser();
+            if (user instanceof Error) {
+                return user;
+            }
+            this.user = {
+                id: user.id,
+                name: user.name,
+            };
+            return this.user;
         }
+    }
+
+    public async updateAnime(id: number, status: AnimeList.Status): Promise<Error | null> {
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const query = `https://api.myanimelist.net/v2/anime/${id}/my_list_status`;
         const data = new URLSearchParams({
@@ -164,12 +171,9 @@ export class MyAnimeList extends AnimeList.AnimeList {
     }
 
     public async deleteAnime(id: number): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const query = `https://api.myanimelist.net/v2/anime/${id}/my_list_status`;
         const resp = await async_GM_xmlhttpRequest({
@@ -194,11 +198,18 @@ export class MyAnimeList extends AnimeList.AnimeList {
         const malStatuses = statuses.map(stat => ToLocalStatus[stat]);
         let headers: any;
         let query: string;
-        const token = await this.getToken();
-        const selfName = (this.logined() && token !== null) ? this.user!.name : undefined;
+        let selfName: string | undefined = undefined;
+        const myInfo = await this.getMyInfo();
+        if (!(user instanceof Error)) {
+            selfName = myInfo.name;
+        }
         if (user.name === selfName) {
+            const token = await this.getToken();
+            if (token instanceof Error) {
+                return token;
+            }
             headers = {
-                'Authorization': `Bearer ${token!.access_token}`,
+                'Authorization': `Bearer ${token.access_token}`,
             };
             query = `https://api.myanimelist.net/v2/users/@me/animelist`;
         } else {
@@ -246,9 +257,6 @@ export class MyAnimeList extends AnimeList.AnimeList {
         if (!this.logined()) {
             return new Error('Not logined');
         }
-        if (await this.getToken() === null) {
-            return new Error('Invalid token');
-        }
         if (overwrite) {
             const err = await this.deleteList();
             if (err) {
@@ -288,15 +296,13 @@ export class MyAnimeList extends AnimeList.AnimeList {
     }
 
     public async deleteList(): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
-        if (await this.getToken() === null) {
-            return new Error('Invalid token');
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
         }
         let retry = 3;
         while (retry--) {
-            const entries = await this.getList({name: this.user!.name},
+            const entries = await this.getList({name: user.name},
                 ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (entries instanceof Error) {
                 return entries;
@@ -328,8 +334,8 @@ export class MyAnimeList extends AnimeList.AnimeList {
 
     private async getUser(): Promise<MyAnimeListUser | Error> {
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const query = `https://api.myanimelist.net/v2/users/@me`;
         const resp = await async_GM_xmlhttpRequest({
@@ -379,18 +385,12 @@ export class MyAnimeList extends AnimeList.AnimeList {
         return newToken;
     }
 
-    private async getToken(): Promise<MyAnimeListAccessToken | null> {
+    private async getToken(): Promise<MyAnimeListAccessToken | Error> {
         const token: MyAnimeListAccessToken | undefined = GM_getValue('MyAnimeList_accessToken');
         if (token === undefined) {
-            return null;
+            return new Error('Not logined');
         } else if (Date.now() > token.expires_in) {
-            const result = await this.refreshToken();
-            if (result instanceof Error) {
-                console.error(result);
-                return null;
-            } else {
-                return result;
-            }
+            return this.refreshToken();
         } else {
             return token;
         }

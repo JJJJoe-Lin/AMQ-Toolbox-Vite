@@ -41,18 +41,44 @@ export interface Entry {
 }
 
 export abstract class AnimeList {
-    public user: User | null;
+    /**
+     * Get access token with OAuth2
+     * @param opt OAuth2 option
+     */
     public abstract login(opt: AuthOptions): Promise<null | Error>;
     public abstract logined(): boolean;
     public abstract logout(): Promise<null | Error>;
+    /**
+     * (Need login) Get logined user info
+     */
+    public abstract getMyInfo(): Promise<User | Error>;
+    /**
+     * (Need login) Add anime to logined user's anime list
+     * @param id anime ID
+     * @param status 
+     */
     public abstract updateAnime(id: number, status: Status): Promise<null | Error>;
+    /**
+     * (Need login) Remove anime from logined user's anime list
+     * @param id anime ID
+     */
     public abstract deleteAnime(id: number): Promise<null | Error>;
+    /**
+     * Get user's anime list that is in some statuses
+     * @param user user's ID or username
+     * @param statuses status list to obtain
+     */
     public abstract getList(user: { id: number; } | { name: string; }, statuses: Status[]): Promise<Entry[] | Error>;
+    /**
+     * Delete logined user's anime list
+     */
     public abstract deleteList(): Promise<null | Error>;
+    /**
+     * Import animes to logined user's anime list
+     * @param entries animes to import
+     * @param overwrite whether delete list before import
+     */
     public abstract importList(entries: Entry[], overwrite: boolean): Promise<null | Error>;
-    constructor () {
-        this.user = null;
-    }
 }
 
 export abstract class AnimeListFactory {

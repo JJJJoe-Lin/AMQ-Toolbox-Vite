@@ -65,6 +65,7 @@ export class AniListFactory extends AnimeList.AnimeListFactory {
 }
 
 export class AniList extends AnimeList.AnimeList {
+    private user: AnimeList.User | null;
     private readonly clientID = '8357';
     private readonly clientSecret = 'H7r1aJRh6XEnTnGZdqhd7WJIVklt622sYeR53syl';
     private readonly authBaseURL = 'https://anilist.co/api/v2/oauth/authorize';
@@ -73,13 +74,14 @@ export class AniList extends AnimeList.AnimeList {
 
     constructor() {
         super();
+        this.user = null;
     }
 
     public async login(opt: AuthOptions): Promise<null | Error> {
         if (opt.grantTypes !== 'Authorization Code') {
             return new Error('Not supported grant type');
         }
-        if (await this.getToken() === null) {
+        if (!this.logined()) {
             const authReqParam = new URLSearchParams({
                 response_type: 'code',
                 client_id: this.clientID,
@@ -117,15 +119,6 @@ export class AniList extends AnimeList.AnimeList {
             token.expires_in = Date.now() + ((token.expires_in - 86400) * 1000);
             GM_setValue('AniList_accessToken', token);
         }
-        // Get user info
-        const user = await this.getUser();
-        if (user instanceof Error) {
-            return user;
-        }
-        this.user = {
-            id: user.id,
-            name: user.name,
-        }
         return null;
     }
 
@@ -136,10 +129,30 @@ export class AniList extends AnimeList.AnimeList {
     }
 
     public logined(): boolean {
-        if (this.user !== null && GM_getValue('AniList_accessToken') !== undefined) {
+        const token: AniListAccessToken | undefined = GM_getValue('AniList_accessToken');
+        if (token && Date.now() < token.expires_in) {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public async getMyInfo(): Promise<AnimeList.User | Error> {
+        if (!this.logined()) {
+            return new Error('Not logined');
+        }
+        if (this.user) {
+            return this.user;
+        } else {
+            const user = await this.getUser();
+            if (user instanceof Error) {
+                return user;
+            }
+            this.user = {
+                id: user.id,
+                name: user.name,
+            };
+            return this.user;
         }
     }
 
@@ -148,10 +161,11 @@ export class AniList extends AnimeList.AnimeList {
     }
 
     public async deleteAnime(id: number): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
         }
-        const entry = await this.getEntry(this.user!.name, id);
+        const entry = await this.getEntry(user.name, id);
         if (entry instanceof Error) {
             return entry;
         }
@@ -168,12 +182,6 @@ export class AniList extends AnimeList.AnimeList {
     }
 
     public async importList(entries: AnimeList.Entry[], overwrite: boolean): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
-        if (await this.getToken() === null) {
-            return new Error('Invalid token');
-        }
         if (overwrite) {
             const err = await this.deleteList();
             if (err) {
@@ -196,13 +204,11 @@ export class AniList extends AnimeList.AnimeList {
     }
 
     public async deleteList(): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
+        const user = await this.getMyInfo();
+        if (user instanceof Error) {
+            return user;
         }
-        if (await this.getToken() === null) {
-            return new Error('Invalid token');
-        }
-        const entries = await this.getEntries({name: this.user!.name},
+        const entries = await this.getEntries({name: user.name},
             ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
         if (entries instanceof Error) {
             return entries;
@@ -213,8 +219,8 @@ export class AniList extends AnimeList.AnimeList {
 
     private async getUser(): Promise<AniListUser | Error> {
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const data: GraphQLData = {
             query: `mutation getUser {
@@ -275,18 +281,12 @@ export class AniList extends AnimeList.AnimeList {
         return newToken;
     }
 
-    private async getToken(): Promise<AniListAccessToken | null> {
+    private async getToken(): Promise<AniListAccessToken | Error> {
         const token: AniListAccessToken | undefined = GM_getValue('AniList_accessToken');
         if (token === undefined) {
-            return null;
+            return new Error('Not logined');
         } else if (Date.now() > token.expires_in) {
-            const result = await this.refreshToken();
-            if (result instanceof Error) {
-                console.error(result);
-                return null;
-            } else {
-                return result;
-            }
+            return this.refreshToken();
         } else {
             return token;
         }
@@ -426,12 +426,9 @@ export class AniList extends AnimeList.AnimeList {
     }
 
     private async updateAnimes(animes: {id: number, status: AnimeList.Status}[]): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const queryNumLimit = 250;
         const data: GraphQLData = {
@@ -465,12 +462,9 @@ export class AniList extends AnimeList.AnimeList {
     }
 
     private async deleteEntries(ids: number[]): Promise<Error | null> {
-        if (!this.logined()) {
-            return new Error('Not logined');
-        }
         const token = await this.getToken();
-        if (token === null) {
-            return new Error('Invalid token');
+        if (token instanceof Error) {
+            return token;
         }
         const queryNumLimit = 250;
         const data: GraphQLData = {
