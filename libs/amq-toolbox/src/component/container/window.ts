@@ -1,6 +1,7 @@
-interface AmqtbWindowOptions {
-    id?: string;
-    class?: string;
+import { IComponent } from '../component';
+import { Container, ContainerOpt, IContainer } from './container';
+
+export interface WindowOpt extends ContainerOpt<IComponent> {
     title: string;
     width: number;
     height: number;
@@ -12,16 +13,14 @@ interface AmqtbWindowOptions {
     zIndex?: number;
 }
 
-export class AmqtbWindow {
-    self: JQuery<HTMLElement>;
-    content: JQuery<HTMLElement>;
-    header: JQuery<HTMLElement>;
-    body: JQuery<HTMLElement>;
-    resizers?: JQuery<HTMLElement>;
+export interface IWindow extends IContainer<IComponent> {}
 
-    constructor(opt: AmqtbWindowOptions) {
-        const id = opt.id === undefined ? '' : opt.id;
-        const cls = opt.class === undefined ? '' : opt.class;
+export class Window extends Container<IComponent> implements IWindow {
+    private components = this.container;
+    private content: JQuery<HTMLElement>;
+
+    constructor (opt: WindowOpt) {
+        super(opt);
         const title = opt.title;
         const width = opt.width;
         const height = opt.height;
@@ -31,11 +30,7 @@ export class AmqtbWindow {
         const minHeight = opt.minHeight === undefined ? opt.height : opt.minHeight;
         const position = opt.position === undefined ? { x: 0, y: 0 } : opt.position;
         const zIndex = opt.zIndex === undefined ? 1060 : opt.zIndex;
-
-        this.self = $(`<div></div>`)
-            .addClass('amqtbWindow')
-            .addClass(cls)
-            .attr("id", id)
+        this.self.addClass('amqtbWindow')
             .css("position", "absolute")
             .css("z-index", zIndex.toString())
             .offset({
@@ -44,27 +39,27 @@ export class AmqtbWindow {
             })
             .height(height)
             .width(width);
-
-        this.content = $(`<div class="amqtbWindowContent"></div>`);
-        this.header = $(`<div></div>`)
+        
+        const content = $(`<div class="amqtbWindowContent"></div>`);
+        const header = $(`<div></div>`)
             .addClass("modal-header amqtbWindowHeader")
             .addClass(draggable === true ? "draggableWindow" : "")
             .append($(`<div class="close" type="button"><span aria-hidden="true">×</span></div>`)
-                .click(() => {
-                    this.close();
+                .on('click', () => {
+                    this.hide();
                 })
             )
             .append($(`<h2></h2>`)
                 .addClass("modal-title")
                 .text(title)
             );
-        this.body = $(`<div class="modal-body amqtbWindowBody"></div>`)
+        this.content = $(`<div class="modal-body amqtbWindowBody"></div>`)
             .addClass(resizable === true ? "resizableWindow" : "")
             .height(height - 75);
-        this.content.append(this.header);
-        this.content.append(this.body);
+        content.append(header);
+        content.append(this.content);
         if (resizable === true) {
-            this.resizers = $(
+            const resizers = $(
                 `<div class="windowResizers">
                     <div class="windowResizer top-left"></div>
                     <div class="windowResizer top-right"></div>
@@ -72,7 +67,7 @@ export class AmqtbWindow {
                     <div class="windowResizer bottom-right"></div>
                 </div>`
             );
-            this.self.append(this.resizers);
+            this.self.append(resizers);
             let tmp = this;
             let startWidth = 0;
             let startHeight = 0;
@@ -80,7 +75,7 @@ export class AmqtbWindow {
             let startY = 0;
             let startMouseX = 0;
             let startMouseY = 0;
-            this.resizers.find(".windowResizer").each(function (index, resizer) {
+            resizers.find(".windowResizer").each(function (index, resizer) {
                 $(resizer).mousedown(function (event) {
                     tmp.self.css("user-select", "none");
                     startWidth = tmp.self.width()!;
@@ -98,7 +93,7 @@ export class AmqtbWindow {
                                 tmp.self.width(newWidth);
                             }
                             if (newHeight > minHeight) {
-                                tmp.body.height(newHeight - 103);
+                                tmp.content.height(newHeight - 103);
                                 tmp.self.height(newHeight);
                             }
                         }
@@ -111,7 +106,7 @@ export class AmqtbWindow {
                                 tmp.self.css("left", newLeft + "px");
                             }
                             if (newHeight > minHeight) {
-                                tmp.body.height(newHeight - 103);
+                                tmp.content.height(newHeight - 103);
                                 tmp.self.height(newHeight);
                             }
                         }
@@ -124,7 +119,7 @@ export class AmqtbWindow {
                             }
                             if (newHeight > minHeight) {
                                 tmp.self.css("top", newTop + "px");
-                                tmp.body.height(newHeight - 103);
+                                tmp.content.height(newHeight - 103);
                                 tmp.self.height(newHeight);
                             }
                         }
@@ -139,7 +134,7 @@ export class AmqtbWindow {
                             }
                             if (newHeight > minHeight) {
                                 tmp.self.css("top", newTop + "px");
-                                tmp.body.height(newHeight - 103);
+                                tmp.content.height(newHeight - 103);
                                 tmp.self.height(newHeight);
                             }
                         }
@@ -154,23 +149,16 @@ export class AmqtbWindow {
         }
         if (draggable === true) {
             this.self.draggable({
-                handle: this.header,
+                handle: header,
                 containment: "#gameContainer"
             });
         }
-        this.self.append(this.content);
+        this.self.append(content);
         $("#gameContainer").append(this.self);
+        this.hide();
     }
 
-    open () {
-        this.self.show();
-    }
-
-    close () {
-        this.self.hide();
-    }
-
-    isVisible () {
-        return this.self.is(":visible");
+    protected appendComponent(component: IComponent): void {
+        this.content.append(component.self);
     }
 }

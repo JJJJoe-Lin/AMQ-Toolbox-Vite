@@ -10,7 +10,7 @@ export function saveToCookie (key: string, entry: any) {
     Cookies.set(key, JSON.stringify(entry), attr);
 }
 
-export function loadFromCookie (key: string, defaultVal?: any) {
+export function loadFromCookie<T> (key: string, defaultVal?: T | undefined): T | undefined {
     let val = Cookies.get(key);
     if (val === undefined) {
         return defaultVal;

@@ -9,9 +9,11 @@
 // @include      /^https:\/\/animemusicquiz\.com\/(\?.*|#.*)?$/
 // @grant        unsafeWindow
 // @grant        GM_addStyle
+// @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-07-29T10:12:22.803Z
+// use vite-plugin-monkey@0.2.14 at 2022-08-17T18:28:17.970Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -21,430 +23,215 @@ var __publicField = (obj, key, value) => {
 };
 (function() {
   "use strict";
-  const AmqtbButtonSize = {
-    "large": "btn-lg",
-    "default": "",
-    "small": "btn-sm",
-    "extra-small": "btn-xs"
-  };
-  const AmqtbButtonStyle = {
-    "default": "btn-default",
-    "primary": "btn-primary",
-    "success": "btn-success",
-    "info": "btn-info",
-    "warning": "btn-warning",
-    "danger": "btn-danger",
-    "link": "btn-link"
-  };
-  class AmqtbButton {
+  class Container {
     constructor(opt) {
       __publicField(this, "self");
-      __publicField(this, "id");
       __publicField(this, "name");
-      __publicField(this, "_size");
-      __publicField(this, "_style");
+      __publicField(this, "container");
       const id = opt.id === void 0 ? "" : opt.id;
       const cls = opt.class === void 0 ? "" : opt.class;
-      this.self = $(`<button></button>`).attr("id", id).attr("type", "button").addClass(cls).addClass(AmqtbButtonSize[opt.size]).addClass(AmqtbButtonStyle[opt.style]).text(opt.label);
-      this.id = id;
       this.name = opt.name;
-      this._size = AmqtbButtonSize[opt.size];
-      this._style = AmqtbButtonStyle[opt.style];
+      this.self = $(`<div></div>`).attr("id", id).addClass(cls);
+      this.container = [];
     }
-    set size(size) {
-      this.self.removeClass(this._size);
-      this._size = AmqtbButtonSize[size];
-      this.self.addClass(this._size);
+    push(...components) {
+      this.splice(this.length, 0, ...components);
     }
-    set style(style) {
-      this.self.removeClass(this._style);
-      this._style = AmqtbButtonStyle[style];
-      this.self.addClass(this._style);
+    pop() {
+      const ret = this.splice(-1, 1);
+      return ret.length === 0 ? void 0 : ret[0];
     }
-    set label(text) {
-      this.self.text(text);
+    at(idx) {
+      return this.container.at(idx);
     }
-  }
-  class AmqtbButtonContainer {
-    constructor(opt) {
-      __publicField(this, "self");
-      __publicField(this, "buttons");
-      const id = opt.id === void 0 ? "" : opt.id;
-      const cls = opt.class === void 0 ? "" : opt.class;
-      this.self = $(`<div></div>`).attr("id", id).addClass("amqtbButtonContainer").addClass(cls);
-      this.buttons = /* @__PURE__ */ new Map();
+    find(callbackFn) {
+      return this.container.find(callbackFn);
     }
-    add(...btns) {
-      for (let btn of btns) {
-        if (btn.name) {
-          if (this.buttons.has(btn.name)) {
-            console.warn(`Skip adding duplicated button '${btn.name}' in this container`);
-            continue;
-          }
-          this.buttons.set(btn.name, btn);
-        }
-        this.self.append(btn.self);
+    get(name) {
+      return this.find((elem) => elem.name === name);
+    }
+    splice(start, deleteCount, ...components) {
+      for (let component of this.container) {
+        this.detachComponent(component);
       }
-    }
-    get(btn) {
-      if (typeof btn === "string") {
-        return this.buttons.get(btn);
+      let deleted;
+      if (deleteCount === void 0) {
+        deleted = this.container.splice(start);
       } else {
-        return btn.name === void 0 ? void 0 : this.buttons.get(btn.name);
+        deleted = this.container.splice(start, deleteCount, ...components);
       }
-    }
-    has(btn) {
-      if (typeof btn === "string") {
-        return this.buttons.has(btn);
-      } else {
-        return btn.name === void 0 ? false : this.buttons.has(btn.name);
+      for (let component of this.container) {
+        this.appendComponent(component);
       }
+      return deleted;
     }
     clear() {
-      this.buttons.clear();
-      this.self.empty();
+      return this.splice(0);
+    }
+    get length() {
+      return this.container.length;
+    }
+    [Symbol.iterator]() {
+      return this.container.values();
+    }
+    show() {
+      this.self.show();
+    }
+    hide() {
+      this.self.hide();
+    }
+    isVisible() {
+      return this.self.is(":visible");
+    }
+    appendComponent(component) {
+      this.self.append(component.self);
+    }
+    detachComponent(component) {
+      component.self.detach();
     }
   }
-  class AmqtbTab {
+  class Buttons extends Container {
     constructor(opt) {
-      __publicField(this, "self");
-      __publicField(this, "container");
-      __publicField(this, "name");
-      let id = opt.id === void 0 ? "" : opt.id;
-      let cls = opt.class === void 0 ? "" : opt.class;
-      let ctid = opt.containerId === void 0 ? "" : opt.containerId;
-      let ctcls = opt.containerClass === void 0 ? "" : opt.containerClass;
-      this.self = $(`<div></div>`).attr("id", id).addClass(cls).addClass("tab leftRightButtonTop clickAble").append($(`<h5></h5>`).text(opt.title));
-      this.container = $(`<div></div>`).attr("id", ctid).addClass(ctcls).addClass("hide");
-      this.name = opt.name;
+      super(opt);
+      this.self.addClass("amqtbButtonContainer");
     }
   }
-  class AmqtbTabContainer {
-    constructor() {
-      __publicField(this, "self");
-      __publicField(this, "contentContainer");
-      __publicField(this, "curTab");
-      __publicField(this, "tabs");
-      this.self = $(`<div class="tabContainer"></div>`);
-      this.contentContainer = $(`<div></div>`);
-      this.tabs = /* @__PURE__ */ new Map();
-    }
-    selectTab(tab) {
-      if (this.curTab !== void 0) {
-        this.curTab.self.removeClass("selected");
-        this.curTab.container.addClass("hide");
-      }
-      tab.self.addClass("selected");
-      tab.container.removeClass("hide");
-      this.curTab = tab;
-    }
-    add(...tabs) {
-      for (let tab of tabs) {
-        if (tab.name) {
-          if (this.tabs.has(tab.name)) {
-            console.warn(`Skip adding duplicated tab '${tab.name}' in this container`);
-            continue;
-          }
-          this.tabs.set(tab.name, tab);
-        }
-        tab.self.on("click", () => {
-          this.selectTab(tab);
-        });
-        this.self.append(tab.self);
-        this.contentContainer.append(tab.container);
-      }
-    }
-    has(tab) {
-      if (typeof tab === "string") {
-        return this.tabs.has(tab);
-      } else {
-        return tab.name === void 0 ? false : this.tabs.has(tab.name);
-      }
-    }
-    get(tab) {
-      if (typeof tab === "string") {
-        return this.tabs.get(tab);
-      } else {
-        return tab.name === void 0 ? void 0 : this.tabs.get(tab.name);
-      }
-    }
-    select(tab) {
-      if (this.has(tab)) {
-        const _tab = this.get(tab);
-        this.selectTab(_tab);
-      }
-    }
-    hide(tab) {
-      if (this.has(tab)) {
-        const _tab = this.get(tab);
-        _tab.self.addClass("hide");
-        _tab.container.addClass("hide");
-        if (this.curTab === _tab) {
-          const existTab = [...this.tabs.values()].find((t) => !t.self.hasClass("hide"));
-          if (existTab === void 0) {
-            this.curTab.self.removeClass("selected");
-            this.curTab = void 0;
-          } else {
-            this.selectTab(existTab);
-          }
-        }
-      }
-    }
-    hideAll() {
-      if (this.curTab !== void 0) {
-        this.curTab.self.removeClass("selected");
-        this.curTab = void 0;
-      }
-      for (let tab of this.tabs.values()) {
-        this.hide(tab);
-      }
-    }
-    show(tab) {
-      if (this.has(tab)) {
-        const _tab = this.get(tab);
-        _tab.self.removeClass("hide");
-        if (this.curTab === void 0) {
-          this.selectTab(_tab);
-        }
-      }
-    }
-    get contents() {
-      return [...this.tabs.values()].map((tab) => tab.container);
-    }
-  }
-  class AmqtbModal {
+  const SIZE_MAP$2 = {
+    "large": "btn-lg",
+    "normal": "",
+    "small": "btn-sm"
+  };
+  class Modal extends Container {
     constructor(opt) {
-      __publicField(this, "self");
-      __publicField(this, "content");
-      const cls = opt.class === void 0 ? "" : opt.class;
-      this.self = $(`<div class="modal fade" tabindex="-1" role="dialog"></div>`).attr("id", opt.id).addClass(cls);
-      const dialog = $(`<div class="modal-dialog" role="document"></div>`);
-      if (opt.size === "small") {
-        dialog.addClass("modal-sm");
-      } else if (opt.size === "large") {
-        dialog.addClass("modal-lg");
-      }
+      super(opt);
+      __publicField(this, "contentBlock");
+      __publicField(this, "components", this.container);
+      const dialog = $(`<div class="modal-dialog" role="document"></div>`).addClass(SIZE_MAP$2[opt.size]);
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
+      const title = $(`<h2 class="modal-title">${opt.title}</h2>`);
       const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
-      const body = $(`<div class="modal-body"></div>`);
-      this.self.append(dialog.append(content.append(header.append(closeIcon)).append(body)));
-      if (opt.content instanceof AmqtbTabContainer) {
-        const title = $(`<h4 class="modal-title">${opt.title}</h4>`);
-        this.self.addClass("tab-modal");
-        header.append(title);
-        opt.content.self.insertAfter(header);
-        body.append(opt.content.contentContainer);
-      } else {
-        const title = $(`<h2 class="modal-title">${opt.title}</h2>`);
-        header.append(title);
-        body.append(opt.content);
-      }
-      this.content = body;
+      this.contentBlock = $(`<div class="modal-body"></div>`);
+      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.contentBlock)));
       $("#gameContainer").append(this.self);
     }
+    appendComponent(component) {
+      this.contentBlock.append(component.self);
+    }
+    show() {
+      this.self.modal("show");
+    }
+    hide() {
+      this.self.modal("hide");
+    }
   }
-  function toTitle(str) {
-    let ret = str.replace(/[_].?/g, (letter) => letter.slice(1).toUpperCase());
-    ret = ret.replace(/[A-Z]/g, (letter) => ` ${letter}`);
-    ret = ret.charAt(0).toUpperCase() + ret.slice(1);
-    return ret;
-  }
-  class AmqtbTable {
+  class Tab extends Container {
     constructor(opt) {
-      __publicField(this, "self");
-      __publicField(this, "table");
-      __publicField(this, "id");
-      __publicField(this, "entries", []);
-      __publicField(this, "addBtn");
-      __publicField(this, "saveBtn");
-      __publicField(this, "resetBtn");
-      __publicField(this, "genRowElem");
-      __publicField(this, "header");
-      __publicField(this, "body");
-      __publicField(this, "deletable");
-      __publicField(this, "movable");
-      __publicField(this, "onSave");
-      __publicField(this, "onLoad");
-      const cls = opt.class === void 0 ? "" : opt.class;
-      const title = opt.title === void 0 ? null : opt.title;
-      this.id = opt.id;
-      this.genRowElem = opt.newRow;
-      const tr = $(`<tr></tr>`);
-      for (let field of opt.fieldNames) {
-        tr.append($(`<th>${toTitle(field)}</th>`));
-      }
-      if (opt.deletable || opt.movable) {
-        tr.append($(`<th></th>`));
-      }
-      this.header = $(`<thead></thead>`).append(tr);
-      this.body = $(`<tbody></tbody>`);
-      this.table = $(`<table class="table amqtbTable"></table>`).attr("id", opt.id).addClass(cls).append(this.header).append(this.body);
-      this.self = $(`<div class="row"></div>`);
-      if (title !== null) {
-        this.self.append($(`<h4 style="text-align: center;"><b>${title}</b></h4>`));
-      }
-      this.self.append($(`<div></div>`).append(this.table));
-      this.deletable = opt.deletable;
-      this.movable = opt.movable;
-      const buttons = [];
-      if (opt.addable) {
-        this.addBtn = new AmqtbButton({
-          label: "Add New",
-          size: "default",
-          style: "success"
-        });
-        this.addBtn.self.on("click", () => {
-          this.appendRow();
-        });
-        buttons.push(this.addBtn);
-      }
-      if (opt.settable) {
-        this.saveBtn = new AmqtbButton({
-          label: "Save",
-          size: "default",
-          style: "success"
-        });
-        this.saveBtn.self.on("click", () => {
-          this.dump();
-        });
-        this.resetBtn = new AmqtbButton({
-          label: "Reset",
-          size: "default",
-          style: "danger"
-        });
-        this.resetBtn.self.on("click", () => {
-          this.reset();
-        });
-        buttons.push(this.saveBtn, this.resetBtn);
-      }
-      if (buttons.length > 0) {
-        const btnContainer = new AmqtbButtonContainer({});
-        for (let btn of buttons) {
-          btnContainer.add(btn);
-        }
-        this.self.append(btnContainer.self);
-      }
-      this.onSave = opt.onSave;
-      this.onLoad = opt.onLoad;
-      this.reset();
+      super(opt);
+      __publicField(this, "content");
+      __publicField(this, "components", this.container);
+      const contentId = opt.contentId === void 0 ? "" : opt.contentId;
+      const contentClass = opt.contentClass === void 0 ? "" : opt.contentClass;
+      this.self.addClass("tab leftRightButtonTop clickAble").append($(`<h5></h5>`).text(opt.tabName));
+      this.content = $(`<div></div>`).attr("id", contentId).addClass(contentClass);
+      this.content.hide();
     }
-    createRow(rowData) {
-      const cells = this.genRowElem();
-      if (rowData !== void 0) {
-        for (let fieldName of Object.keys(rowData)) {
-          cells[fieldName].value = rowData[fieldName];
-        }
-      }
-      const row = {
-        ...cells,
-        _elem: $(`<tr></tr>`)
-      };
-      for (let fieldName of Object.keys(cells)) {
-        const cell = cells[fieldName];
-        const td = $(`<td></td>`).append(cell.elem);
-        row._elem.append(td);
-      }
-      const buttons = [];
-      if (this.deletable) {
-        const delBtn = new AmqtbButton({
-          label: "",
-          name: "delBtn",
-          size: "small",
-          style: "danger"
-        });
-        delBtn.self.append($(`<i class="fa fa-trash" style="font-size: 15px;"></i>`)).on("click", () => {
-          row._elem.remove();
-          const idx = this.entries.findIndex((r) => r === row);
-          this.entries.splice(idx, 1);
-        });
-        buttons.push(delBtn);
-      }
-      if (this.movable) {
-        const upBtn = new AmqtbButton({
-          label: "",
-          size: "small",
-          style: "primary"
-        });
-        upBtn.self.append($(`<i class="fa fa-arrow-up" style="font-size: 15px;"></i>`)).on("click", () => {
-          const prev = row._elem.prev();
-          const cur = row._elem;
-          if (prev.length != 0) {
-            cur.detach().insertBefore(prev);
-          }
-          const idx = this.entries.findIndex((r) => r === row);
-          if (idx > 0) {
-            [this.entries[idx - 1], this.entries[idx]] = [this.entries[idx], this.entries[idx - 1]];
-          }
-        });
-        const downBtn = new AmqtbButton({
-          label: "",
-          size: "small",
-          style: "primary"
-        });
-        downBtn.self.append($(`<i class="fa fa-arrow-down" style="font-size: 15px;"></i>`)).on("click", () => {
-          let next = row._elem.next();
-          let cur = row._elem;
-          if (next.length != 0) {
-            cur.detach().insertAfter(next);
-          }
-          const idx = this.entries.findIndex((r) => r === row);
-          if (idx < this.entries.length - 1) {
-            [this.entries[idx], this.entries[idx + 1]] = [this.entries[idx + 1], this.entries[idx]];
-          }
-        });
-        buttons.push(upBtn, downBtn);
-      }
-      if (buttons.length > 0) {
-        const td = $(`<td></td>`).append(buttons.map((btn) => btn.self));
-        row._elem.append(td);
-      }
-      return row;
+    appendComponent(component) {
+      this.content.append(component.self);
     }
-    appendRow(rowData) {
-      const row = this.createRow(rowData);
-      console.log(`Append new row on table '${this.id}':`, row);
-      this.body.append(row._elem);
-      this.entries.push(row);
-    }
-    insertRowBefore(target, rowData) {
-      const newRow = this.createRow(rowData);
-      const idx = this.entries.findIndex((row) => row === target);
-      if (idx !== -1) {
-        console.log(`Insert new row on table[${idx}] '${this.id}':`, newRow);
-        newRow._elem.insertBefore(target._elem);
-        this.entries.splice(idx, 0, newRow);
-      }
-    }
-    dump() {
-      const datas = [];
-      for (let row of this.entries) {
-        const rowData = {};
-        for (let fieldName of Object.keys(row)) {
-          if (fieldName !== "_elem") {
-            rowData[fieldName] = row[fieldName].value;
-          }
-        }
-        datas.push(rowData);
-      }
-      console.log(`Save table '${this.id}':`, datas);
-      if (this.onSave) {
-        this.onSave(datas);
-      }
-    }
-    reset() {
-      this.body.empty();
-      this.entries.length = 0;
-      const datas = this.onLoad !== void 0 ? this.onLoad() : void 0;
-      console.log(`Reset and load table '${this.id}':`, datas);
-      if (datas !== void 0) {
-        for (let rowData of datas) {
-          this.appendRow(rowData);
-        }
-      }
+    hide() {
+      super.hide();
+      this.content.hide();
     }
   }
-  var styles = ".amqtbButtonContainer {\n  display: flex;\n  flex-flow: row wrap;\n  justify-content: space-around;\n  align-content: space-around;\n  margin: 5px 0;\n}\n.amqtbButtonContainer button {\n  margin: 5px 0;\n}\n.customCheckboxContainer {\n  display: flex;\n}\n.customCheckboxContainer > div {\n  display: inline-block;\n  margin: 5px 0px;\n}\n.customCheckboxContainer > .customCheckboxContainerLabel {\n  margin-left: 5px;\n  margin-top: 5px;\n  font-weight: normal;\n}\n.amqtbRadio {\n  text-align: center;\n}\n.offset1 {\n  margin-left: 20px;\n}\n.offset2 {\n  margin-left: 40px;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n.amqtbWindow {\n  overflow-y: hidden;\n  top: 0px;\n  left: 0px;\n  margin: 0px;\n  background-color: #424242;\n  border: 1px solid rgba(27, 27, 27, 0.2);\n  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n  user-select: text;\n  display: none;\n}\n.draggableWindow {\n  cursor: move;\n}\n.amqtbWindowBody {\n  width: 100%;\n  overflow-y: auto;\n}\n.amqtbWindowContent {\n  width: 100%;\n  position: absolute;\n  top: 0px;\n}\n.amqtbWindow .close {\n  font-size: 32px;\n}\n.windowResizers {\n  width: 100%;\n  height: 100%;\n}\n.windowResizer {\n  width: 10px;\n  height: 10px;\n  position: absolute;\n  z-index: 100;\n}\n.windowResizer.top-left {\n  top: 0px;\n  left: 0px;\n  cursor: nwse-resize;\n}\n.windowResizer.top-right {\n  top: 0px;\n  right: 0px;\n  cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n  bottom: 0px;\n  left: 0px;\n  cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n  bottom: 0px;\n  right: 0px;\n  cursor: nwse-resize;\n}\n#qpToolboxContainer {\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  position: absolute;\n  border-radius: 5px;\n  padding-bottom: 5px;\n  padding-top: 5px;\n  margin-top: 10px;\n  left: 0px;\n  right: 0px;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  const SIZE_MAP$1 = {
+    "large": "btn-lg",
+    "normal": "",
+    "small": "btn-sm"
+  };
+  class TabModal extends Container {
+    constructor(opt) {
+      super(opt);
+      __publicField(this, "contentBlock");
+      __publicField(this, "tabBlock");
+      __publicField(this, "tabs", this.container);
+      __publicField(this, "curTab");
+      const dialog = $(`<div class="modal-dialog" role="document"></div>`).addClass(SIZE_MAP$1[opt.size]);
+      const content = $(`<div class="modal-content"></div>`);
+      const header = $(`<div class="modal-header"></div>`);
+      const title = $(`<h4 class="modal-title">${opt.title}</h4>`);
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      this.tabBlock = $(`<div class="tabContainer"></div>`);
+      this.contentBlock = $(`<div class="modal-body"></div>`);
+      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.tabBlock).append(this.contentBlock)));
+      this.curTab = null;
+      $("#gameContainer").append(this.self);
+    }
+    push(...tabs) {
+      super.push(...tabs);
+      if (this.curTab === null && this.tabs.length > 0) {
+        this.select(this.tabs[0]);
+      }
+    }
+    pop() {
+      const tab = super.pop();
+      if (this.curTab === tab && this.tabs.length > 0) {
+        this.select(this.tabs[0]);
+      }
+      return tab;
+    }
+    clear() {
+      if (this.curTab) {
+        this.curTab.self.removeClass("selected");
+        this.curTab.content.hide();
+      }
+      this.curTab = null;
+      return super.clear();
+    }
+    show() {
+      this.self.modal("show");
+    }
+    hide() {
+      this.self.modal("hide");
+    }
+    select(tab) {
+      if (this.curTab) {
+        this.curTab.self.removeClass("selected");
+        this.curTab.content.hide();
+      }
+      tab.self.addClass("selected");
+      tab.content.show();
+      this.curTab = tab;
+    }
+    appendComponent(tab) {
+      tab.self.on("click", () => {
+        this.select(tab);
+      });
+      this.tabBlock.append(tab.self);
+      this.contentBlock.append(tab.content);
+    }
+    detachComponent(tab) {
+      tab.self.off("click");
+      tab.self.detach();
+      tab.content.detach();
+    }
+  }
+  const attr = {
+    expires: 365,
+    Domain: "animemusicquiz.com",
+    secure: true
+  };
+  function saveToCookie(key, entry) {
+    Cookies.set(key, JSON.stringify(entry), attr);
+  }
+  function loadFromCookie(key, defaultVal) {
+    let val = Cookies.get(key);
+    if (val === void 0) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val);
+    }
+  }
   function saveToLocalStorage(key, entry) {
     localStorage.setItem(key, JSON.stringify(entry));
   }
@@ -456,15 +243,286 @@ var __publicField = (obj, key, value) => {
       return JSON.parse(val);
     }
   }
-  function deleteLocalStorage(key) {
-    localStorage.removeItem(key);
+  function toTitle(str) {
+    let ret = str.replace(/[_].?/g, (letter) => letter.slice(1).toUpperCase());
+    ret = ret.replace(/[A-Z]/g, (letter) => ` ${letter}`);
+    ret = ret.charAt(0).toUpperCase() + ret.slice(1);
+    return ret;
   }
-  class AmqtbViewBlock {
+  const SIZE_MAP = {
+    "large": "btn-lg",
+    "default": "",
+    "small": "btn-sm",
+    "extra-small": "btn-xs"
+  };
+  const STYLE_MAP = {
+    "default": "btn-default",
+    "primary": "btn-primary",
+    "success": "btn-success",
+    "info": "btn-info",
+    "warning": "btn-warning",
+    "danger": "btn-danger",
+    "link": "btn-link"
+  };
+  class Button {
     constructor(opt) {
       __publicField(this, "self");
+      __publicField(this, "name");
+      __publicField(this, "_size");
+      __publicField(this, "_style");
       const id = opt.id === void 0 ? "" : opt.id;
       const cls = opt.class === void 0 ? "" : opt.class;
+      this.self = $(`<button></button>`).attr("id", id).attr("type", "button").addClass(cls).addClass(SIZE_MAP[opt.size]).addClass(STYLE_MAP[opt.style]).text(opt.label);
+      this.name = opt.name;
+      this._size = SIZE_MAP[opt.size];
+      this._style = STYLE_MAP[opt.style];
+    }
+    set size(size) {
+      this.self.removeClass(this._size);
+      this._size = SIZE_MAP[size];
+      this.self.addClass(this._size);
+    }
+    set style(style) {
+      this.self.removeClass(this._style);
+      this._style = STYLE_MAP[style];
+      this.self.addClass(this._style);
+    }
+    set label(text) {
+      this.self.text(text);
+    }
+  }
+  class Table {
+    constructor(opt) {
+      __publicField(this, "self");
+      __publicField(this, "table");
+      __publicField(this, "name");
+      __publicField(this, "buttonBlock");
+      __publicField(this, "saveIn");
+      __publicField(this, "body");
+      __publicField(this, "newRow");
+      __publicField(this, "addOrDeletable");
+      __publicField(this, "movable");
+      __publicField(this, "savable");
+      __publicField(this, "rows");
+      const id = opt.id === void 0 ? "" : opt.id;
+      const cls = opt.class === void 0 ? "" : opt.class;
+      this.name = opt.name;
+      this.saveIn = opt.saveIn;
+      this.newRow = opt.newRow;
+      this.addOrDeletable = opt.addOrDeletable;
+      this.movable = opt.movable;
+      this.savable = opt.savable;
+      this.rows = [];
       this.self = $(`<div class="row"></div>`).attr("id", id).addClass(cls);
+      if (opt.title) {
+        this.self.append($(`<h4 style="text-align: center;"><b>${opt.title}</b></h4>`));
+      }
+      const header = $(`<thead></thead>`);
+      const headerRow = $(`<tr></tr>`);
+      for (let fieldName of Object.keys(this.newRow())) {
+        headerRow.append(`<th>${toTitle(fieldName)}</th>`);
+      }
+      if (opt.addOrDeletable || opt.movable) {
+        headerRow.append(`<th></th>`);
+      }
+      header.append(headerRow);
+      this.body = $(`<tbody></tbody>`);
+      this.table = $(`<table class="table amqtbTable"></table>`).append(header).append(this.body);
+      this.self.append($(`<div></div>`).append(this.table));
+      const btns = [];
+      if (this.addOrDeletable) {
+        const btn = new Button({
+          name: "add",
+          label: "Add New",
+          size: "default",
+          style: "success"
+        });
+        btn.self.on("click", () => {
+          this.append(this.createRow());
+        });
+        btns.push(btn);
+      }
+      if (this.savable) {
+        const saveBtn = new Button({
+          name: "save",
+          label: "Save",
+          size: "default",
+          style: "success"
+        });
+        saveBtn.self.on("click", () => {
+          this.save();
+        });
+        const resetBtn = new Button({
+          name: "reset",
+          label: "Reset",
+          size: "default",
+          style: "danger"
+        });
+        resetBtn.self.on("click", () => {
+          this.load();
+        });
+        btns.push(saveBtn, resetBtn);
+      }
+      if (btns.length > 0) {
+        this.buttonBlock = new Buttons({
+          name: "tableButtons"
+        });
+        this.buttonBlock.push(...btns);
+        this.self.append(this.buttonBlock.self);
+      } else {
+        this.buttonBlock = null;
+      }
+    }
+    createRow(data) {
+      const newFields = this.newRow();
+      const rowElem = $(`<tr></tr>`);
+      for (let field of Object.keys(newFields)) {
+        if (data) {
+          newFields[field].setValue(data[field]);
+        }
+        rowElem.append($(`<td></td>`).append(newFields[field].self));
+      }
+      const row = {
+        elem: rowElem,
+        fields: newFields
+      };
+      const buttons = [];
+      if (this.addOrDeletable) {
+        const delBtn = new Button({
+          label: "",
+          name: "delBtn",
+          size: "small",
+          style: "danger"
+        });
+        delBtn.self.append($(`<i class="fa fa-trash" style="font-size: 15px;"></i>`)).on("click", () => {
+          const idx = this.rows.findIndex((r) => r === row);
+          if (idx !== -1) {
+            this.splice(idx, 1);
+          }
+        });
+        buttons.push(delBtn);
+      }
+      if (this.movable) {
+        const upBtn = new Button({
+          label: "",
+          name: "upBtn",
+          size: "small",
+          style: "primary"
+        });
+        upBtn.self.append($(`<i class="fa fa-arrow-up" style="font-size: 15px;"></i>`)).on("click", () => {
+          this.moveUp(row);
+        });
+        const downBtn = new Button({
+          label: "",
+          name: "downBtn",
+          size: "small",
+          style: "primary"
+        });
+        downBtn.self.append($(`<i class="fa fa-arrow-down" style="font-size: 15px;"></i>`)).on("click", () => {
+          this.moveDown(row);
+        });
+        buttons.push(upBtn, downBtn);
+      }
+      if (buttons.length > 0) {
+        const td = $(`<td></td>`).append(buttons.map((btn) => btn.self));
+        rowElem.append(td);
+      }
+      return row;
+    }
+    append(row) {
+      this.body.append(row.elem);
+      this.rows.push(row);
+    }
+    splice(start, deleteCount, ...rows) {
+      for (let row of this.rows) {
+        row.elem.detach();
+      }
+      let deleted;
+      if (deleteCount === void 0) {
+        deleted = this.rows.splice(start);
+      } else {
+        deleted = this.rows.splice(start, deleteCount, ...rows);
+      }
+      for (let row of this.rows) {
+        this.body.append(row.elem);
+      }
+      return deleted;
+    }
+    getButton(name) {
+      if (this.buttonBlock) {
+        return this.buttonBlock.find((btn) => btn.name === name);
+      } else {
+        return void 0;
+      }
+    }
+    getValue() {
+      let datas = [];
+      for (let row of this.rows) {
+        const data = Object.fromEntries(Object.entries(row.fields).map(([field, cp]) => {
+          return [field, cp.getValue()];
+        }));
+        datas.push(data);
+      }
+      return datas;
+    }
+    setValue(datas) {
+      this.splice(0);
+      for (let data of datas) {
+        this.splice(this.rows.length, 0, this.createRow(data));
+      }
+    }
+    save() {
+      switch (this.saveIn) {
+        case "Script":
+          GM_setValue(this.name, this.getValue());
+          break;
+        case "LocalStorage":
+          saveToLocalStorage(this.name, this.getValue());
+          break;
+        case "Cookie":
+          saveToCookie(this.name, this.getValue());
+          break;
+      }
+    }
+    load() {
+      let val;
+      switch (this.saveIn) {
+        case "Script":
+          val = GM_getValue(this.name);
+          break;
+        case "LocalStorage":
+          val = loadFromLocalStorage(this.name);
+          break;
+        case "Cookie":
+          val = loadFromCookie(this.name);
+          break;
+      }
+      if (val !== void 0) {
+        this.setValue(val);
+      }
+    }
+    moveUp(row) {
+      const idx = this.rows.findIndex((r) => r === row);
+      if (idx > 0) {
+        row.elem.detach();
+        row.elem.insertBefore(this.rows[idx - 1].elem);
+        [this.rows[idx], this.rows[idx - 1]] = [this.rows[idx - 1], this.rows[idx]];
+      }
+    }
+    moveDown(row) {
+      const idx = this.rows.findIndex((r) => r === row);
+      if (idx > -1 && idx < this.rows.length - 1) {
+        row.elem.detach();
+        row.elem.insertAfter(this.rows[idx + 1].elem);
+        [this.rows[idx], this.rows[idx + 1]] = [this.rows[idx + 1], this.rows[idx]];
+      }
+    }
+  }
+  var styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  position: absolute;\n  border-radius: 5px;\n  padding-bottom: 5px;\n  padding-top: 5px;\n  margin-top: 10px;\n  left: 0px;\n  right: 0px;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  class View {
+    constructor(opt) {
+      __publicField(this, "self");
+      this.self = $(`<div class="row"></div>`);
       const header = $(`<h5 class="collapsible"></h5>`).text(opt.title);
       header.on("click", function() {
         this.classList.toggle("active");
@@ -478,210 +536,225 @@ var __publicField = (obj, key, value) => {
       this.self.append(header, opt.content);
     }
   }
-  const PluginManageTableId = "amqtbPluginManageTable";
-  class PluginNameCell {
-    constructor() {
-      __publicField(this, "elem");
-      this.elem = $(`<p></p>`);
-    }
-    get value() {
-      return this.elem.text();
-    }
-    set value(str) {
-      this.elem.text(str);
+  class ViewBlock extends Container {
+    constructor(opt) {
+      super(opt);
+      this.self.attr("id", "qpToolboxContainer").addClass("container floatingContainer");
     }
   }
-  class EnabledCell {
-    constructor(enabled) {
-      __publicField(this, "elem");
+  class Text {
+    constructor() {
+      __publicField(this, "self");
+      this.self = $(`<p></p>`);
+    }
+    setValue(val) {
+      this.self.text(val);
+    }
+    getValue() {
+      return this.self.text();
+    }
+  }
+  class Switch {
+    constructor() {
+      __publicField(this, "self");
       __publicField(this, "switch");
       __publicField(this, "switchOn");
       __publicField(this, "switchOff");
       this.switchOff = $(`<div class="switchOff slider-tick round"></div>`);
       this.switchOn = $(`<div class="switchOn slider-tick round"></div>`);
       this.switch = $(`<div class="switchContainer slider-track"></div>`).append($(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn));
-      this.elem = $(`<div></div>`).addClass(`${PluginManageTableId}EnabledCell`).append(this.switch);
-      if (enabled) {
+      this.self = $(`<div></div>`).addClass(`amqtbPluginManageTableEnabledCell`).append(this.switch);
+      this.switch.on("click", () => {
+        this.setValue(!this.getValue());
+      });
+    }
+    setValue(val) {
+      if (val) {
+        this.switchOn.show();
         this.switchOff.hide();
         this.switch.addClass("active");
       } else {
         this.switchOn.hide();
+        this.switchOff.show();
         this.switch.removeClass("active");
       }
-      this.switch.on("click", () => {
-        this.value = !this.value;
-      });
     }
-    get value() {
+    getValue() {
       return this.switch.hasClass("active");
     }
-    set value(val) {
-      if (val !== this.value) {
-        if (val) {
-          this.switchOn.show();
-          this.switchOff.hide();
-          this.switch.addClass("active");
-        } else {
-          this.switchOn.hide();
-          this.switchOff.show();
-          this.switch.removeClass("active");
-        }
-      }
-    }
   }
-  class AMQ_Toolbox {
+  class Toolbox {
     constructor() {
+      __publicField(this, "viewBlock");
       __publicField(this, "settingModal");
-      __publicField(this, "viewBlocks");
-      __publicField(this, "tabContainer");
-      __publicField(this, "settingButton");
-      __publicField(this, "optionsTab");
+      __publicField(this, "optionTab");
       __publicField(this, "manageModal");
-      __publicField(this, "manageTable");
+      __publicField(this, "pluginTable");
+      __publicField(this, "prevPluginsInfo");
       __publicField(this, "plugins");
-      __publicField(this, "oldPluginsInfo");
-      this.viewBlocks = $(`<div></div>`).attr("id", "qpToolboxContainer").addClass("container floatingContainer");
-      this.viewBlocks.insertBefore($(`#qpCheatTestCommands`));
-      this.tabContainer = new AmqtbTabContainer();
-      this.settingModal = new AmqtbModal({
-        id: "amqtbSettingModal",
+      this.plugins = /* @__PURE__ */ new Map();
+      this.viewBlock = new ViewBlock({});
+      this.viewBlock.self.insertBefore(`#qpCheatTestCommands`);
+      this.optionTab = new Tab({
+        tabName: "Option",
+        contentClass: "row"
+      });
+      this.settingModal = new TabModal({
         title: "Toolbox Setting",
-        size: "normal",
-        content: this.tabContainer
-      });
-      this.optionsTab = new AmqtbTab({
-        title: "Option",
-        name: "optionsTab",
-        containerClass: "row"
-      });
-      this.tabContainer.add(this.optionsTab);
-      this.tabContainer.select(this.optionsTab);
-      this.settingButton = $(`<div></div>`).attr("id", "amqtbSettingButton").addClass("clickAble qpOption").append($(`<i></i>`).addClass("fa fa-wrench").addClass("qpMenuItem").attr("aria-hidden", "true")).on("click", () => {
-        this.settingModal.self.modal("show");
-      }).popover({
-        placement: "bottom",
-        content: "Toolbox Setting",
-        trigger: "hover"
-      });
-      const oldWidth = $("#qpOptionContainer").width();
-      $("#qpOptionContainer").width(oldWidth + 35);
-      $("#qpOptionContainer > div").append(this.settingButton);
-      this.plugins = [];
-      this.manageTable = new AmqtbTable({
-        id: PluginManageTableId,
-        addable: false,
-        deletable: false,
-        movable: true,
-        settable: true,
-        fieldNames: ["pluginName", "enabled"],
-        newRow: () => {
-          return {
-            pluginName: new PluginNameCell(),
-            enabled: new EnabledCell(true)
-          };
-        },
-        onSave: (data) => {
-          saveToLocalStorage(PluginManageTableId, data);
-        },
-        onLoad: () => {
-          return loadFromLocalStorage(PluginManageTableId);
-        }
-      });
-      this.manageTable.saveBtn.self.on("click", () => {
-        console.log("Refresh AMQ Toolbox");
-        this.refresh();
-        this.manageModal.self.modal("hide");
-      });
-      this.oldPluginsInfo = loadFromLocalStorage(PluginManageTableId, []);
-      deleteLocalStorage(PluginManageTableId);
-      this.manageTable.reset();
-      this.manageModal = new AmqtbModal({
-        id: "amqtbManageModal",
-        title: "Toolbox Management",
-        content: this.manageTable.self,
+        id: "amqtbSettingModal",
         size: "normal"
       });
+      this.settingModal.self.on("shown.bs.modal", () => {
+        for (let plugin of this.plugins.values()) {
+          if (plugin.enabled() && plugin.options) {
+            plugin.options.refresh();
+          }
+        }
+      });
+      $("#gameContainer").append(this.settingModal.self);
+      this.settingModal.push(this.optionTab);
+      const settingBtn = {
+        self: $(`<div></div>`).attr("id", "amqtbSettingButton").addClass("clickAble qpOption").append($(`<i></i>`).addClass("fa fa-wrench").addClass("qpMenuItem").attr("aria-hidden", "true")).on("click", () => {
+          this.settingModal.self.modal("show");
+        }).popover({
+          placement: "bottom",
+          content: "Toolbox Setting",
+          trigger: "hover"
+        })
+      };
+      const oldWidth = $("#qpOptionContainer").width();
+      $("#qpOptionContainer").width(oldWidth + 35);
+      $("#qpOptionContainer > div").append(settingBtn.self);
+      this.manageModal = new Modal({
+        title: "Toolbox Management",
+        id: "amqtbManageModal",
+        size: "normal"
+      });
+      this.pluginTable = new Table({
+        name: "amqtbPluginManageTable",
+        addOrDeletable: false,
+        movable: true,
+        savable: true,
+        saveIn: "LocalStorage",
+        newRow: () => ({
+          pluginName: new Text(),
+          enabled: new Switch()
+        })
+      });
+      this.manageModal.push(this.pluginTable);
+      const saveBtn = this.pluginTable.getButton("save");
+      saveBtn.self.on("click", () => {
+        console.log("[Toolbox] Reload plugins");
+        this.reload();
+        this.manageModal.hide();
+      });
+      this.pluginTable.load();
+      this.prevPluginsInfo = this.pluginTable.getValue();
+      this.pluginTable.splice(0);
+      this.pluginTable.save();
       $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins"));
       $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting"));
       GM_addStyle(styles);
       console.log("New AMQ Toolbox created");
     }
-    registerPlugin(plugin) {
+    addPlugin(plugin) {
       if (plugin.dependencies && !this.checkDependency(plugin.dependencies)) {
-        return new Error("Dependencies has not loaded");
+        throw new Error("Dependencies has not loaded");
       }
-      this.plugins.push(plugin);
-      const saveInfo = this.oldPluginsInfo.find((info) => info.pluginName === plugin.name);
-      if (saveInfo !== void 0) {
-        plugin.enabled = saveInfo.enabled;
+      this.plugins.set(plugin.name, plugin);
+      const prevOrder = this.prevPluginsInfo.findIndex((info) => info.pluginName === plugin.name);
+      if (prevOrder !== -1) {
+        if (this.prevPluginsInfo[prevOrder].enabled) {
+          plugin.enable();
+        } else {
+          plugin.disable();
+        }
       }
-      const newEntry = {
+      const pluginInfos = this.pluginTable.getValue();
+      const newRow = this.pluginTable.createRow({
         pluginName: plugin.name,
-        enabled: plugin.enabled
-      };
-      const savedOrder = this.oldPluginsInfo.findIndex((info) => info.pluginName === plugin.name);
-      if (savedOrder !== -1) {
-        newEntry.enabled = this.oldPluginsInfo[savedOrder].enabled;
-        let added = false;
-        for (let entry of this.manageTable.entries) {
-          const order = this.oldPluginsInfo.findIndex((info) => info.pluginName === entry.pluginName.value);
-          if (order === void 0 || savedOrder < order) {
-            this.manageTable.insertRowBefore(entry, newEntry);
-            added = true;
+        enabled: plugin.enabled()
+      });
+      let insertIdx = pluginInfos.length;
+      if (prevOrder !== -1) {
+        for (let [idx, pluginInfo] of pluginInfos.entries()) {
+          const order = this.prevPluginsInfo.findIndex((info) => info.pluginName === pluginInfo.pluginName);
+          if (order === -1 || prevOrder < order) {
+            insertIdx = idx;
             break;
           }
         }
-        if (!added) {
-          this.manageTable.appendRow(newEntry);
-        }
-      } else {
-        this.manageTable.appendRow(newEntry);
       }
-      this.manageTable.saveBtn.self.trigger("click");
-      console.log(`Register plugin: ${plugin.name}`);
-      return null;
+      if (insertIdx === pluginInfos.length) {
+        this.pluginTable.append(newRow);
+      } else {
+        this.pluginTable.splice(insertIdx, 0, newRow);
+      }
+      this.pluginTable.save();
+      this.reload();
+      console.log(`[Toolbox] Register plugin: ${plugin.name}`);
     }
-    refresh() {
-      this.viewBlocks.children().detach();
-      this.tabContainer.hideAll();
-      this.tabContainer.show(this.optionsTab);
-      this.optionsTab.container.children(".col-xs-6").detach();
-      for (let info of this.manageTable.entries) {
-        const plugin = this.plugins.find((p) => p.name === info.pluginName.value);
+    reload() {
+      this.viewBlock.clear();
+      this.optionTab.clear();
+      this.settingModal.clear();
+      this.settingModal.push(this.optionTab);
+      const pluginInfos = this.pluginTable.getValue();
+      for (let pluginInfo of pluginInfos) {
+        const plugin = this.plugins.get(pluginInfo.pluginName);
         if (plugin === void 0) {
-          console.error("loaded Plugin: ", this.plugins.map((p) => p.name), "\nentry in table: ", info.pluginName.value);
-        } else {
-          plugin.enabled = info.enabled.value;
-          if (plugin.enabled) {
-            if (plugin.view) {
-              this.viewBlocks.append(plugin.view.self);
-            }
-            if (plugin.settingTab) {
-              if (this.tabContainer.has(plugin.settingTab)) {
-                this.tabContainer.show(plugin.settingTab);
-              } else {
-                this.tabContainer.add(plugin.settingTab);
-              }
-            }
-            if (plugin.enabled && plugin.options) {
-              this.optionsTab.container.append(plugin.options.self);
-              this.settingModal.self.on("shown.bs.modal", () => {
-                plugin.options.refresh();
-              });
-            }
+          console.error(`plugins:`, this.plugins, `table:`, pluginInfos);
+          throw new Error(`Reload Error`);
+        }
+        if (pluginInfo.enabled) {
+          plugin.enable();
+          if (plugin.view) {
+            this.viewBlock.push(new View({
+              title: plugin.name,
+              content: plugin.view.self
+            }));
           }
+          if (plugin.options) {
+            this.optionTab.push(plugin.options);
+          }
+          if (plugin.settingTab) {
+            this.settingModal.push(plugin.settingTab);
+          }
+        } else {
+          plugin.disable();
         }
       }
     }
     checkDependency(dps) {
-      let ret = true;
-      let pluginNames = this.plugins.map((p) => p.name);
+      let pluginNames = [...this.plugins.keys()];
       dps.forEach((dp) => {
         if (!pluginNames.includes(dp)) {
-          ret = false;
+          return false;
         }
       });
-      return ret;
+      return true;
+    }
+  }
+  function onStartPageLoaded(callback) {
+    if (document.getElementById("startPage"))
+      return;
+    const loadInterval = setInterval(() => {
+      if ($("#loadingScreen").hasClass("hidden")) {
+        clearInterval(loadInterval);
+        callback();
+      }
+    }, 500);
+  }
+  function registerPlugin(plugin) {
+    try {
+      onStartPageLoaded(() => {
+        if (unsafeWindow.amqToolbox === void 0) {
+          unsafeWindow.amqToolbox = new Toolbox();
+        }
+        unsafeWindow.amqToolbox.addPlugin(plugin);
+      });
+    } catch (err) {
+      console.error(`[registerPlugin] Failed to register ${plugin.name}`, err);
     }
   }
   const readyMsg = "Start AutoSkip";
@@ -701,16 +774,12 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "playNextSongListener");
       __publicField(this, "playNextSongDelayListener");
       __publicField(this, "resultListener");
-      this.autoBtn = new AmqtbButton({
-        id: "amqtbAutoSkip",
-        name: "autoBtn",
+      this.autoBtn = new Button({
         size: "extra-small",
         style: this.isAutoSkipRunning ? runningStyle : readyStyle,
         label: this.isAutoSkipRunning ? runningMsg : readyMsg
       });
-      this.onceBtn = new AmqtbButton({
-        id: "amqtbOnceSkip",
-        name: "onceBtn",
+      this.onceBtn = new Button({
         size: "extra-small",
         style: onceStyle,
         label: onceMsg
@@ -729,33 +798,31 @@ var __publicField = (obj, key, value) => {
         console.log("Force skip on this song...");
         quiz.videoReady($(this).data("songID"));
       });
-      const btnContainer = new AmqtbButtonContainer({});
-      btnContainer.add(this.autoBtn, this.onceBtn);
-      this.view = new AmqtbViewBlock({
-        title: "Force Skip",
-        content: btnContainer.self
-      });
+      this.view = new Buttons({});
+      this.view.push(this.autoBtn, this.onceBtn);
       this.playNextSongListener = new Listener("play next song", this.playNextSongHandler.bind(this));
       this.playNextSongDelayListener = new Listener("play next song", this.playNextSongDelayHandler.bind(this));
       this.resultListener = new Listener("answer results", this.resultHandler.bind(this));
-      this.enabled = true;
+      this.enable();
     }
-    get enabled() {
-      return this._enabled;
-    }
-    set enabled(val) {
-      if (val !== this._enabled) {
-        this._enabled = val;
-        if (val) {
-          this.playNextSongListener.bindListener();
-          this.playNextSongDelayListener.bindListener();
-          this.resultListener.bindListener();
-        } else {
-          this.playNextSongListener.unbindListener();
-          this.playNextSongDelayListener.unbindListener();
-          this.resultListener.unbindListener();
-        }
+    enable() {
+      if (!this._enabled) {
+        this._enabled = true;
+        this.playNextSongListener.bindListener();
+        this.playNextSongDelayListener.bindListener();
+        this.resultListener.bindListener();
       }
+    }
+    disable() {
+      if (this._enabled) {
+        this._enabled = false;
+        this.playNextSongListener.unbindListener();
+        this.playNextSongDelayListener.unbindListener();
+        this.resultListener.unbindListener();
+      }
+    }
+    enabled() {
+      return this._enabled;
     }
     playNextSongHandler() {
       this.onceBtn.self.addClass("disabled");
@@ -778,30 +845,10 @@ var __publicField = (obj, key, value) => {
       }
     }
   }
-  function setup() {
-    if (unsafeWindow.amqToolbox === void 0) {
-      unsafeWindow.amqToolbox = new AMQ_Toolbox();
-    }
-    const plugin = new ForceSkip();
-    const err = amqToolbox.registerPlugin(plugin);
-    if (err) {
-      console.error(err);
-      plugin.enabled = false;
-      return;
-    }
-  }
   function main() {
-    if (document.getElementById("startPage"))
-      return;
-    let loadInterval = setInterval(() => {
-      if ($("#loadingScreen").hasClass("hidden")) {
-        try {
-          setup();
-        } finally {
-          clearInterval(loadInterval);
-        }
-      }
-    }, 500);
+    onStartPageLoaded(() => {
+      registerPlugin(new ForceSkip());
+    });
   }
   $(main);
 })();

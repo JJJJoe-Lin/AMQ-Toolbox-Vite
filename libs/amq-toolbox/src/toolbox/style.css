@@ -1,7 +1,4 @@
-@import '../button/style.css';
-@import '../option/style.css';
-@import '../table/style.css';
-@import '../window/style.css';
+@import '../component/style.css';
 
 #qpToolboxContainer {
   max-width: 215px;

@@ -18,6 +18,9 @@ export default defineConfig({
                 updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js',
                 downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js',
             },
+            server: {
+                open: false,
+            }
         }),
     ],
 });
