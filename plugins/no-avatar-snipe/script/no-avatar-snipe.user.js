@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ No Avatar Snipe
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.4
+// @version      0.3.0
 // @author       JJJJoe
 // @description  Avatar would not change when players answered
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js
@@ -13,7 +13,7 @@
 // @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-08-17T18:28:22.343Z
+// use vite-plugin-monkey@0.2.14 at 2022-08-17T18:36:12.209Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;

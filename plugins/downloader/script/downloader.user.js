@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Downloader
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.6
+// @version      0.3.0
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
@@ -16,7 +16,7 @@
 // @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-08-17T18:28:13.474Z
+// use vite-plugin-monkey@0.2.14 at 2022-08-17T18:36:04.254Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;

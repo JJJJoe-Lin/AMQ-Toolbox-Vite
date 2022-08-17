@@ -11,7 +11,7 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Downloader',
-                version: '0.2.6',
+                version: '0.3.0',
                 description: 'AMQ song downloader',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',
