@@ -1,0 +1,9 @@
+@import './checkboxOption.css';
+@import './radioOption.css';
+
+.offset1 {
+    margin-left: 20px;
+}
+.offset2 {
+    margin-left: 40px;
+}

@@ -1,0 +1,10 @@
+.amqtbButtonContainer {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    align-content: space-around;
+    margin: 5px 0;
+}
+.amqtbButtonContainer button {
+    margin: 5px 0;
+}

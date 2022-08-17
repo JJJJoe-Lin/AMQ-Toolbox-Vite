@@ -21,9 +21,12 @@ export default defineConfig({
             },
             build: {
                 externalGlobals: {
-                    mp3tag: ['mp3tag', (version) => `https://cdn.jsdelivr.net/npm/mp3tag.js@${version}/dist/mp3tag.min.js`],
+                    mp3tag: ['mp3tag', `https://cdn.jsdelivr.net/npm/mp3tag.js@3.3.0/dist/mp3tag.min.js`],
                 }
-            }
+            },
+            server: {
+                open: false,
+            },
         }),
     ],
 });

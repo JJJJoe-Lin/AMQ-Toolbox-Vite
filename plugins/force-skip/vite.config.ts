@@ -18,6 +18,9 @@ export default defineConfig({
                 updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js',
                 downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js',
             },
+            server: {
+                open: false,
+            }
         }),
     ],
 });

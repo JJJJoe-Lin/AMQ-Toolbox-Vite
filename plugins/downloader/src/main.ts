@@ -1,16 +1,15 @@
-import { 
-    AmqtbButton,
-    AmqtbButtonContainer,
-    AmqtbCheckbox,
-    AmqtbOptions,
-    AmqtbRadio,
-    AmqtbViewBlock,
-    AMQ_Toolbox,
-    Plugin,
+import {
+    Button,
+    Buttons,
+    CheckboxOption,
+    IPlugin,
+    onStartPageLoaded,
+    Options,
+    RadioOption,
+    registerPlugin,
 } from 'amq-toolbox';
 import { getAnimeImage, Image } from './cover';
 
-declare var amqToolbox: AMQ_Toolbox;
 declare var Listener: any;
 declare var quiz: any;
 declare var selfName: any;
@@ -26,104 +25,86 @@ interface Mp3Info {
     cover: Image | null;
 }
 
-class Downloader implements Plugin {
-    name = 'Downloader';
-    options: AmqtbOptions;
-    view: AmqtbViewBlock;
+type MediaType = 'Audio' | 'Video';
+
+class Downloader implements IPlugin {
+    public name = 'Downloader';
+    public options;
+    public view;
     private _enabled = false;
     private currentSongInfo: any;
     private isAutoDlRunning: boolean;
-    private btnContainer: AmqtbButtonContainer;
     private answerResultListener: any;
 
     constructor() {
         this.isAutoDlRunning = false;
-        
-        this.options = new AmqtbOptions({
+        // create options
+        this.options = new Options({
             title: this.name,
         });
-        this.options.add(new AmqtbCheckbox({
-            id: 'amqtbDownloaderAutoDlOnWrong',
+        this.options.push(new CheckboxOption({
             name: 'autoDlOnWrong',
+            inputId: 'amqtbDownloaderAutoDlOnWrong',
             label: 'Auto download only on wrong',
             offset: 0,
-            enables: [],
-            onSave: (data) => {
-                GM_setValue('amqtbDownloaderAutoDlOnWrong', data);
-            },
-            onLoad: () => {
-                return GM_getValue('amqtbDownloaderAutoDlOnWrong', false);
-            }
+            saveIn: 'Script',
         }));
-        this.options.add(new AmqtbCheckbox({
-            id: 'amqtbDownloaderAutoDlMedia',
+        this.options.push(new CheckboxOption({
             name: 'autoDlMedia',
+            inputId: 'amqtbDownloaderAutoDlMedia',
             label: 'Auto download media',
             offset: 0,
-            enables: ['autoDlMediaType'],
-            onSave: (data) => {
-                GM_setValue('amqtbDownloaderAutoDlMedia', data);
+            saveIn: 'Script',
+            enables: {
+                'true': ['autoDlMediaType'],
+                'false': [],
             },
-            onLoad: () => {
-                return GM_getValue('amqtbDownloaderAutoDlMedia', false);
-            }
         }));
-        const radio = new AmqtbRadio({
-            id: 'amqtbDownloaderAutoDlMediaType',
+        this.options.push(new RadioOption<MediaType>({
             name: 'autoDlMediaType',
+            inputId: 'amqtbDownloaderAutoDlMediaType',
             label: 'Media Type',
+            saveIn: 'Script',
+            offset: 0,
             choices: [
                 {
                     label: 'Audio',
-                    value: 'audio',
+                    value: 'Audio',
                 },
                 {
                     label: 'Video',
-                    value: 'video',
+                    value: 'Video',
                 },
             ],
-            onSave: (data) => {
-                GM_setValue('amqtbDownloaderAutoDlMediaType', data);
-            },
-            onLoad: () => {
-                return GM_getValue('amqtbDownloaderAutoDlMediaType', 'video');
-            }
-        });
-        this.options.add(radio);
-        this.options.add(new AmqtbCheckbox({
-            id: 'amqtbDownloaderAutoDlInfo',
+        }));
+        this.options.push(new CheckboxOption({
             name: 'autoDlInfo',
+            inputId: 'amqtbDownloaderAutoDlInfo',
             label: 'Auto download info',
             offset: 0,
-            enables: [],
-            onSave: (data) => {
-                GM_setValue('amqtbDownloaderAutoDlInfo', data);
-            },
-            onLoad: () => {
-                return GM_getValue('amqtbDownloaderAutoDlInfo', false);
-            }
+            saveIn: 'Script',
         }));
-
-        this.btnContainer = new AmqtbButtonContainer({});
-        const autoDlBtn = new AmqtbButton({
+        // create view
+        this.view = new Buttons({});
+        const autoDlBtn = new Button({
             name: 'autoDlBtn',
             label: 'Start AutoDL',
             size: 'extra-small',
             style: 'success',
         });
-        const videoDlBtn = new AmqtbButton({
+        const videoDlBtn = new Button({
             name: 'videoDlBtn',
             label: 'Video',
             size: 'extra-small',
             style: 'primary',
         });
-        const audioDlBtn = new AmqtbButton({
+        const audioDlBtn = new Button({
             name: 'audioDlBtn',
             label: 'Audio',
             size: 'extra-small',
             style: 'primary',
         });
-        const infoDlBtn = new AmqtbButton({
+        const infoDlBtn = new Button({
             name: 'infoDlBtn',
             label: 'Info',
             size: 'extra-small',
@@ -152,37 +133,36 @@ class Downloader implements Plugin {
         infoDlBtn.self.on('click', () => {
             this.downloadSongInfo();
         });
-        this.btnContainer.add(autoDlBtn, videoDlBtn, audioDlBtn, infoDlBtn);
-        this.view = new AmqtbViewBlock({
-            title: 'Download',
-            content: this.btnContainer.self,
-        });
+        this.view.push(autoDlBtn, videoDlBtn, audioDlBtn, infoDlBtn);
 
         this.answerResultListener = new Listener("answer results", this.answerResultHanler.bind(this));
-        this.enabled = true;
+        this.enable();
     }
 
-    get enabled() {
-        return this._enabled;
-    }
-
-    set enabled(val: boolean) {
-        if (val !== this._enabled) {
-            this._enabled = val;
-            if (val) {
-                this.answerResultListener.bindListener();
-            } else {
-                this.answerResultListener.unbindListener();
-            }
+    enable(): void {
+        if (!this._enabled) {
+            this._enabled = true;
+            this.answerResultListener.bindListener();
         }
+    }
+
+    disable(): void {
+        if (this._enabled) {
+            this._enabled = false;
+            this.answerResultListener.unbindListener();
+        }
+    }
+
+    enabled(): boolean {
+        return this._enabled;
     }
 
     private answerResultHanler(result: any) {
         this.currentSongInfo = result.songInfo;
         const resolutions = ["720", "480"];
-        const videoDlBtn = this.btnContainer.get('videoDlBtn')!;
-        const audioDlBtn = this.btnContainer.get('audioDlBtn')!;
-        const infoDlBtn = this.btnContainer.get('infoDlBtn')!;
+        const videoDlBtn = this.view.get('videoDlBtn')!;
+        const audioDlBtn = this.view.get('audioDlBtn')!;
+        const infoDlBtn = this.view.get('infoDlBtn')!;
         // update video URL
         videoDlBtn.self.removeData("url").addClass("disabled");
         for (let resolution of resolutions) {
@@ -212,19 +192,19 @@ class Downloader implements Plugin {
                 isCorrect = result.players[playerIdx].correct;
             }
             // auto download
-            const autoDlOnWrong = this.options.get('autoDlOnWrong') as AmqtbCheckbox;
-            if (!autoDlOnWrong.checked || (isCorrect !== undefined && !isCorrect)) {
-                const autoDlMedia = this.options.get('autoDlMedia') as AmqtbCheckbox;
-                const autoDlInfo = this.options.get('autoDlInfo') as AmqtbCheckbox; 
-                if (autoDlMedia.checked) {
-                    const mediaType = this.options.get('autoDlMediaType') as AmqtbRadio;
-                    if (mediaType.value === 'audio') {
+            const autoDlOnWrong = (this.options.get('autoDlOnWrong') as CheckboxOption).getValue();
+            if (!autoDlOnWrong || (isCorrect !== undefined && !isCorrect)) {
+                const autoDlMedia = (this.options.get('autoDlMedia') as CheckboxOption).getValue();
+                const autoDlInfo = (this.options.get('autoDlInfo') as CheckboxOption).getValue(); 
+                if (autoDlMedia) {
+                    const mediaType = (this.options.get('autoDlMediaType') as RadioOption<MediaType>).getValue();
+                    if (mediaType === 'Audio') {
                         audioDlBtn.self.trigger('click');
-                    } else if (mediaType.value === 'video') {
+                    } else if (mediaType === 'Video') {
                         videoDlBtn.self.trigger('click');
                     }
                 }
-                if (autoDlInfo.checked) {
+                if (autoDlInfo) {
                     infoDlBtn.self.trigger('click');
                 }
             }
@@ -345,30 +325,10 @@ function addMp3Tag(data: ArrayBuffer, info: Mp3Info): null | Buffer {
     return ret;
 }
 
-function setup() {
-    if ((unsafeWindow as any).amqToolbox === undefined) {
-        (unsafeWindow as any).amqToolbox = new AMQ_Toolbox();
-    }
-    const plugin = new Downloader();
-    const err = amqToolbox.registerPlugin(plugin);
-    if (err) {
-        console.error(err);
-        plugin.enabled = false;
-        return;
-    }
-}
-
 function main() {
-    if (document.getElementById('startPage')) return;
-    let loadInterval = setInterval(() => {
-        if ($('#loadingScreen').hasClass('hidden')) {
-            try {
-                setup();
-            } finally {
-                clearInterval(loadInterval);
-            }
-        }
-    }, 500);
+    onStartPageLoaded(() => {
+        registerPlugin(new Downloader());
+    });
 }
 
 $(main);

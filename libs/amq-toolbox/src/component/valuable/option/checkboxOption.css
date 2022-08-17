@@ -1,0 +1,12 @@
+.customCheckboxContainer {
+    display: flex;
+}
+.customCheckboxContainer>div {
+    display: inline-block;
+    margin: 5px 0px;
+}
+.customCheckboxContainer>.customCheckboxContainerLabel {
+    margin-left: 5px;
+    margin-top: 5px;
+    font-weight: normal;
+}
