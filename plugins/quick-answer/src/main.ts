@@ -25,7 +25,6 @@ class QuickAnswer implements IPlugin {
             title: 'Quick Answer List',
             addOrDeletable: true,
             movable: true,
-            savable: true,
             saveIn: 'Script',
             newRow: () => ({
                 displayName: new TextInput({placeholder: 'Display Name'}),

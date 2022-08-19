@@ -30,8 +30,7 @@ export interface TableOpt<T extends Schema> extends ComponentOpt {
     defaultValue?: RowData<T>[];
     addOrDeletable: boolean;
     movable: boolean;
-    savable: boolean;
-    saveIn: SaveIn;
+    saveIn?: SaveIn;
 }
 
 export interface ITable<T extends Schema> extends IComponent {
@@ -69,7 +68,7 @@ export class Table<T extends Schema> implements ITable<T> {
         this.newRow = opt.newRow;
         this.addOrDeletable = opt.addOrDeletable;
         this.movable = opt.movable;
-        this.savable = opt.savable;
+        this.savable = opt.saveIn === undefined ? false : true;
         this.rows = [];
         
         this.self = $(`<div class="row"></div>`)
@@ -264,6 +263,7 @@ export class Table<T extends Schema> implements ITable<T> {
             case 'Cookie':
                 saveToCookie(this.name, this.getValue());
                 break;
+            default:
         }
     }
 
@@ -279,6 +279,7 @@ export class Table<T extends Schema> implements ITable<T> {
             case 'Cookie':
                 val = loadFromCookie(this.name);
                 break;
+            default:
         }
         if (val !== undefined) {
             this.setValue(val);

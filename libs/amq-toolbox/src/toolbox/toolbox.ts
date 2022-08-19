@@ -79,7 +79,6 @@ export class Toolbox {
             name: 'amqtbPluginManageTable',
             addOrDeletable: false,
             movable: true,
-            savable: true,
             saveIn: 'LocalStorage',
             newRow: () => ({
                 pluginName: new Text(),
