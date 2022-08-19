@@ -100,7 +100,7 @@ export class Table<T extends Schema> implements ITable<T> {
             const btn = new Button({
                 name: 'add',
                 label: 'Add New',
-                size: 'default',
+                size: 'small',
                 style: 'success',
             });
             btn.self.on('click', () => {
@@ -112,7 +112,7 @@ export class Table<T extends Schema> implements ITable<T> {
             const saveBtn = new Button({
                 name: 'save',
                 label: 'Save',
-                size: 'default',
+                size: 'small',
                 style: 'success',
             });
             saveBtn.self.on('click', () => {
@@ -121,7 +121,7 @@ export class Table<T extends Schema> implements ITable<T> {
             const resetBtn = new Button({
                 name: 'reset',
                 label: 'Reset',
-                size: 'default',
+                size: 'small',
                 style: 'danger',
             });
             resetBtn.self.on('click', () => {
