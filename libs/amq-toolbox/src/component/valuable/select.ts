@@ -1,21 +1,25 @@
 import { IValuable, ValuableOpt } from "./valuable";
 
-interface SelectChoise<T> {
+interface SelectChoice<T> {
     label: string;
     value: T;
 }
 
-export interface SingleSelectOpt<T extends string> extends ValuableOpt<T> {
-    choices: SelectChoise<T>[];
+export interface SingleSelectOpt<T extends string> extends ValuableOpt<T | undefined> {
+    label: string;
+    choices: SelectChoice<T>[];
 }
 
-export interface ISingleSelect<T extends string> extends IValuable<T> {}
+export interface ISingleSelect<T extends string> extends IValuable<T | undefined> {}
 
 export class SingleSelect<T extends string> implements ISingleSelect<T> {
     public self: JQuery<HTMLElement>;
     private button: JQuery<HTMLElement>;
     private menu: JQuery<HTMLElement>;
-    private value: T;
+    private label: string;
+    private choices: SelectChoice<T>[];
+    private choice: SelectChoice<T> | undefined;
+    
     constructor (opt: SingleSelectOpt<T>) {
         const id = opt.id === undefined ? '' : opt.id;
         const cls = opt.class === undefined ? '' : opt.class;
@@ -26,7 +30,9 @@ export class SingleSelect<T extends string> implements ISingleSelect<T> {
         this.button = $(`<button type="button" data-toggle="dropdown"></button>`)
             .addClass('btn btn-default dropdown-toggle');
         this.menu = $(`<ul class="dropdown-menu"></ul>`);
-        for (let choice of opt.choices) {
+        this.label = opt.label;
+        this.choices = [...opt.choices];
+        for (let choice of this.choices) {
             const li = $(`<li></li>`);
             const a = $(`<a href="#"></a>`).text(choice.label);
             a.on('click', () => {
@@ -36,22 +42,23 @@ export class SingleSelect<T extends string> implements ISingleSelect<T> {
         }
         this.self.append(this.button, this.menu);
         // set value
-        this.value = opt.defaultValue === undefined ? opt.choices[0].value : opt.defaultValue;
-        this.setValue(this.value);
+        this.choice = this.choices.find(ch => ch.value === opt.defaultValue);
+        this.setValue(this.choice === undefined ? undefined : this.choice.value);
     }
-    public getValue(): T {
-        return this.value;
+    public getValue(): T | undefined {
+        return this.choice === undefined ? undefined : this.choice.value;   
     }
-    public setValue(val: T): void {
-        this.value = val;
-        this.button.text(`${val} `);
+    public setValue(val: T | undefined): void {
+        this.choice = this.choices.find(ch => ch.value === val);
+        const label = this.choice === undefined ? this.label : this.choice.label;
+        this.button.text(`${label} `);
         this.button.append($(`<span class="caret"></span>`));
     }
 }
 
 export interface MultiSelectOpt<T extends string> extends ValuableOpt<T[]> {
     label: string;
-    choices: SelectChoise<T>[];
+    choices: SelectChoice<T>[];
 }
 
 export interface IMultiSelect<T extends string> extends IValuable<T[]> {}

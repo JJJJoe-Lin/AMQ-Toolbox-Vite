@@ -3,6 +3,7 @@ import { IComponent, ComponentOpt } from './component';
 const SIZE_MAP = {
     'large': 'btn-lg',
     'default': '',
+    'normal': 'btn',
     'small': 'btn-sm',
     'extra-small': 'btn-xs',
 } as const;
