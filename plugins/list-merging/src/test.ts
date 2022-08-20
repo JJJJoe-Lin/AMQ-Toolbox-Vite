@@ -209,11 +209,11 @@ async function testUpdateSmallList() {
 
 async function testDeleteList() {
     console.log('[testDeleteList] Start DeleteList test');
-    let err = await animeList.deleteList();
+    let err = await animeList.deleteList([SINGLE_SERIES_TYPE]);
     if (err) {
         return err;
     }
-    let result = await animeList.getList(USER, ALL_SERIES_TYPE);
+    let result = await animeList.getList(USER, [SINGLE_SERIES_TYPE]);
     if (result instanceof Error) {
         return result;
     }

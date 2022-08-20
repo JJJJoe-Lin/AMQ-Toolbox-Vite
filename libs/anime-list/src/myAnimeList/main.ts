@@ -44,13 +44,13 @@ const ToGlobalSeriesType: Record<MyAnimeListSeriesType, AnimeList.SeriesType> = 
     'music': 'Music',
 };
 
-export class MyAnimeListFactory extends AnimeList.AnimeListFactory {
+export class MyAnimeListFactory implements AnimeList.AnimeListFactory {
     public getInstance(): AnimeList.AnimeList {
         return new MyAnimeList();
     }
 }
 
-export class MyAnimeList extends AnimeList.AnimeList {
+export class MyAnimeList implements AnimeList.AnimeList {
     private user: AnimeList.User | null;
     private readonly PKCECode: string;
     private readonly PKCEMethod = 'plain';
@@ -62,7 +62,6 @@ export class MyAnimeList extends AnimeList.AnimeList {
     private readonly reqDelay = 10; // ms
 
     constructor() {
-        super();
         this.user = null;
         // PKCE code should be 48 characters
         this.PKCECode = window.btoa(Math.random().toFixed(16).toString()) +
@@ -258,7 +257,7 @@ export class MyAnimeList extends AnimeList.AnimeList {
             return new Error('Not logined');
         }
         if (overwrite) {
-            const err = await this.deleteList();
+            const err = await this.deleteList(['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (err) {
                 return err;
             }
@@ -295,19 +294,18 @@ export class MyAnimeList extends AnimeList.AnimeList {
         return null;
     }
 
-    public async deleteList(): Promise<Error | null> {
+    public async deleteList(statuses: AnimeList.Status[]): Promise<Error | null> {
         const user = await this.getMyInfo();
         if (user instanceof Error) {
             return user;
         }
         let retry = 3;
         while (retry--) {
-            const entries = await this.getList({name: user.name},
-                ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
+            const entries = await this.getList({name: user.name}, statuses);
             if (entries instanceof Error) {
                 return entries;
             }
-            console.log('[deleteList] get all entries successfully', entries);
+            console.log(`[deleteList] get ${statuses} entries successfully`, entries);
             const count = entries.length;
             if (count === 0) {
                 console.log(`[deleteList] all entries are deleted`);

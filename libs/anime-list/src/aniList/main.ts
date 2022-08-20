@@ -58,13 +58,13 @@ const ToGlobalSeriesType: Record<AniListSeriesType, AnimeList.SeriesType> = {
     'TV_SHORT': 'TV',
 };
 
-export class AniListFactory extends AnimeList.AnimeListFactory {
+export class AniListFactory implements AnimeList.AnimeListFactory {
     public getInstance(): AnimeList.AnimeList {
         return new AniList();
     }
 }
 
-export class AniList extends AnimeList.AnimeList {
+export class AniList implements AnimeList.AnimeList {
     private user: AnimeList.User | null;
     private readonly clientID = '8357';
     private readonly clientSecret = 'H7r1aJRh6XEnTnGZdqhd7WJIVklt622sYeR53syl';
@@ -73,7 +73,6 @@ export class AniList extends AnimeList.AnimeList {
     private readonly redirectURL = 'https://animemusicquiz.com/amqToolbox/oauth2';
 
     constructor() {
-        super();
         this.user = null;
     }
 
@@ -183,7 +182,7 @@ export class AniList extends AnimeList.AnimeList {
 
     public async importList(entries: AnimeList.Entry[], overwrite: boolean): Promise<Error | null> {
         if (overwrite) {
-            const err = await this.deleteList();
+            const err = await this.deleteList(['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (err) {
                 return err;
             }
@@ -203,17 +202,16 @@ export class AniList extends AnimeList.AnimeList {
         return this.updateAnimes(animes);
     }
 
-    public async deleteList(): Promise<Error | null> {
+    public async deleteList(statuses: AnimeList.Status[]): Promise<Error | null> {
         const user = await this.getMyInfo();
         if (user instanceof Error) {
             return user;
         }
-        const entries = await this.getEntries({name: user.name},
-            ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
+        const entries = await this.getEntries({name: user.name}, statuses);
         if (entries instanceof Error) {
             return entries;
         }
-        console.log('[deleteList] get all entries successfully', entries);
+        console.log(`[deleteList] get ${statuses} entries successfully`, entries);
         return this.deleteEntries(entries.map(entry => entry.id));
     }
 

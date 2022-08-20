@@ -1,5 +1,6 @@
 import { AuthOptions } from "../utils/oauth2";
 
+export type AnimeListSite = 'MyAnimeList' | 'AniList' | 'Kitsu';
 export type Status = 'Watching' | 'Completed' | 'On-Hold' | 'Dropped' | 'Plan to Watch';
 export type SeriesType = 'Unknown' | 'TV' | 'OVA' | 'Movie' | 'Special' | 'ONA' | 'Music';
 
@@ -40,49 +41,50 @@ export interface Entry {
     updateOnImport: boolean;
 }
 
-export abstract class AnimeList {
+export interface AnimeList {
     /**
      * Get access token with OAuth2
      * @param opt OAuth2 option
      */
-    public abstract login(opt: AuthOptions): Promise<null | Error>;
-    public abstract logined(): boolean;
-    public abstract logout(): Promise<null | Error>;
+    login(opt: AuthOptions): Promise<null | Error>;
+    logined(): boolean;
+    logout(): Promise<null | Error>;
     /**
      * (Need login) Get logined user info
      */
-    public abstract getMyInfo(): Promise<User | Error>;
+    getMyInfo(): Promise<User | Error>;
     /**
      * (Need login) Add anime to logined user's anime list
      * @param id anime ID
      * @param status 
      */
-    public abstract updateAnime(id: number, status: Status): Promise<null | Error>;
+    updateAnime(id: number, status: Status): Promise<null | Error>;
     /**
      * (Need login) Remove anime from logined user's anime list
      * @param id anime ID
      */
-    public abstract deleteAnime(id: number): Promise<null | Error>;
+    deleteAnime(id: number): Promise<null | Error>;
     /**
      * Get user's anime list that is in some statuses
      * @param user user's ID or username
      * @param statuses status list to obtain
      */
-    public abstract getList(user: { id: number; } | { name: string; }, statuses: Status[]): Promise<Entry[] | Error>;
+    getList(user: { id: number; } | { name: string; }, statuses: Status[]): Promise<Entry[] | Error>;
     /**
      * Delete logined user's anime list
+     * @param statuses status list to delete
      */
-    public abstract deleteList(): Promise<null | Error>;
+    deleteList(statuses: Status[]): Promise<null | Error>;
     /**
      * Import animes to logined user's anime list
      * @param entries animes to import
      * @param overwrite whether delete list before import
      */
-    public abstract importList(entries: Entry[], overwrite: boolean): Promise<null | Error>;
+    importList(entries: Entry[], overwrite: boolean): Promise<null | Error>;
 }
 
-export abstract class AnimeListFactory {
-    public abstract getInstance(): AnimeList;
+export interface AnimeListFactory {
+    getInstance(): AnimeList;
 }
 
 export function entryToXml(userID: number, userName: string, entries: Entry[]): XMLDocument {

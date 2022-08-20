@@ -51,13 +51,13 @@ const ToGlobalSeriesType: Record<KitsuSeriesType, AnimeList.SeriesType> = {
     'music': 'Music',
 };
 
-export class KitsuFactory extends AnimeList.AnimeListFactory {
+export class KitsuFactory implements AnimeList.AnimeListFactory {
     public getInstance(): AnimeList.AnimeList {
         return new Kitsu();
     }
 }
 
-export class Kitsu extends AnimeList.AnimeList {
+export class Kitsu implements AnimeList.AnimeList {
     private user: AnimeList.User | null;
     private readonly clientID = 'dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd';
     private readonly clientSecret = '54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151';
@@ -65,7 +65,6 @@ export class Kitsu extends AnimeList.AnimeList {
     private readonly reqDelay = 10; // ms
 
     constructor() {
-        super();
         this.user = null;
     }
 
@@ -177,7 +176,7 @@ export class Kitsu extends AnimeList.AnimeList {
 
     public async importList(entries: AnimeList.Entry[], overwrite: boolean): Promise<Error | null> {
         if (overwrite) {
-            const err = await this.deleteList();
+            const err = await this.deleteList(['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (err) {
                 return err;
             }
@@ -227,19 +226,18 @@ export class Kitsu extends AnimeList.AnimeList {
         return null;
     }
 
-    public async deleteList(): Promise<Error | null> {
+    public async deleteList(statuses: AnimeList.Status[]): Promise<Error | null> {
         const user = await this.getMyInfo();
         if (user instanceof Error) {
             return user;
         }
         let retry = 3;
         while (retry--) {
-            const entries = await this.getEntries({id: user.id},
-                ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
+            const entries = await this.getEntries({id: user.id}, statuses);
             if (entries instanceof Error) {
                 return entries;
             }
-            console.log('[deleteList] get all entries successfully', entries);
+            console.log(`[deleteList] get ${statuses} entries successfully`, entries);
             const count = entries.length;
             if (count === 0) {
                 console.log(`[deleteList] all entries are deleted`);
