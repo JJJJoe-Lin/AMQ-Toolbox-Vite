@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ No Avatar Snipe
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.3.2
+// @version      0.3.3
 // @author       JJJJoe
 // @description  Avatar would not change when players answered
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js
@@ -13,7 +13,7 @@
 // @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-08-19T10:29:34.476Z
+// use vite-plugin-monkey@0.2.14 at 2022-08-20T04:20:31.259Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -252,6 +252,7 @@ var __publicField = (obj, key, value) => {
   const SIZE_MAP = {
     "large": "btn-lg",
     "default": "",
+    "normal": "btn",
     "small": "btn-sm",
     "extra-small": "btn-xs"
   };
@@ -311,7 +312,7 @@ var __publicField = (obj, key, value) => {
       this.newRow = opt.newRow;
       this.addOrDeletable = opt.addOrDeletable;
       this.movable = opt.movable;
-      this.savable = opt.savable;
+      this.savable = opt.saveIn === void 0 ? false : true;
       this.rows = [];
       this.self = $(`<div class="row"></div>`).attr("id", id).addClass(cls);
       if (opt.title) {
@@ -334,7 +335,7 @@ var __publicField = (obj, key, value) => {
         const btn = new Button({
           name: "add",
           label: "Add New",
-          size: "default",
+          size: "small",
           style: "success"
         });
         btn.self.on("click", () => {
@@ -346,7 +347,7 @@ var __publicField = (obj, key, value) => {
         const saveBtn = new Button({
           name: "save",
           label: "Save",
-          size: "default",
+          size: "small",
           style: "success"
         });
         saveBtn.self.on("click", () => {
@@ -355,7 +356,7 @@ var __publicField = (obj, key, value) => {
         const resetBtn = new Button({
           name: "reset",
           label: "Reset",
-          size: "default",
+          size: "small",
           style: "danger"
         });
         resetBtn.self.on("click", () => {
@@ -372,6 +373,10 @@ var __publicField = (obj, key, value) => {
       } else {
         this.buttonBlock = null;
       }
+      if (opt.defaultValue !== void 0) {
+        this.setValue(opt.defaultValue);
+      }
+      this.load();
     }
     createRow(data) {
       const newFields = this.newRow();
@@ -634,7 +639,6 @@ var __publicField = (obj, key, value) => {
         name: "amqtbPluginManageTable",
         addOrDeletable: false,
         movable: true,
-        savable: true,
         saveIn: "LocalStorage",
         newRow: () => ({
           pluginName: new Text(),
@@ -648,7 +652,6 @@ var __publicField = (obj, key, value) => {
         this.reload();
         this.manageModal.hide();
       });
-      this.pluginTable.load();
       this.prevPluginsInfo = this.pluginTable.getValue();
       this.pluginTable.splice(0);
       this.pluginTable.save();
