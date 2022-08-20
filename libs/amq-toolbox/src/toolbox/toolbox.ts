@@ -94,7 +94,6 @@ export class Toolbox {
             this.manageModal.hide();
         });
         // get previous plugin info and reset
-        this.pluginTable.load();
         this.prevPluginsInfo = this.pluginTable.getValue();
         this.pluginTable.splice(0);
         this.pluginTable.save();

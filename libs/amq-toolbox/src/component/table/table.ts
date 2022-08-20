@@ -138,6 +138,11 @@ export class Table<T extends Schema> implements ITable<T> {
         } else {
             this.buttonBlock = null;
         }
+        // set value
+        if (opt.defaultValue !== undefined) {
+            this.setValue(opt.defaultValue);
+        }
+        this.load();
     }
     
     createRow(data?: RowData<T> | undefined): Row<T> {
