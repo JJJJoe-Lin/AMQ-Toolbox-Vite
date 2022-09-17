@@ -464,6 +464,7 @@ export class Kitsu implements AnimeList.AnimeList {
             filter: {
                 userId: userId,
                 status: stat.toString(),
+                kind: 'anime',
             },
             include: 'anime,anime.mappings',
             page: {

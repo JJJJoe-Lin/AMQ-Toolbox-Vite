@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ List Merging
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.1.0
+// @version      0.1.1
 // @author       JJJJoe
 // @description  Merge multiple list to one
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js
@@ -11,7 +11,6 @@
 // @connect      myanimelist.net
 // @connect      anilist.co
 // @connect      kitsu.io
-// @grant        unsafeWindow
 // @grant        GM_addValueChangeListener
 // @grant        GM_deleteValue
 // @grant        GM_getValue
@@ -20,10 +19,11 @@
 // @grant        GM_setValue
 // @grant        window.close
 // @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
 // @grant        GM_addStyle
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-08-20T04:20:27.348Z
+// use vite-plugin-monkey@0.2.14 at 2022-09-17T07:30:23.098Z
 
 ;(({ cssTextList = [] }) => {
   cssTextList.forEach((s) => {
@@ -1452,7 +1452,7 @@ var __publicField = (obj, key, value) => {
         }
         console.log("[importList] delete all entries successfully");
       }
-      const ids = await this.getIds(entries.map((entry) => entry.malID));
+      const ids = await this.getIds(entries);
       if (ids instanceof Error) {
         return ids;
       }
@@ -1749,7 +1749,8 @@ var __publicField = (obj, key, value) => {
       }
       return null;
     }
-    async getIds(malIds) {
+    async getIds(entries) {
+      const malIds = entries.map((entry) => entry.malID);
       const queryNumLimit = 250;
       const data = {
         query: `query getMedium {`,
@@ -1772,6 +1773,20 @@ var __publicField = (obj, key, value) => {
             data: JSON.stringify(data)
           });
           if (resp === null || resp.status !== 200) {
+            if (resp !== null) {
+              const errs = JSON.parse(resp.responseText).errors;
+              if (errs !== void 0) {
+                for (let err of errs) {
+                  const st = Math.floor(idx / queryNumLimit) * queryNumLimit;
+                  const errIdx = st + (err.locations[0].line - 1) / 2;
+                  console.warn(`Failed to get ID of malID=${malIds[errIdx]}: ${err.message}`);
+                  if (err.status === 404) {
+                    entries.splice(errIdx, 1);
+                  }
+                }
+                return this.getIds(entries);
+              }
+            }
             console.log(resp);
             return new Error(`Query failed: ${data.query}`);
           }
@@ -2473,7 +2488,8 @@ var __publicField = (obj, key, value) => {
       let query$1 = `https://kitsu.io/api/edge/library-entries?` + query({
         filter: {
           userId,
-          status: stat.toString()
+          status: stat.toString(),
+          kind: "anime"
         },
         include: "anime,anime.mappings",
         page: {

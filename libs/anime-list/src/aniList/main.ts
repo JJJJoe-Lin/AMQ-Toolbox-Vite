@@ -188,7 +188,7 @@ export class AniList implements AnimeList.AnimeList {
             }
             console.log('[importList] delete all entries successfully');
         }
-        const ids = await this.getIds(entries.map(entry => entry.malID));
+        const ids = await this.getIds(entries);
         if (ids instanceof Error) {
             return ids;
         }
@@ -496,7 +496,8 @@ export class AniList implements AnimeList.AnimeList {
         return null;
     }
 
-    private async getIds(malIds: number[]): Promise<number[] | Error> {
+    private async getIds(entries: AnimeList.Entry[]): Promise<number[] | Error> {
+        const malIds = entries.map(entry => entry.malID);
         const queryNumLimit = 250;
         const data: GraphQLData = {
             query: `query getMedium {`,
@@ -519,6 +520,21 @@ export class AniList implements AnimeList.AnimeList {
                     data: JSON.stringify(data),
                 });
                 if (resp === null || resp.status !== 200) {
+                    // handle malID not found error
+                    if (resp !== null) {
+                        const errs: Record<string, any>[] | undefined = JSON.parse(resp.responseText).errors;
+                        if (errs !== undefined) {
+                            for (let err of errs) {
+                                const st = Math.floor(idx / queryNumLimit) * queryNumLimit;
+                                const errIdx = st + ((err.locations[0].line - 1) / 2);
+                                console.warn(`Failed to get ID of malID=${malIds[errIdx]}: ${err.message}`);
+                                if (err.status === 404) {
+                                    entries.splice(errIdx, 1);
+                                }
+                            }
+                            return this.getIds(entries);
+                        }
+                    }
                     console.log(resp);
                     return new Error(`Query failed: ${data.query}`);
                 }
