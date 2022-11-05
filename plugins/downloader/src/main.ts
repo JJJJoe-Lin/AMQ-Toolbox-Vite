@@ -9,7 +9,7 @@ import {
     registerPlugin,
 } from 'amq-toolbox';
 import { getAnimeImage, Image } from './cover';
-import * as MP3Tag from 'mp3tag.js';
+import MP3Tag from 'mp3tag.js';
 
 declare var Listener: any;
 declare var quiz: any;
@@ -351,6 +351,7 @@ function addMp3Tag(data: ArrayBuffer, info: Mp3Info): null | Buffer {
 
 function main() {
     onStartPageLoaded(() => {
+        console.log(MP3Tag);
         registerPlugin(new Downloader());
     });
 }

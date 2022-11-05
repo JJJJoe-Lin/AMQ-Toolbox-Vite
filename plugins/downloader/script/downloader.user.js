@@ -15,7 +15,7 @@
 // @grant        GM_setValue
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-11-05T09:03:26.992Z
+// use vite-plugin-monkey@0.2.14 at 2022-11-05T09:26:41.154Z
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -25,22 +25,6 @@ var __publicField = (obj, key, value) => {
 };
 (function() {
   "use strict";
-  function _mergeNamespaces(n, m) {
-    m.forEach(function(e) {
-      e && typeof e !== "string" && !Array.isArray(e) && Object.keys(e).forEach(function(k) {
-        if (k !== "default" && !(k in n)) {
-          var d = Object.getOwnPropertyDescriptor(e, k);
-          Object.defineProperty(n, k, d.get ? d : {
-            enumerable: true,
-            get: function() {
-              return e[k];
-            }
-          });
-        }
-      });
-    });
-    return Object.freeze(Object.defineProperty(n, Symbol.toStringTag, { value: "Module" }));
-  }
   class Container {
     constructor(opt) {
       __publicField(this, "self");
@@ -2573,7 +2557,7 @@ var __publicField = (obj, key, value) => {
     }
     return ret === void 0 ? null : ret;
   }
-  var mp3tag$1 = { exports: {} };
+  var mp3tag = { exports: {} };
   (function(module, exports) {
     (function(global2, factory) {
       module.exports = factory();
@@ -10326,12 +10310,8 @@ var __publicField = (obj, key, value) => {
       }();
       return MP3Tag2;
     });
-  })(mp3tag$1);
-  var mp3tag = mp3tag$1.exports;
-  var MP3Tag = /* @__PURE__ */ _mergeNamespaces({
-    __proto__: null,
-    "default": mp3tag
-  }, [mp3tag$1.exports]);
+  })(mp3tag);
+  var MP3Tag = mp3tag.exports;
   class Downloader {
     constructor() {
       __publicField(this, "name", "Downloader");
@@ -10627,6 +10607,7 @@ var __publicField = (obj, key, value) => {
   }
   function main() {
     onStartPageLoaded(() => {
+      console.log(MP3Tag);
       registerPlugin(new Downloader());
     });
   }
