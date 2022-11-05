@@ -9,20 +9,24 @@ import {
     registerPlugin,
 } from 'amq-toolbox';
 import { getAnimeImage, Image } from './cover';
+import * as MP3Tag from 'mp3tag.js';
 
 declare var Listener: any;
 declare var quiz: any;
 declare var selfName: any;
-
-declare var MP3Tag: any;
 
 interface Mp3Info {
     animeName: string;
     songName: string;
     type: string;
     artist: string;
-    annId: number,
+    annId: number;
     cover: Image | null;
+    videoUrl: {
+        'catbox_480'?: string;
+        'catbox_720'?: string;
+        'openingsmoe'?: string;
+    }
 }
 
 type MediaType = 'Audio' | 'Video';
@@ -254,6 +258,8 @@ class Downloader implements IPlugin {
     }
 
     private getMp3Info(): Mp3Info {
+        const catbox = this.currentSongInfo.urlMap['catbox'];
+        const opm = this.currentSongInfo.urlMap['openingsmoe'];
         return {
             animeName: this.currentSongInfo.animeNames.romaji,
             songName: this.currentSongInfo.songName,
@@ -261,6 +267,11 @@ class Downloader implements IPlugin {
             artist: this.currentSongInfo.artist,
             annId: this.currentSongInfo.annId,
             cover: null,
+            videoUrl: {
+                'catbox_480': catbox ? (catbox['480'] ? catbox['480'] : undefined) : undefined,
+                'catbox_720': catbox ? (catbox['720'] ? catbox['720'] : undefined) : undefined,
+                'openingsmoe': opm ? (opm['720'] ? catbox['720'] : undefined) : undefined,
+            },
         }
     }
 
@@ -303,6 +314,19 @@ function addMp3Tag(data: ArrayBuffer, info: Mp3Info): null | Buffer {
     mp3tag.tags.title = info.songName;
     mp3tag.tags.artist = info.artist;
     mp3tag.tags.album = info.animeName;
+    
+    let comment = '';
+    if (info.videoUrl.catbox_480) {
+        comment += `Catbox 480p: ${info.videoUrl.catbox_480}\n`;
+    }
+    if (info.videoUrl.catbox_720) {
+        comment += `Catbox 720p: ${info.videoUrl.catbox_720}\n`;
+    }
+    if (info.videoUrl.openingsmoe) {
+        comment += `OpeningsMoe: ${info.videoUrl.openingsmoe}\n`;
+    }
+    mp3tag.tags.comment = comment;
+
     if (info.cover !== null) {
         mp3tag.tags.v2.APIC = [{
             format: info.cover.contentType,
