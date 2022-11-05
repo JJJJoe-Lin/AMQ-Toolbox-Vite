@@ -351,7 +351,6 @@ function addMp3Tag(data: ArrayBuffer, info: Mp3Info): null | Buffer {
 
 function main() {
     onStartPageLoaded(() => {
-        console.log(MP3Tag);
         registerPlugin(new Downloader());
     });
 }
