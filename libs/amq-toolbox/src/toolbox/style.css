@@ -1,16 +1,23 @@
 @import '../component/style.css';
 
 #qpToolboxContainer {
+  /* box size */
   max-width: 215px;
   min-width: 208px;
   width: calc(100% + 30px);
-  position: absolute;
   border-radius: 5px;
-  padding-bottom: 5px;
   padding-top: 5px;
+  padding-bottom: 5px;
+  /* position */
   margin-top: 10px;
+  position: absolute;
   left: 0px;
   right: 0px;
+}
+#gameChatPage.nexusView #qpToolboxContainer {
+  position: relative; /* overwrite */
+  float: right;
+  pointer-events: initial;
 }
 #qpToolboxContainer h5 {
   margin-top: 5px;
@@ -22,6 +29,11 @@
 }
 #qpAvatarRow {
   width: 80%;
+}
+#gameChatPage.nexusView #qpAvatarRow {
+  width: 70%;  /* overwrite */
+  margin-left: 25%;
+  margin-right: 5%;
 }
 .collapsible:hover {
   background-color: #555;
