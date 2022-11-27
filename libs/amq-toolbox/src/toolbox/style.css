@@ -18,6 +18,7 @@
   position: relative; /* overwrite */
   float: right;
   pointer-events: initial;
+  clear: both;
 }
 #qpToolboxContainer h5 {
   margin-top: 5px;
