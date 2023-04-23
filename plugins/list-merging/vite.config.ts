@@ -10,7 +10,7 @@ export default defineConfig({
             entry: 'src/main.ts',
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
-                name: 'AMQ List Merging',
+                name: 'AMQ List Merging(dev)',
                 version: '0.2.0',
                 description: 'Merge multiple list to one',
                 author: 'JJJJoe',
@@ -23,8 +23,8 @@ export default defineConfig({
                     'anilist.co',
                     'kitsu.io',
                 ],
-                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js',
-                downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js',
+                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js',
+                downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js',
             },
             server: {
                 open: false,
