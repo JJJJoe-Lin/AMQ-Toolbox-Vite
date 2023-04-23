@@ -11,7 +11,7 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Quick Answer',
-                version: '0.3.4',
+                version: '0.4.0',
                 description: 'AMQ Quick-Answer Buttons',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',

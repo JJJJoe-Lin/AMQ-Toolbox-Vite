@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Force Skip
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.3.4
+// @version      0.4.0
 // @author       JJJJoe
 // @description  Skip song without waiting buffering
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/force-skip/script/force-skip.user.js

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Quick Answer
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.3.4
+// @version      0.4.0
 // @author       JJJJoe
 // @description  AMQ Quick-Answer Buttons
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js

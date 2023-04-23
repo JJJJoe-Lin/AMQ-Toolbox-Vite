@@ -1,7 +1,6 @@
 {
   "name": "list-merging",
   "private": true,
-  "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -14,7 +13,7 @@
     "vite-plugin-monkey": "^3.0.1"
   },
   "dependencies": {
-    "amq-toolbox": "^1.0.0",
-    "anime-list": "^1.0.0"
+    "amq-toolbox": "0.1.0",
+    "anime-list": "0.1.0"
   }
 }
