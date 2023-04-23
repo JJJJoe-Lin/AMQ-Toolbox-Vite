@@ -1,3 +1,4 @@
+import { GM_addStyle } from '$';
 import styles from './style.css?inline';
 import {
     Switch,

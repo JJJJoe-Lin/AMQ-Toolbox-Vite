@@ -1,7 +1,6 @@
 {
   "name": "amq-toolbox-vite",
   "private": true,
-  "version": "1.0.0",
   "author": "JJJJoe",
   "license": "ISC",
   "scripts": {

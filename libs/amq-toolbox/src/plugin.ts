@@ -1,3 +1,4 @@
+import { unsafeWindow } from '$';
 import { IComponent, IOptions, ITab } from './component/main';
 import { Toolbox } from './toolbox/toolbox';
 import { onStartPageLoaded } from './utils/amq';

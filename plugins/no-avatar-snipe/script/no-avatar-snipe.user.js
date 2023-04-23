@@ -1,28 +1,27 @@
 // ==UserScript==
-// @name         AMQ No Avatar Snipe
+// @name         AMQ No Avatar Snipe(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.3.5
+// @version      0.4.0
 // @author       JJJJoe
 // @description  Avatar would not change when players answered
-// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js
-// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js
+// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js
+// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js
 // @include      /^https:\/\/animemusicquiz\.com\/(\?.*|#.*)?$/
-// @grant        unsafeWindow
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-11-27T04:24:36.906Z
+(function () {
+  'use strict';
 
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-(function() {
-  "use strict";
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
   class Container {
     constructor(opt) {
       __publicField(this, "self");
@@ -110,9 +109,15 @@ var __publicField = (obj, key, value) => {
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
       const title = $(`<h2 class="modal-title">${opt.title}</h2>`);
-      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">×</span>`));
       this.contentBlock = $(`<div class="modal-body"></div>`);
-      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.contentBlock)));
+      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(
+        dialog.append(
+          content.append(
+            header.append(closeIcon, title)
+          ).append(this.contentBlock)
+        )
+      );
       $("#gameContainer").append(this.self);
     }
     appendComponent(component) {
@@ -160,10 +165,16 @@ var __publicField = (obj, key, value) => {
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
       const title = $(`<h4 class="modal-title">${opt.title}</h4>`);
-      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">×</span>`));
       this.tabBlock = $(`<div class="tabContainer"></div>`);
       this.contentBlock = $(`<div class="modal-body"></div>`);
-      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.tabBlock).append(this.contentBlock)));
+      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(
+        dialog.append(
+          content.append(
+            header.append(closeIcon, title)
+          ).append(this.tabBlock).append(this.contentBlock)
+        )
+      );
       this.curTab = null;
       $("#gameContainer").append(this.self);
     }
@@ -216,6 +227,10 @@ var __publicField = (obj, key, value) => {
       tab.content.detach();
     }
   }
+  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
+  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
+  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
+  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
   const attr = {
     expires: 365,
     Domain: "animemusicquiz.com",
@@ -479,7 +494,7 @@ var __publicField = (obj, key, value) => {
     save() {
       switch (this.saveIn) {
         case "Script":
-          GM_setValue(this.name, this.getValue());
+          _GM_setValue(this.name, this.getValue());
           break;
         case "LocalStorage":
           saveToLocalStorage(this.name, this.getValue());
@@ -493,7 +508,7 @@ var __publicField = (obj, key, value) => {
       let val;
       switch (this.saveIn) {
         case "Script":
-          val = GM_getValue(this.name);
+          val = _GM_getValue(this.name);
           break;
         case "LocalStorage":
           val = loadFromLocalStorage(this.name);
@@ -523,7 +538,7 @@ var __publicField = (obj, key, value) => {
       }
     }
   }
-  var styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbMultiSelect a.selected {\n    background-color: #4497ea;\n    color: #fff;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  /* box size */\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  border-radius: 5px;\n  padding-top: 5px;\n  padding-bottom: 5px;\n  /* position */\n  margin-top: 10px;\n  position: absolute;\n  left: 0px;\n  right: 0px;\n}\n#gameChatPage.nexusView #qpToolboxContainer {\n  position: relative; /* overwrite */\n  float: right;\n  pointer-events: initial;\n  clear: both;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n#gameChatPage.nexusView #qpAvatarRow {\n  width: 70%;  /* overwrite */\n  margin-left: 25%;\n  margin-right: 5%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  const styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbMultiSelect a.selected {\n    background-color: #4497ea;\n    color: #fff;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  /* box size */\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  border-radius: 5px;\n  padding-top: 5px;\n  padding-bottom: 5px;\n  /* position */\n  margin-top: 10px;\n  position: absolute;\n  left: 0px;\n  right: 0px;\n}\n#gameChatPage.nexusView #qpToolboxContainer {\n  position: relative; /* overwrite */\n  float: right;\n  pointer-events: initial;\n  clear: both;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n#gameChatPage.nexusView #qpAvatarRow {\n  width: 70%;  /* overwrite */\n  margin-left: 25%;\n  margin-right: 5%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
   class View {
     constructor(opt) {
       __publicField(this, "self");
@@ -567,7 +582,9 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "switchOff");
       this.switchOff = $(`<div class="switchOff slider-tick round"></div>`);
       this.switchOn = $(`<div class="switchOn slider-tick round"></div>`);
-      this.switch = $(`<div class="switchContainer slider-track"></div>`).append($(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn));
+      this.switch = $(`<div class="switchContainer slider-track"></div>`).append(
+        $(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn)
+      );
       this.self = $(`<div></div>`).addClass(`amqtbPluginManageTableEnabledCell`).append(this.switch);
       this.switch.on("click", () => {
         this.setValue(!this.getValue());
@@ -655,9 +672,13 @@ var __publicField = (obj, key, value) => {
       this.prevPluginsInfo = this.pluginTable.getValue();
       this.pluginTable.splice(0);
       this.pluginTable.save();
-      $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins"));
-      $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting"));
-      GM_addStyle(styles);
+      $("#optionsContainer > ul").prepend(
+        $(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins")
+      );
+      $("#optionsContainer > ul").prepend(
+        $(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting")
+      );
+      _GM_addStyle(styles);
       console.log("New AMQ Toolbox created");
     }
     addPlugin(plugin) {
@@ -751,10 +772,10 @@ var __publicField = (obj, key, value) => {
   function registerPlugin(plugin) {
     try {
       onStartPageLoaded(() => {
-        if (unsafeWindow.amqToolbox === void 0) {
-          unsafeWindow.amqToolbox = new Toolbox();
+        if (_unsafeWindow.amqToolbox === void 0) {
+          _unsafeWindow.amqToolbox = new Toolbox();
         }
-        unsafeWindow.amqToolbox.addPlugin(plugin);
+        _unsafeWindow.amqToolbox.addPlugin(plugin);
       });
     } catch (err) {
       console.error(`[registerPlugin] Failed to register ${plugin.name}`, err);
@@ -797,5 +818,5 @@ var __publicField = (obj, key, value) => {
     });
   }
   $(main);
+
 })();
- 
