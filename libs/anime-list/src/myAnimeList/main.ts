@@ -1,3 +1,4 @@
+import { GM_setValue, GM_getValue, GM_deleteValue } from '$';
 import * as AnimeList from '../animeList/main';
 import { AuthOptions, authoriationRequest } from '../utils/oauth2';
 import { async_GM_xmlhttpRequest, asyncWait } from '../utils/requests';

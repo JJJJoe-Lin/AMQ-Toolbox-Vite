@@ -1,7 +1,8 @@
+import { GM_setValue, GM_getValue, GM_deleteValue } from '$';
 import * as kitsuCore from 'kitsu-core';
 import * as AnimeList from '../animeList/main';
 import { AuthOptions } from '../utils/oauth2';
-import { asyncWait, async_GM_xmlhttpRequest } from '../utils/requests';
+import { asyncWait, async_GM_xmlhttpRequest, TResponse } from '../utils/requests';
 
 type KitsuStatus = 'completed' | 'current' | 'dropped' | 'on_hold' | 'planned';
 type KitsuSeriesType = 'TV' | 'OVA' | 'movie' | 'special' | 'ONA' | 'music';
@@ -305,7 +306,7 @@ export class Kitsu implements AnimeList.AnimeList {
 
     private async getUser(userName?: string): Promise<KitsuUser | Error> {
         let query: string;
-        let resp: Tampermonkey.Response<any> | null;
+        let resp: TResponse<object> | null;
         if (userName === undefined || this.logined()) {
             const token = await this.getToken();
             if (token instanceof Error) {

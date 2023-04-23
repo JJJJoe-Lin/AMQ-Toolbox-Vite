@@ -10,8 +10,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "outDir": "dist"
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": ["src"]
 }

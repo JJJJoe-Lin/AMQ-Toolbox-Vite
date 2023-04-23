@@ -1,3 +1,12 @@
+import {
+    GM_setValue,
+    GM_getValue,
+    GM_deleteValue,
+    GM_openInTab,
+    GM_addValueChangeListener,
+    GM_removeValueChangeListener,
+} from '$';
+
 export type GrantType = 'Authorization Code'
     | 'Implicit Flow'
     | 'Client Credentials' 

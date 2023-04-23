@@ -5,12 +5,12 @@ import {
     saveStorable
 } from './option';
 
-export interface RadioChoise<T> {
+export interface RadioChoise<T extends string | number | boolean> {
     label: string;
     value: T;
 }
 
-export interface RadioOptionOpt<T> extends OptionComponentOpt<T> {
+export interface RadioOptionOpt<T extends string | number | boolean> extends OptionComponentOpt<T> {
     label: string;
     description?: string;
     choices: RadioChoise<T>[];
@@ -20,7 +20,7 @@ export interface IRadioOption<T> extends IOptionComponent<T> {
     relayout(): void;
 }
 
-export class RadioOption<T> implements IRadioOption<T> {
+export class RadioOption<T extends string | number | boolean> implements IRadioOption<T> {
     readonly name;
     readonly self: JQuery<HTMLElement>;
     readonly input: JQuery<HTMLElement>;

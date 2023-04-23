@@ -11,41 +11,29 @@
 // @connect      myanimelist.net
 // @connect      anilist.co
 // @connect      kitsu.io
+// @grant        GM_addStyle
 // @grant        GM_addValueChangeListener
 // @grant        GM_deleteValue
 // @grant        GM_getValue
 // @grant        GM_openInTab
 // @grant        GM_removeValueChangeListener
 // @grant        GM_setValue
-// @grant        window.close
-// @grant        unsafeWindow
 // @grant        GM_xmlhttpRequest
-// @grant        GM_addStyle
+// @grant        unsafeWindow
+// @grant        window.close
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-11-27T04:24:33.065Z
+(t=>{const e=document.createElement("style");e.dataset.source="vite-plugin-monkey",e.textContent=t,document.head.append(e)})(" .amqtb-list-merging-tab i.fa-spinner{position:relative;left:5px} ");
 
-;(({ cssTextList = [] }) => {
-  cssTextList.forEach((s) => {
-    const style = document.createElement("style");
-    style.innerText = s;
-    style.dataset.source = "vite-plugin-monkey";
-    document.head.appendChild(style);
-  });
-})({
-  "cssTextList": [
-    ".amqtb-list-merging-tab i.fa-spinner {\n    position: relative;\n    left: 5px;\n}"
-  ]
-});
+(function () {
+  'use strict';
 
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-(function() {
-  "use strict";
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
   class Container {
     constructor(opt) {
       __publicField(this, "self");
@@ -133,9 +121,15 @@ var __publicField = (obj, key, value) => {
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
       const title = $(`<h2 class="modal-title">${opt.title}</h2>`);
-      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">×</span>`));
       this.contentBlock = $(`<div class="modal-body"></div>`);
-      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.contentBlock)));
+      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(
+        dialog.append(
+          content.append(
+            header.append(closeIcon, title)
+          ).append(this.contentBlock)
+        )
+      );
       $("#gameContainer").append(this.self);
     }
     appendComponent(component) {
@@ -183,10 +177,16 @@ var __publicField = (obj, key, value) => {
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
       const title = $(`<h4 class="modal-title">${opt.title}</h4>`);
-      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">×</span>`));
       this.tabBlock = $(`<div class="tabContainer"></div>`);
       this.contentBlock = $(`<div class="modal-body"></div>`);
-      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.tabBlock).append(this.contentBlock)));
+      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(
+        dialog.append(
+          content.append(
+            header.append(closeIcon, title)
+          ).append(this.tabBlock).append(this.contentBlock)
+        )
+      );
       this.curTab = null;
       $("#gameContainer").append(this.self);
     }
@@ -239,6 +239,15 @@ var __publicField = (obj, key, value) => {
       tab.content.detach();
     }
   }
+  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
+  var _GM_addValueChangeListener = /* @__PURE__ */ (() => typeof GM_addValueChangeListener != "undefined" ? GM_addValueChangeListener : void 0)();
+  var _GM_deleteValue = /* @__PURE__ */ (() => typeof GM_deleteValue != "undefined" ? GM_deleteValue : void 0)();
+  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
+  var _GM_openInTab = /* @__PURE__ */ (() => typeof GM_openInTab != "undefined" ? GM_openInTab : void 0)();
+  var _GM_removeValueChangeListener = /* @__PURE__ */ (() => typeof GM_removeValueChangeListener != "undefined" ? GM_removeValueChangeListener : void 0)();
+  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
+  var _GM_xmlhttpRequest = /* @__PURE__ */ (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
+  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
   const attr = {
     expires: 365,
     Domain: "animemusicquiz.com",
@@ -620,7 +629,7 @@ var __publicField = (obj, key, value) => {
     save() {
       switch (this.saveIn) {
         case "Script":
-          GM_setValue(this.name, this.getValue());
+          _GM_setValue(this.name, this.getValue());
           break;
         case "LocalStorage":
           saveToLocalStorage(this.name, this.getValue());
@@ -634,7 +643,7 @@ var __publicField = (obj, key, value) => {
       let val;
       switch (this.saveIn) {
         case "Script":
-          val = GM_getValue(this.name);
+          val = _GM_getValue(this.name);
           break;
         case "LocalStorage":
           val = loadFromLocalStorage(this.name);
@@ -664,7 +673,7 @@ var __publicField = (obj, key, value) => {
       }
     }
   }
-  var styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbMultiSelect a.selected {\n    background-color: #4497ea;\n    color: #fff;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  /* box size */\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  border-radius: 5px;\n  padding-top: 5px;\n  padding-bottom: 5px;\n  /* position */\n  margin-top: 10px;\n  position: absolute;\n  left: 0px;\n  right: 0px;\n}\n#gameChatPage.nexusView #qpToolboxContainer {\n  position: relative; /* overwrite */\n  float: right;\n  pointer-events: initial;\n  clear: both;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n#gameChatPage.nexusView #qpAvatarRow {\n  width: 70%;  /* overwrite */\n  margin-left: 25%;\n  margin-right: 5%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  const styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbMultiSelect a.selected {\n    background-color: #4497ea;\n    color: #fff;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  /* box size */\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  border-radius: 5px;\n  padding-top: 5px;\n  padding-bottom: 5px;\n  /* position */\n  margin-top: 10px;\n  position: absolute;\n  left: 0px;\n  right: 0px;\n}\n#gameChatPage.nexusView #qpToolboxContainer {\n  position: relative; /* overwrite */\n  float: right;\n  pointer-events: initial;\n  clear: both;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n#gameChatPage.nexusView #qpAvatarRow {\n  width: 70%;  /* overwrite */\n  margin-left: 25%;\n  margin-right: 5%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
   class View {
     constructor(opt) {
       __publicField(this, "self");
@@ -708,7 +717,9 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "switchOff");
       this.switchOff = $(`<div class="switchOff slider-tick round"></div>`);
       this.switchOn = $(`<div class="switchOn slider-tick round"></div>`);
-      this.switch = $(`<div class="switchContainer slider-track"></div>`).append($(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn));
+      this.switch = $(`<div class="switchContainer slider-track"></div>`).append(
+        $(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn)
+      );
       this.self = $(`<div></div>`).addClass(`amqtbPluginManageTableEnabledCell`).append(this.switch);
       this.switch.on("click", () => {
         this.setValue(!this.getValue());
@@ -796,9 +807,13 @@ var __publicField = (obj, key, value) => {
       this.prevPluginsInfo = this.pluginTable.getValue();
       this.pluginTable.splice(0);
       this.pluginTable.save();
-      $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins"));
-      $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting"));
-      GM_addStyle(styles);
+      $("#optionsContainer > ul").prepend(
+        $(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins")
+      );
+      $("#optionsContainer > ul").prepend(
+        $(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting")
+      );
+      _GM_addStyle(styles);
       console.log("New AMQ Toolbox created");
     }
     addPlugin(plugin) {
@@ -892,10 +907,10 @@ var __publicField = (obj, key, value) => {
   function registerPlugin(plugin) {
     try {
       onStartPageLoaded(() => {
-        if (unsafeWindow.amqToolbox === void 0) {
-          unsafeWindow.amqToolbox = new Toolbox();
+        if (_unsafeWindow.amqToolbox === void 0) {
+          _unsafeWindow.amqToolbox = new Toolbox();
         }
-        unsafeWindow.amqToolbox.addPlugin(plugin);
+        _unsafeWindow.amqToolbox.addPlugin(plugin);
       });
     } catch (err) {
       console.error(`[registerPlugin] Failed to register ${plugin.name}`, err);
@@ -904,27 +919,27 @@ var __publicField = (obj, key, value) => {
   const authCodeKeyName = "authorizationCode";
   function authoriationRequest(authURL) {
     return new Promise((resolve, reject) => {
-      GM_setValue(authCodeKeyName, "");
-      const tab = GM_openInTab(authURL, { active: true, setParent: true });
-      const listenerID = GM_addValueChangeListener(authCodeKeyName, (_, __, newValue) => {
+      _GM_setValue(authCodeKeyName, "");
+      const tab = _GM_openInTab(authURL, { active: true, setParent: true });
+      const listenerID = _GM_addValueChangeListener(authCodeKeyName, (_, __, newValue) => {
         tab.close();
         resolve(newValue);
       });
       tab.onclose = () => {
-        if (GM_getValue(authCodeKeyName) === "") {
+        if (_GM_getValue(authCodeKeyName) === "") {
           resolve(new Error("Authoriation Request failed"));
         }
-        GM_removeValueChangeListener(listenerID);
-        GM_deleteValue(authCodeKeyName);
+        _GM_removeValueChangeListener(listenerID);
+        _GM_deleteValue(authCodeKeyName);
       };
     });
   }
   function redirectURLHandler() {
     const path2 = new URL(document.URL);
     const authCode = path2.searchParams.get("code");
-    if (GM_getValue(authCodeKeyName, void 0) !== void 0) {
+    if (_GM_getValue(authCodeKeyName, void 0) !== void 0) {
       if (authCode) {
-        GM_setValue(authCodeKeyName, authCode);
+        _GM_setValue(authCodeKeyName, authCode);
       } else {
         window.close();
       }
@@ -932,7 +947,7 @@ var __publicField = (obj, key, value) => {
   }
   function async_GM_xmlhttpRequest(details) {
     return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
+      _GM_xmlhttpRequest({
         ...details,
         onload: (response) => {
           resolve(response);
@@ -984,6 +999,7 @@ var __publicField = (obj, key, value) => {
     }
   }
   class MyAnimeList {
+    // ms
     constructor() {
       __publicField(this, "user");
       __publicField(this, "PKCECode");
@@ -1036,17 +1052,17 @@ var __publicField = (obj, key, value) => {
         }
         const token = JSON.parse(authGrantResp.responseText);
         token.expires_in = Date.now() + (token.expires_in - 86400) * 1e3;
-        GM_setValue("MyAnimeList_accessToken", token);
+        _GM_setValue("MyAnimeList_accessToken", token);
       }
       return null;
     }
     async logout() {
       this.user = null;
-      GM_deleteValue("MyAnimeList_accessToken");
+      _GM_deleteValue("MyAnimeList_accessToken");
       return null;
     }
     logined() {
-      const token = GM_getValue("MyAnimeList_accessToken");
+      const token = _GM_getValue("MyAnimeList_accessToken");
       if (token && Date.now() < token.expires_in) {
         return true;
       } else {
@@ -1271,7 +1287,7 @@ var __publicField = (obj, key, value) => {
       };
     }
     async refreshToken() {
-      const oldToken = GM_getValue("MyAnimeList_accessToken");
+      const oldToken = _GM_getValue("MyAnimeList_accessToken");
       if (oldToken === void 0) {
         return new Error("No token to refresh");
       }
@@ -1294,11 +1310,11 @@ var __publicField = (obj, key, value) => {
       }
       const newToken = JSON.parse(resp.responseText);
       newToken.expires_in = Date.now() + (newToken.expires_in - 86400) * 1e3;
-      GM_setValue("MyAnimeList_accessToken", newToken);
+      _GM_setValue("MyAnimeList_accessToken", newToken);
       return newToken;
     }
     async getToken() {
-      const token = GM_getValue("MyAnimeList_accessToken");
+      const token = _GM_getValue("MyAnimeList_accessToken");
       if (token === void 0) {
         return new Error("Not logined");
       } else if (Date.now() > token.expires_in) {
@@ -1388,17 +1404,17 @@ var __publicField = (obj, key, value) => {
         }
         const token = JSON.parse(authGrantResp.responseText);
         token.expires_in = Date.now() + (token.expires_in - 86400) * 1e3;
-        GM_setValue("AniList_accessToken", token);
+        _GM_setValue("AniList_accessToken", token);
       }
       return null;
     }
     async logout() {
       this.user = null;
-      GM_deleteValue("AniList_accessToken");
+      _GM_deleteValue("AniList_accessToken");
       return null;
     }
     logined() {
-      const token = GM_getValue("AniList_accessToken");
+      const token = _GM_getValue("AniList_accessToken");
       if (token && Date.now() < token.expires_in) {
         return true;
       } else {
@@ -1511,7 +1527,7 @@ var __publicField = (obj, key, value) => {
       };
     }
     async refreshToken() {
-      const oldToken = GM_getValue("AniList_accessToken");
+      const oldToken = _GM_getValue("AniList_accessToken");
       if (oldToken === void 0) {
         return new Error("No token to refresh");
       }
@@ -1536,11 +1552,11 @@ var __publicField = (obj, key, value) => {
       }
       const newToken = JSON.parse(resp.responseText);
       newToken.expires_in = Date.now() + (newToken.expires_in - 86400) * 1e3;
-      GM_setValue("AniList_accessToken", newToken);
+      _GM_setValue("AniList_accessToken", newToken);
       return newToken;
     }
     async getToken() {
-      const token = GM_getValue("AniList_accessToken");
+      const token = _GM_getValue("AniList_accessToken");
       if (token === void 0) {
         return new Error("Not logined");
       } else if (Date.now() > token.expires_in) {
@@ -1849,7 +1865,28 @@ var __publicField = (obj, key, value) => {
       error(E);
     }
   }
-  function link(_ref, included, previouslyLinked) {
+  const isDeepEqual = (left, right) => {
+    if (!left || !right) {
+      return left === right;
+    }
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    if (leftKeys.length !== rightKeys.length)
+      return false;
+    for (const key of leftKeys) {
+      const leftValue = left[key];
+      const rightValue = right[key];
+      const isObjects = isObject(leftValue) && isObject(rightValue);
+      if (isObjects && !isDeepEqual(leftValue, rightValue) || !isObjects && leftValue !== rightValue) {
+        return false;
+      }
+    }
+    return true;
+  };
+  const isObject = (object) => {
+    return object != null && typeof object === "object";
+  };
+  function link(_ref, included, previouslyLinked, relationshipCache) {
     let {
       id,
       type,
@@ -1861,20 +1898,22 @@ var __publicField = (obj, key, value) => {
     });
     previouslyLinked[`${type}#${id}`] = filtered;
     if (filtered.relationships) {
-      linkRelationships(filtered, included, previouslyLinked);
+      linkRelationships(filtered, included, previouslyLinked, relationshipCache);
     }
     if (meta)
       filtered.meta = meta;
     return deattribute(filtered);
   }
-  function linkArray(data, included, key, previouslyLinked) {
+  function linkArray(data, included, key, previouslyLinked, relationshipCache) {
     data[key] = {};
     if (data.relationships[key].links)
       data[key].links = data.relationships[key].links;
+    if (data.relationships[key].meta)
+      data[key].meta = data.relationships[key].meta;
     data[key].data = [];
     for (const resource of data.relationships[key].data) {
       const cache = previouslyLinked[`${resource.type}#${resource.id}`];
-      let relationship = cache || link(resource, included, previouslyLinked);
+      let relationship = cache || link(resource, included, previouslyLinked, relationshipCache);
       if (resource.meta !== relationship.meta)
         relationship = {
           ...relationship,
@@ -1884,33 +1923,55 @@ var __publicField = (obj, key, value) => {
     }
     delete data.relationships[key];
   }
-  function linkObject(data, included, key, previouslyLinked) {
+  function linkObject(data, included, key, previouslyLinked, relationshipCache) {
     data[key] = {};
     const resource = data.relationships[key].data;
     const cache = previouslyLinked[`${resource.type}#${resource.id}`];
-    data[key].data = cache || link(resource, included, previouslyLinked);
-    if (data.relationships[key].links)
-      data[key].links = data.relationships[key].links;
+    if (cache) {
+      let resourceCache = null;
+      if (!isDeepEqual(cache.meta, resource.meta)) {
+        resourceCache = {
+          ...cache,
+          meta: resource.meta
+        };
+      } else {
+        resourceCache = cache;
+      }
+      data[key].data = resourceCache;
+    } else {
+      data[key].data = link(resource, included, previouslyLinked, relationshipCache);
+    }
+    const cacheKey = `${data.type}#${data.id}#${key}`;
+    const relationships = relationshipCache[cacheKey] || data.relationships[key];
+    if (!relationshipCache[cacheKey])
+      relationshipCache[cacheKey] = relationships;
+    if (relationships !== null && relationships !== void 0 && relationships.links)
+      data[key].links = relationships.links;
+    if (relationships !== null && relationships !== void 0 && relationships.meta)
+      data[key].meta = relationships.meta;
     delete data.relationships[key];
   }
   function linkAttr(data, key) {
     data[key] = {};
     if (data.relationships[key].links)
       data[key].links = data.relationships[key].links;
+    if (data.relationships[key].meta)
+      data[key].meta = data.relationships[key].meta;
     delete data.relationships[key];
   }
   function linkRelationships(data) {
     let included = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : [];
     let previouslyLinked = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
+    let relationshipCache = arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : {};
     const {
       relationships
     } = data;
     for (const key in relationships) {
       var _relationships$key;
       if (Array.isArray((_relationships$key = relationships[key]) === null || _relationships$key === void 0 ? void 0 : _relationships$key.data)) {
-        linkArray(data, included, key, previouslyLinked);
+        linkArray(data, included, key, previouslyLinked, relationshipCache);
       } else if (relationships[key].data) {
-        linkObject(data, included, key, previouslyLinked);
+        linkObject(data, included, key, previouslyLinked, relationshipCache);
       } else {
         linkAttr(data, key);
       }
@@ -1922,8 +1983,15 @@ var __publicField = (obj, key, value) => {
   }
   function deserialiseArray(array) {
     const previouslyLinked = {};
+    const relationshipCache = {};
     for (let value of array.data) {
-      value = linkRelationships(value, [...array.data, ...array.included || []], previouslyLinked);
+      const included = [...array.data.map((item) => ({
+        ...item,
+        relationships: {
+          ...item.relationships
+        }
+      })), ...array.included || []];
+      value = linkRelationships(value, included, previouslyLinked, relationshipCache);
       if (value.attributes)
         value = deattribute(value);
       array.data[array.data.indexOf(value)] = value;
@@ -1945,17 +2013,28 @@ var __publicField = (obj, key, value) => {
       response.data = deattribute(response.data);
     return response;
   }
-  function queryFormat(value, key) {
-    if (value !== null && typeof value === "object")
-      return query(value, key);
+  function queryFormat(value, key, traditional) {
+    if (traditional && value !== null && Array.isArray(value))
+      return value.map((v) => queryFormat(v, key, traditional)).join("&");
+    if (!traditional && value !== null && Array.isArray(value))
+      return value.map((v) => queryFormat(v, `${key}[]`, traditional)).join("&");
+    else if (value !== null && typeof value === "object")
+      return query(value, key, traditional);
     else
       return encodeURIComponent(key) + "=" + encodeURIComponent(value);
   }
+  function paramKeyName(param) {
+    if (["[]", "]["].includes(param.slice(-2))) {
+      return `[${param.slice(0, -2)}][]`;
+    }
+    return `[${param}]`;
+  }
   function query(params) {
     let prefix = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : null;
+    let traditional = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : true;
     const str = [];
     for (const param in params) {
-      str.push(queryFormat(params[param], prefix ? `${prefix}[${param}]` : param));
+      str.push(queryFormat(params[param], prefix ? `${prefix}${paramKeyName(param)}` : param, traditional));
     }
     return str.join("&");
   }
@@ -1972,7 +2051,7 @@ var __publicField = (obj, key, value) => {
         }
       }
     } else {
-      if (typeof payload !== "object" || Object.keys(payload).length === 0) {
+      if (typeof payload !== "object" || method !== "POST" && Object.keys(payload).length === 0) {
         throw new Error(`${method} requires an object or array body`);
       }
       if (method !== "POST" && !payload.id) {
@@ -2117,6 +2196,7 @@ var __publicField = (obj, key, value) => {
     }
   }
   class Kitsu {
+    // ms
     constructor() {
       __publicField(this, "user");
       __publicField(this, "clientID", "dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd");
@@ -2149,12 +2229,12 @@ var __publicField = (obj, key, value) => {
         }
         const token = JSON.parse(resp.responseText);
         token.expires_in -= 86400;
-        GM_setValue("Kitsu_accessToken", token);
+        _GM_setValue("Kitsu_accessToken", token);
       }
       return null;
     }
     logined() {
-      const token = GM_getValue("Kitsu_accessToken");
+      const token = _GM_getValue("Kitsu_accessToken");
       if (token && Date.now() < (token.created_at + token.expires_in) * 1e3) {
         return true;
       } else {
@@ -2163,7 +2243,7 @@ var __publicField = (obj, key, value) => {
     }
     async logout() {
       this.user = null;
-      GM_deleteValue("Kitsu_accessToken");
+      _GM_deleteValue("Kitsu_accessToken");
       return null;
     }
     async getMyInfo() {
@@ -2235,7 +2315,10 @@ var __publicField = (obj, key, value) => {
       if (user instanceof Error) {
         return user;
       }
-      const existEntries = await this.getEntries({ id: user.id }, ["Completed", "Dropped", "On-Hold", "Plan to Watch", "Watching"]);
+      const existEntries = await this.getEntries(
+        { id: user.id },
+        ["Completed", "Dropped", "On-Hold", "Plan to Watch", "Watching"]
+      );
       if (existEntries instanceof Error) {
         return existEntries;
       }
@@ -2310,7 +2393,7 @@ var __publicField = (obj, key, value) => {
       return null;
     }
     async refreshToken() {
-      const oldToken = GM_getValue("Kitsu_accessToken");
+      const oldToken = _GM_getValue("Kitsu_accessToken");
       if (oldToken === void 0) {
         return new Error("No token to refresh");
       }
@@ -2331,11 +2414,11 @@ var __publicField = (obj, key, value) => {
       }
       const newToken = JSON.parse(resp.responseText);
       newToken.expires_in -= 86400;
-      GM_setValue("Kitsu_accessToken", newToken);
+      _GM_setValue("Kitsu_accessToken", newToken);
       return newToken;
     }
     async getToken() {
-      const token = GM_getValue("Kitsu_accessToken");
+      const token = _GM_getValue("Kitsu_accessToken");
       if (token === void 0) {
         return new Error("Not logined");
       } else if (Date.now() > (token.created_at + token.expires_in) * 1e3) {
@@ -2866,7 +2949,6 @@ var __publicField = (obj, key, value) => {
       }
     }
   }
-  var style = "";
   class ListMerging {
     constructor() {
       __publicField(this, "name", "List Merging");
@@ -2880,7 +2962,9 @@ var __publicField = (obj, key, value) => {
         tabName: "Custom List",
         contentClass: "amqtb-list-merging-tab row"
       });
-      const accountTitle = $('<div class="col-xs-12"></div>').append($("<h4><b>Target Account</b></h4>").css("text-align", "center"));
+      const accountTitle = $('<div class="col-xs-12"></div>').append(
+        $("<h4><b>Target Account</b></h4>").css("text-align", "center")
+      );
       this.settingTab.push({ self: accountTitle });
       this.account = new AnimeListAccount();
       const siteChooseBlock = $('<div class="col-xs-3"></div>').css("text-align", "center");
@@ -3022,9 +3106,15 @@ var __publicField = (obj, key, value) => {
         console.log(`[getMergedEntries] get ${list.user} List`);
         let entries;
         if (list.accountType === "Kitsu") {
-          entries = await this.account.getAccount(list.accountType).getList({ id: parseInt(list.user, 10) }, list.status);
+          entries = await this.account.getAccount(list.accountType).getList(
+            { id: parseInt(list.user, 10) },
+            list.status
+          );
         } else {
-          entries = await this.account.getAccount(list.accountType).getList({ name: list.user }, list.status);
+          entries = await this.account.getAccount(list.accountType).getList(
+            { name: list.user },
+            list.status
+          );
         }
         if (entries instanceof Error) {
           return new Error(`Failed to get [${list.accountType}]${list.user}'s list: ${entries}`);
@@ -3045,5 +3135,5 @@ var __publicField = (obj, key, value) => {
   } else {
     $(main);
   }
+
 })();
- 

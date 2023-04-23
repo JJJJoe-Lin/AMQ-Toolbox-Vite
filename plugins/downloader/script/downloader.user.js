@@ -8,23 +8,22 @@
 // @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
 // @include      /^https:\/\/animemusicquiz\.com\/(\?.*|#.*)?$/
 // @connect      cdn.animenewsnetwork.com
-// @grant        GM_xmlhttpRequest
-// @grant        unsafeWindow
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
 // ==/UserScript==
 
-// use vite-plugin-monkey@0.2.14 at 2022-11-27T04:24:24.604Z
+(function () {
+  'use strict';
 
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-(function() {
-  "use strict";
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
   class Container {
     constructor(opt) {
       __publicField(this, "self");
@@ -112,9 +111,15 @@ var __publicField = (obj, key, value) => {
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
       const title = $(`<h2 class="modal-title">${opt.title}</h2>`);
-      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">×</span>`));
       this.contentBlock = $(`<div class="modal-body"></div>`);
-      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.contentBlock)));
+      this.self.addClass("modal fade").attr("tabindex", "-1").attr("role", "dialog").append(
+        dialog.append(
+          content.append(
+            header.append(closeIcon, title)
+          ).append(this.contentBlock)
+        )
+      );
       $("#gameContainer").append(this.self);
     }
     appendComponent(component) {
@@ -132,7 +137,9 @@ var __publicField = (obj, key, value) => {
       super(opt);
       __publicField(this, "options", this.container);
       this.self.addClass("col-xs-6");
-      this.self.append($(`<h4>${opt.title}</h4>`).css("text-align", "center"));
+      this.self.append(
+        $(`<h4>${opt.title}</h4>`).css("text-align", "center")
+      );
     }
     refresh() {
       for (let option of this.options) {
@@ -245,10 +252,16 @@ var __publicField = (obj, key, value) => {
       const content = $(`<div class="modal-content"></div>`);
       const header = $(`<div class="modal-header"></div>`);
       const title = $(`<h4 class="modal-title">${opt.title}</h4>`);
-      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">\xD7</span>`));
+      const closeIcon = $(`<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>`).append($(`<span aria-hidden="true">×</span>`));
       this.tabBlock = $(`<div class="tabContainer"></div>`);
       this.contentBlock = $(`<div class="modal-body"></div>`);
-      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(dialog.append(content.append(header.append(closeIcon, title)).append(this.tabBlock).append(this.contentBlock)));
+      this.self.addClass("modal fade tab-modal").attr("tabindex", "-1").attr("role", "dialog").append(
+        dialog.append(
+          content.append(
+            header.append(closeIcon, title)
+          ).append(this.tabBlock).append(this.contentBlock)
+        )
+      );
       this.curTab = null;
       $("#gameContainer").append(this.self);
     }
@@ -301,6 +314,11 @@ var __publicField = (obj, key, value) => {
       tab.content.detach();
     }
   }
+  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
+  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
+  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
+  var _GM_xmlhttpRequest = /* @__PURE__ */ (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
+  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
   const attr = {
     expires: 365,
     Domain: "animemusicquiz.com",
@@ -310,28 +328,28 @@ var __publicField = (obj, key, value) => {
     Cookies.set(key, JSON.stringify(entry), attr);
   }
   function loadFromCookie(key, defaultVal) {
-    let val = Cookies.get(key);
-    if (val === void 0) {
+    let val2 = Cookies.get(key);
+    if (val2 === void 0) {
       return defaultVal;
     } else {
-      return JSON.parse(val);
+      return JSON.parse(val2);
     }
   }
   function saveToLocalStorage(key, entry) {
     localStorage.setItem(key, JSON.stringify(entry));
   }
   function loadFromLocalStorage(key, defaultVal) {
-    const val = localStorage.getItem(key);
-    if (val === null) {
+    const val2 = localStorage.getItem(key);
+    if (val2 === null) {
       return defaultVal;
     } else {
-      return JSON.parse(val);
+      return JSON.parse(val2);
     }
   }
   function saveStorable(comp, type) {
     switch (type) {
       case "Script":
-        GM_setValue(comp.name, comp.getValue());
+        _GM_setValue(comp.name, comp.getValue());
         break;
       case "LocalStorage":
         saveToLocalStorage(comp.name, comp.getValue());
@@ -342,20 +360,20 @@ var __publicField = (obj, key, value) => {
     }
   }
   function loadStorable(comp, type) {
-    let val;
+    let val2;
     switch (type) {
       case "Script":
-        val = GM_getValue(comp.name);
+        val2 = _GM_getValue(comp.name);
         break;
       case "LocalStorage":
-        val = loadFromLocalStorage(comp.name);
+        val2 = loadFromLocalStorage(comp.name);
         break;
       case "Cookie":
-        val = loadFromCookie(comp.name);
+        val2 = loadFromCookie(comp.name);
         break;
     }
-    if (val !== void 0) {
-      comp.setValue(val);
+    if (val2 !== void 0) {
+      comp.setValue(val2);
     }
   }
   class CheckboxOption {
@@ -386,7 +404,9 @@ var __publicField = (obj, key, value) => {
           container: "#settingModal"
         });
       }
-      this.self = $(`<div class='customCheckboxContainer'></div>`).attr("id", id).addClass(cls).addClass(opt.offset !== 0 ? `offset${opt.offset}` : "").append($(`<div class='customCheckbox'></div>`).append(this.input).append(checkLabel)).append(textLabel);
+      this.self = $(`<div class='customCheckboxContainer'></div>`).attr("id", id).addClass(cls).addClass(opt.offset !== 0 ? `offset${opt.offset}` : "").append(
+        $(`<div class='customCheckbox'></div>`).append(this.input).append(checkLabel)
+      ).append(textLabel);
       const checked = opt.defaultValue ? true : false;
       this.setValue(checked);
       this.load();
@@ -395,8 +415,8 @@ var __publicField = (obj, key, value) => {
     getValue() {
       return this.input.prop("checked");
     }
-    setValue(val) {
-      this.input.prop("checked", val);
+    setValue(val2) {
+      this.input.prop("checked", val2);
     }
     enabled() {
       return !this.self.hasClass("disabled");
@@ -460,8 +480,8 @@ var __publicField = (obj, key, value) => {
         this.save();
         this.input.trigger("amqtoolbox.option.enables", this.getValue());
       });
-      const val = opt.defaultValue === void 0 ? this.choices[0].value : opt.defaultValue;
-      this.setValue(val);
+      const val2 = opt.defaultValue === void 0 ? this.choices[0].value : opt.defaultValue;
+      this.setValue(val2);
       this.load();
       this.input.trigger("amqtoolbox.option.enables", this.getValue());
     }
@@ -469,8 +489,8 @@ var __publicField = (obj, key, value) => {
       const idx = this.input.bootstrapSlider("getValue");
       return this.choices[idx].value;
     }
-    setValue(val) {
-      const idx = this.choices.findIndex((c) => c.value === val);
+    setValue(val2) {
+      const idx = this.choices.findIndex((c) => c.value === val2);
       if (idx !== -1) {
         this.input.bootstrapSlider("setValue", idx);
       }
@@ -731,7 +751,7 @@ var __publicField = (obj, key, value) => {
     save() {
       switch (this.saveIn) {
         case "Script":
-          GM_setValue(this.name, this.getValue());
+          _GM_setValue(this.name, this.getValue());
           break;
         case "LocalStorage":
           saveToLocalStorage(this.name, this.getValue());
@@ -742,20 +762,20 @@ var __publicField = (obj, key, value) => {
       }
     }
     load() {
-      let val;
+      let val2;
       switch (this.saveIn) {
         case "Script":
-          val = GM_getValue(this.name);
+          val2 = _GM_getValue(this.name);
           break;
         case "LocalStorage":
-          val = loadFromLocalStorage(this.name);
+          val2 = loadFromLocalStorage(this.name);
           break;
         case "Cookie":
-          val = loadFromCookie(this.name);
+          val2 = loadFromCookie(this.name);
           break;
       }
-      if (val !== void 0) {
-        this.setValue(val);
+      if (val2 !== void 0) {
+        this.setValue(val2);
       }
     }
     moveUp(row) {
@@ -775,7 +795,7 @@ var __publicField = (obj, key, value) => {
       }
     }
   }
-  var styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbMultiSelect a.selected {\n    background-color: #4497ea;\n    color: #fff;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  /* box size */\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  border-radius: 5px;\n  padding-top: 5px;\n  padding-bottom: 5px;\n  /* position */\n  margin-top: 10px;\n  position: absolute;\n  left: 0px;\n  right: 0px;\n}\n#gameChatPage.nexusView #qpToolboxContainer {\n  position: relative; /* overwrite */\n  float: right;\n  pointer-events: initial;\n  clear: both;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n#gameChatPage.nexusView #qpAvatarRow {\n  width: 70%;  /* overwrite */\n  margin-left: 25%;\n  margin-right: 5%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
+  const styles = ".amqtbButtonContainer {\n    display: flex;\n    flex-flow: row wrap;\n    justify-content: space-around;\n    align-content: space-around;\n    margin: 5px 0;\n}\n.amqtbButtonContainer button {\n    margin: 5px 0;\n}\n.amqtbWindow {\n    overflow-y: hidden;\n    top: 0px;\n    left: 0px;\n    margin: 0px;\n    background-color: #424242;\n    border: 1px solid rgba(27, 27, 27, 0.2);\n    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);\n    user-select: text;\n    display: none;\n}\n.draggableWindow {\n    cursor: move;\n}\n.amqtbWindowBody {\n    width: 100%;\n    overflow-y: auto;\n}\n.amqtbWindowContent {\n    width: 100%;\n    position: absolute;\n    top: 0px;\n}\n.amqtbWindow .close {\n    font-size: 32px;\n}\n.windowResizers {\n    width: 100%;\n    height: 100%;\n}\n.windowResizer {\n    width: 10px;\n    height: 10px;\n    position: absolute;\n    z-index: 100;\n}\n.windowResizer.top-left {\n    top: 0px;\n    left: 0px;\n    cursor: nwse-resize;\n}\n.windowResizer.top-right {\n    top: 0px;\n    right: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-left {\n    bottom: 0px;\n    left: 0px;\n    cursor: nesw-resize;\n}\n.windowResizer.bottom-right {\n    bottom: 0px;\n    right: 0px;\n    cursor: nwse-resize;\n}\n.customCheckboxContainer {\n    display: flex;\n}\n.customCheckboxContainer>div {\n    display: inline-block;\n    margin: 5px 0px;\n}\n.customCheckboxContainer>.customCheckboxContainerLabel {\n    margin-left: 5px;\n    margin-top: 5px;\n    font-weight: normal;\n}\n.amqtbRadio {\n    text-align: center;\n}\n.offset1 {\n    margin-left: 20px;\n}\n.offset2 {\n    margin-left: 40px;\n}\n.amqtbMultiSelect a.selected {\n    background-color: #4497ea;\n    color: #fff;\n}\n.amqtbTable {\n    border-collapse: separate;\n    padding: 0 15px;\n}\n.amqtbTable th, .amqtbTable td {\n    text-align: center;\n    vertical-align: middle !important;\n}\n.amqtbTable thead {\n    background-color: #000;\n}\n.amqtbTable tbody tr {\n    background-color: #424242 !important;\n}\n#qpToolboxContainer {\n  /* box size */\n  max-width: 215px;\n  min-width: 208px;\n  width: calc(100% + 30px);\n  border-radius: 5px;\n  padding-top: 5px;\n  padding-bottom: 5px;\n  /* position */\n  margin-top: 10px;\n  position: absolute;\n  left: 0px;\n  right: 0px;\n}\n#gameChatPage.nexusView #qpToolboxContainer {\n  position: relative; /* overwrite */\n  float: right;\n  pointer-events: initial;\n  clear: both;\n}\n#qpToolboxContainer h5 {\n  margin-top: 5px;\n  margin-bottom: 5px;\n}\n#amqtbSettingButton {\n  width: 30px;\n  height: 100%;\n}\n#qpAvatarRow {\n  width: 80%;\n}\n#gameChatPage.nexusView #qpAvatarRow {\n  width: 70%;  /* overwrite */\n  margin-left: 25%;\n  margin-right: 5%;\n}\n.collapsible:hover {\n  background-color: #555;\n}\n.amqtbPluginManageTableEnabledCell {\n  position: relative;\n  top: -10px;\n  left: -25px;\n  display: inline-block;\n}";
   class View {
     constructor(opt) {
       __publicField(this, "self");
@@ -804,8 +824,8 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "self");
       this.self = $(`<p></p>`);
     }
-    setValue(val) {
-      this.self.text(val);
+    setValue(val2) {
+      this.self.text(val2);
     }
     getValue() {
       return this.self.text();
@@ -819,14 +839,16 @@ var __publicField = (obj, key, value) => {
       __publicField(this, "switchOff");
       this.switchOff = $(`<div class="switchOff slider-tick round"></div>`);
       this.switchOn = $(`<div class="switchOn slider-tick round"></div>`);
-      this.switch = $(`<div class="switchContainer slider-track"></div>`).append($(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn));
+      this.switch = $(`<div class="switchContainer slider-track"></div>`).append(
+        $(`<div class="slider-tick-container"></div>`).append(this.switchOff).append(this.switchOn)
+      );
       this.self = $(`<div></div>`).addClass(`amqtbPluginManageTableEnabledCell`).append(this.switch);
       this.switch.on("click", () => {
         this.setValue(!this.getValue());
       });
     }
-    setValue(val) {
-      if (val) {
+    setValue(val2) {
+      if (val2) {
         this.switchOn.show();
         this.switchOff.hide();
         this.switch.addClass("active");
@@ -907,9 +929,13 @@ var __publicField = (obj, key, value) => {
       this.prevPluginsInfo = this.pluginTable.getValue();
       this.pluginTable.splice(0);
       this.pluginTable.save();
-      $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins"));
-      $("#optionsContainer > ul").prepend($(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting"));
-      GM_addStyle(styles);
+      $("#optionsContainer > ul").prepend(
+        $(`<li class="clickAble" data-toggle="modal" data-target="#amqtbManageModal"></li>`).text("Plugins")
+      );
+      $("#optionsContainer > ul").prepend(
+        $(`<li class="clickAble" data-toggle="modal" data-target="#amqtbSettingModal"></li>`).text("Toolbox Setting")
+      );
+      _GM_addStyle(styles);
       console.log("New AMQ Toolbox created");
     }
     addPlugin(plugin) {
@@ -1003,10 +1029,10 @@ var __publicField = (obj, key, value) => {
   function registerPlugin(plugin) {
     try {
       onStartPageLoaded(() => {
-        if (unsafeWindow.amqToolbox === void 0) {
-          unsafeWindow.amqToolbox = new Toolbox();
+        if (_unsafeWindow.amqToolbox === void 0) {
+          _unsafeWindow.amqToolbox = new Toolbox();
         }
-        unsafeWindow.amqToolbox.addPlugin(plugin);
+        _unsafeWindow.amqToolbox.addPlugin(plugin);
       });
     } catch (err) {
       console.error(`[registerPlugin] Failed to register ${plugin.name}`, err);
@@ -1072,6 +1098,7 @@ var __publicField = (obj, key, value) => {
   const util$1 = util$2;
   const defaultOptions$2 = {
     allowBooleanAttributes: false,
+    //A tag can have attributes without any value
     unpairedTags: []
   };
   validator$2.validate = function(xmlData, options) {
@@ -1142,7 +1169,11 @@ var __publicField = (obj, key, value) => {
               const otg = tags.pop();
               if (tagName !== otg.tagName) {
                 let openPos = getLineNumberForPosition(xmlData, otg.tagStartPos);
-                return getErrorObject("InvalidTag", "Expected closing tag '" + otg.tagName + "' (opened in line " + openPos.line + ", col " + openPos.col + ") instead of closing tag '" + tagName + "'.", getLineNumberForPosition(xmlData, tagStartPos));
+                return getErrorObject(
+                  "InvalidTag",
+                  "Expected closing tag '" + otg.tagName + "' (opened in line " + openPos.line + ", col " + openPos.col + ") instead of closing tag '" + tagName + "'.",
+                  getLineNumberForPosition(xmlData, tagStartPos)
+                );
               }
               if (tags.length == 0) {
                 reachedRoot = true;
@@ -1364,6 +1395,7 @@ var __publicField = (obj, key, value) => {
     const lines = xmlData.substring(0, index).split(/\r?\n/);
     return {
       line: lines.length,
+      // column number is last line's length + 1, because column numbering starts at 1:
       col: lines[lines.length - 1].length + 1
     };
   }
@@ -1378,22 +1410,28 @@ var __publicField = (obj, key, value) => {
     textNodeName: "#text",
     ignoreAttributes: true,
     removeNSPrefix: false,
+    // remove NS from tag name or attribute name if true
     allowBooleanAttributes: false,
+    //a tag can have attributes without any value
+    //ignoreRootElement : false,
     parseTagValue: true,
     parseAttributeValue: false,
     trimValues: true,
+    //Trim string values of tag and attributes
     cdataPropName: false,
     numberParseOptions: {
       hex: true,
-      leadingZeros: true
+      leadingZeros: true,
+      eNotation: true
     },
-    tagValueProcessor: function(tagName, val) {
-      return val;
+    tagValueProcessor: function(tagName, val2) {
+      return val2;
     },
-    attributeValueProcessor: function(attrName, val) {
-      return val;
+    attributeValueProcessor: function(attrName, val2) {
+      return val2;
     },
     stopNodes: [],
+    //nested tags will not be parsed even for errors
     alwaysCreateTextNode: false,
     isArray: () => false,
     commentPropName: false,
@@ -1402,7 +1440,12 @@ var __publicField = (obj, key, value) => {
     htmlEntities: false,
     ignoreDeclaration: false,
     ignorePiTags: false,
-    transformTagName: false
+    transformTagName: false,
+    transformAttributeName: false,
+    updateTag: function(tagName, jPath, attrs) {
+      return tagName;
+    }
+    // skipEmptyListItem: false
   };
   const buildOptions$1 = function(options) {
     return Object.assign({}, defaultOptions$1, options);
@@ -1415,10 +1458,14 @@ var __publicField = (obj, key, value) => {
       this.child = [];
       this[":@"] = {};
     }
-    add(key, val) {
-      this.child.push({ [key]: val });
+    add(key, val2) {
+      if (key === "__proto__")
+        key = "#__proto__";
+      this.child.push({ [key]: val2 });
     }
     addChild(node) {
+      if (node.tagname === "__proto__")
+        node.tagname = "#__proto__";
       if (node[":@"] && Object.keys(node[":@"]).length > 0) {
         this.child.push({ [node.tagname]: node.child, [":@"]: node[":@"] });
       } else {
@@ -1432,38 +1479,39 @@ var __publicField = (obj, key, value) => {
     if (xmlData[i + 3] === "O" && xmlData[i + 4] === "C" && xmlData[i + 5] === "T" && xmlData[i + 6] === "Y" && xmlData[i + 7] === "P" && xmlData[i + 8] === "E") {
       i = i + 9;
       let angleBracketsCount = 1;
-      let hasBody = false, entity = false, comment = false;
+      let hasBody = false, comment = false;
       let exp = "";
       for (; i < xmlData.length; i++) {
-        if (xmlData[i] === "<") {
-          if (hasBody && xmlData[i + 1] === "!" && xmlData[i + 2] === "E" && xmlData[i + 3] === "N" && xmlData[i + 4] === "T" && xmlData[i + 5] === "I" && xmlData[i + 6] === "T" && xmlData[i + 7] === "Y") {
+        if (xmlData[i] === "<" && !comment) {
+          if (hasBody && isEntity(xmlData, i)) {
             i += 7;
-            entity = true;
-          } else if (hasBody && xmlData[i + 1] === "!" && xmlData[i + 2] === "E" && xmlData[i + 3] === "L" && xmlData[i + 4] === "E" && xmlData[i + 5] === "M" && xmlData[i + 6] === "E" && xmlData[i + 7] === "N" && xmlData[i + 8] === "T") {
+            [entityName, val, i] = readEntityExp(xmlData, i + 1);
+            if (val.indexOf("&") === -1)
+              entities[entityName] = {
+                regx: RegExp(`&${entityName};`, "g"),
+                val
+              };
+          } else if (hasBody && isElement(xmlData, i))
             i += 8;
-          } else if (hasBody && xmlData[i + 1] === "!" && xmlData[i + 2] === "A" && xmlData[i + 3] === "T" && xmlData[i + 4] === "T" && xmlData[i + 5] === "L" && xmlData[i + 6] === "I" && xmlData[i + 7] === "S" && xmlData[i + 8] === "T") {
+          else if (hasBody && isAttlist(xmlData, i))
             i += 8;
-          } else if (hasBody && xmlData[i + 1] === "!" && xmlData[i + 2] === "N" && xmlData[i + 3] === "O" && xmlData[i + 4] === "T" && xmlData[i + 5] === "A" && xmlData[i + 6] === "T" && xmlData[i + 7] === "I" && xmlData[i + 8] === "O" && xmlData[i + 9] === "N") {
+          else if (hasBody && isNotation(xmlData, i))
             i += 9;
-          } else if (xmlData[i + 1] === "!" && xmlData[i + 2] === "-" && xmlData[i + 3] === "-") {
+          else if (isComment)
             comment = true;
-          } else {
+          else
             throw new Error("Invalid DOCTYPE");
-          }
           angleBracketsCount++;
           exp = "";
         } else if (xmlData[i] === ">") {
           if (comment) {
             if (xmlData[i - 1] === "-" && xmlData[i - 2] === "-") {
               comment = false;
-            } else {
-              throw new Error(`Invalid XML comment in DOCTYPE`);
+              angleBracketsCount--;
             }
-          } else if (entity) {
-            parseEntityExp(exp, entities);
-            entity = false;
+          } else {
+            angleBracketsCount--;
           }
-          angleBracketsCount--;
           if (angleBracketsCount === 0) {
             break;
           }
@@ -1481,15 +1529,45 @@ var __publicField = (obj, key, value) => {
     }
     return { entities, i };
   }
-  const entityRegex = RegExp(`^\\s([a-zA-z0-0]+)[ 	](['"])([^&]+)\\2`);
-  function parseEntityExp(exp, entities) {
-    const match = entityRegex.exec(exp);
-    if (match) {
-      entities[match[1]] = {
-        regx: RegExp(`&${match[1]};`, "g"),
-        val: match[3]
-      };
+  function readEntityExp(xmlData, i) {
+    let entityName2 = "";
+    for (; i < xmlData.length && (xmlData[i] !== "'" && xmlData[i] !== '"'); i++) {
+      entityName2 += xmlData[i];
     }
+    entityName2 = entityName2.trim();
+    if (entityName2.indexOf(" ") !== -1)
+      throw new Error("External entites are not supported");
+    const startChar = xmlData[i++];
+    let val2 = "";
+    for (; i < xmlData.length && xmlData[i] !== startChar; i++) {
+      val2 += xmlData[i];
+    }
+    return [entityName2, val2, i];
+  }
+  function isComment(xmlData, i) {
+    if (xmlData[i + 1] === "!" && xmlData[i + 2] === "-" && xmlData[i + 3] === "-")
+      return true;
+    return false;
+  }
+  function isEntity(xmlData, i) {
+    if (xmlData[i + 1] === "!" && xmlData[i + 2] === "E" && xmlData[i + 3] === "N" && xmlData[i + 4] === "T" && xmlData[i + 5] === "I" && xmlData[i + 6] === "T" && xmlData[i + 7] === "Y")
+      return true;
+    return false;
+  }
+  function isElement(xmlData, i) {
+    if (xmlData[i + 1] === "!" && xmlData[i + 2] === "E" && xmlData[i + 3] === "L" && xmlData[i + 4] === "E" && xmlData[i + 5] === "M" && xmlData[i + 6] === "E" && xmlData[i + 7] === "N" && xmlData[i + 8] === "T")
+      return true;
+    return false;
+  }
+  function isAttlist(xmlData, i) {
+    if (xmlData[i + 1] === "!" && xmlData[i + 2] === "A" && xmlData[i + 3] === "T" && xmlData[i + 4] === "T" && xmlData[i + 5] === "L" && xmlData[i + 6] === "I" && xmlData[i + 7] === "S" && xmlData[i + 8] === "T")
+      return true;
+    return false;
+  }
+  function isNotation(xmlData, i) {
+    if (xmlData[i + 1] === "!" && xmlData[i + 2] === "N" && xmlData[i + 3] === "O" && xmlData[i + 4] === "T" && xmlData[i + 5] === "A" && xmlData[i + 6] === "T" && xmlData[i + 7] === "I" && xmlData[i + 8] === "O" && xmlData[i + 9] === "N")
+      return true;
+    return false;
   }
   var DocTypeReader = readDocType$1;
   const hexRegex = /^[-+]?0x[a-fA-F0-9]+$/;
@@ -1505,6 +1583,7 @@ var __publicField = (obj, key, value) => {
     leadingZeros: true,
     decimalPoint: ".",
     eNotation: true
+    //skipLike: /regex/
   };
   function toNumber$1(str, options = {}) {
     options = Object.assign({}, consider, options);
@@ -1587,28 +1666,33 @@ var __publicField = (obj, key, value) => {
   const readDocType = DocTypeReader;
   const toNumber = strnum;
   "<((!\\[CDATA\\[([\\s\\S]*?)(]]>))|((NAME:)?(NAME))([^>]*)>|((\\/)(NAME)\\s*>))([^<]*)".replace(/NAME/g, util.nameRegexp);
-  class OrderedObjParser$1 {
+  let OrderedObjParser$1 = class OrderedObjParser {
     constructor(options) {
       this.options = options;
       this.currentNode = null;
       this.tagsNodeStack = [];
       this.docTypeEntities = {};
       this.lastEntities = {
-        "amp": { regex: /&(amp|#38|#x26);/g, val: "&" },
         "apos": { regex: /&(apos|#39|#x27);/g, val: "'" },
         "gt": { regex: /&(gt|#62|#x3E);/g, val: ">" },
         "lt": { regex: /&(lt|#60|#x3C);/g, val: "<" },
         "quot": { regex: /&(quot|#34|#x22);/g, val: '"' }
       };
+      this.ampEntity = { regex: /&(amp|#38|#x26);/g, val: "&" };
       this.htmlEntities = {
         "space": { regex: /&(nbsp|#160);/g, val: " " },
-        "cent": { regex: /&(cent|#162);/g, val: "\xA2" },
-        "pound": { regex: /&(pound|#163);/g, val: "\xA3" },
-        "yen": { regex: /&(yen|#165);/g, val: "\xA5" },
-        "euro": { regex: /&(euro|#8364);/g, val: "\u20AC" },
-        "copyright": { regex: /&(copy|#169);/g, val: "\xA9" },
-        "reg": { regex: /&(reg|#174);/g, val: "\xAE" },
-        "inr": { regex: /&(inr|#8377);/g, val: "\u20B9" }
+        // "lt" : { regex: /&(lt|#60);/g, val: "<" },
+        // "gt" : { regex: /&(gt|#62);/g, val: ">" },
+        // "amp" : { regex: /&(amp|#38);/g, val: "&" },
+        // "quot" : { regex: /&(quot|#34);/g, val: "\"" },
+        // "apos" : { regex: /&(apos|#39);/g, val: "'" },
+        "cent": { regex: /&(cent|#162);/g, val: "¢" },
+        "pound": { regex: /&(pound|#163);/g, val: "£" },
+        "yen": { regex: /&(yen|#165);/g, val: "¥" },
+        "euro": { regex: /&(euro|#8364);/g, val: "€" },
+        "copyright": { regex: /&(copy|#169);/g, val: "©" },
+        "reg": { regex: /&(reg|#174);/g, val: "®" },
+        "inr": { regex: /&(inr|#8377);/g, val: "₹" }
       };
       this.addExternalEntities = addExternalEntities;
       this.parseXml = parseXml;
@@ -1616,11 +1700,12 @@ var __publicField = (obj, key, value) => {
       this.resolveNameSpace = resolveNameSpace;
       this.buildAttributesMap = buildAttributesMap;
       this.isItStopNode = isItStopNode;
-      this.replaceEntitiesValue = replaceEntitiesValue$2;
+      this.replaceEntitiesValue = replaceEntitiesValue$1;
       this.readStopNodeData = readStopNodeData;
       this.saveTextToParentTag = saveTextToParentTag;
+      this.addChild = addChild;
     }
-  }
+  };
   function addExternalEntities(externalEntities) {
     const entKeys = Object.keys(externalEntities);
     for (let i = 0; i < entKeys.length; i++) {
@@ -1631,27 +1716,27 @@ var __publicField = (obj, key, value) => {
       };
     }
   }
-  function parseTextData(val, tagName, jPath, dontTrim, hasAttributes, isLeafNode, escapeEntities) {
-    if (val !== void 0) {
+  function parseTextData(val2, tagName, jPath, dontTrim, hasAttributes, isLeafNode, escapeEntities) {
+    if (val2 !== void 0) {
       if (this.options.trimValues && !dontTrim) {
-        val = val.trim();
+        val2 = val2.trim();
       }
-      if (val.length > 0) {
+      if (val2.length > 0) {
         if (!escapeEntities)
-          val = this.replaceEntitiesValue(val);
-        const newval = this.options.tagValueProcessor(tagName, val, jPath, hasAttributes, isLeafNode);
+          val2 = this.replaceEntitiesValue(val2);
+        const newval = this.options.tagValueProcessor(tagName, val2, jPath, hasAttributes, isLeafNode);
         if (newval === null || newval === void 0) {
-          return val;
-        } else if (typeof newval !== typeof val || newval !== val) {
+          return val2;
+        } else if (typeof newval !== typeof val2 || newval !== val2) {
           return newval;
         } else if (this.options.trimValues) {
-          return parseValue(val, this.options.parseTagValue, this.options.numberParseOptions);
+          return parseValue(val2, this.options.parseTagValue, this.options.numberParseOptions);
         } else {
-          const trimmedVal = val.trim();
-          if (trimmedVal === val) {
-            return parseValue(val, this.options.parseTagValue, this.options.numberParseOptions);
+          const trimmedVal = val2.trim();
+          if (trimmedVal === val2) {
+            return parseValue(val2, this.options.parseTagValue, this.options.numberParseOptions);
           } else {
-            return val;
+            return val2;
           }
         }
       }
@@ -1671,7 +1756,7 @@ var __publicField = (obj, key, value) => {
     return tagname;
   }
   const attrsRegx = new RegExp(`([^\\s=]+)\\s*(=\\s*(['"])([\\s\\S]*?)\\3)?`, "gm");
-  function buildAttributesMap(attrStr, jPath) {
+  function buildAttributesMap(attrStr, jPath, tagName) {
     if (!this.options.ignoreAttributes && typeof attrStr === "string") {
       const matches = util.getAllMatches(attrStr, attrsRegx);
       const len = matches.length;
@@ -1679,8 +1764,13 @@ var __publicField = (obj, key, value) => {
       for (let i = 0; i < len; i++) {
         const attrName = this.resolveNameSpace(matches[i][1]);
         let oldVal = matches[i][4];
-        const aName = this.options.attributeNamePrefix + attrName;
+        let aName = this.options.attributeNamePrefix + attrName;
         if (attrName.length) {
+          if (this.options.transformAttributeName) {
+            aName = this.options.transformAttributeName(aName);
+          }
+          if (aName === "__proto__")
+            aName = "#__proto__";
           if (oldVal !== void 0) {
             if (this.options.trimValues) {
               oldVal = oldVal.trim();
@@ -1692,7 +1782,11 @@ var __publicField = (obj, key, value) => {
             } else if (typeof newVal !== typeof oldVal || newVal !== oldVal) {
               attrs[aName] = newVal;
             } else {
-              attrs[aName] = parseValue(oldVal, this.options.parseAttributeValue, this.options.numberParseOptions);
+              attrs[aName] = parseValue(
+                oldVal,
+                this.options.parseAttributeValue,
+                this.options.numberParseOptions
+              );
             }
           } else if (this.options.allowBooleanAttributes) {
             attrs[aName] = true;
@@ -1734,7 +1828,18 @@ var __publicField = (obj, key, value) => {
           if (currentNode) {
             textData = this.saveTextToParentTag(textData, currentNode, jPath);
           }
-          jPath = jPath.substr(0, jPath.lastIndexOf("."));
+          const lastTagName = jPath.substring(jPath.lastIndexOf(".") + 1);
+          if (tagName && this.options.unpairedTags.indexOf(tagName) !== -1) {
+            throw new Error(`Unpaired tag can not be used as closing tag: </${tagName}>`);
+          }
+          let propIndex = 0;
+          if (lastTagName && this.options.unpairedTags.indexOf(lastTagName) !== -1) {
+            propIndex = jPath.lastIndexOf(".", jPath.lastIndexOf(".") - 1);
+            this.tagsNodeStack.pop();
+          } else {
+            propIndex = jPath.lastIndexOf(".");
+          }
+          jPath = jPath.substring(0, propIndex);
           currentNode = this.tagsNodeStack.pop();
           textData = "";
           i = closeIndex;
@@ -1749,9 +1854,9 @@ var __publicField = (obj, key, value) => {
             const childNode = new xmlNode(tagData.tagName);
             childNode.add(this.options.textNodeName, "");
             if (tagData.tagName !== tagData.tagExp && tagData.attrExpPresent) {
-              childNode[":@"] = this.buildAttributesMap(tagData.tagExp, jPath);
+              childNode[":@"] = this.buildAttributesMap(tagData.tagExp, jPath, tagData.tagName);
             }
-            currentNode.addChild(childNode);
+            this.addChild(currentNode, childNode, jPath);
           }
           i = tagData.closeIndex + 1;
         } else if (xmlData.substr(i + 1, 3) === "!--") {
@@ -1773,10 +1878,10 @@ var __publicField = (obj, key, value) => {
           if (this.options.cdataPropName) {
             currentNode.add(this.options.cdataPropName, [{ [this.options.textNodeName]: tagExp }]);
           } else {
-            let val = this.parseTextData(tagExp, currentNode.tagname, jPath, true, false, true);
-            if (val == void 0)
-              val = "";
-            currentNode.add(this.options.textNodeName, val);
+            let val2 = this.parseTextData(tagExp, currentNode.tagname, jPath, true, false, true);
+            if (val2 == void 0)
+              val2 = "";
+            currentNode.add(this.options.textNodeName, val2);
           }
           i = closeIndex + 2;
         } else {
@@ -1793,12 +1898,13 @@ var __publicField = (obj, key, value) => {
               textData = this.saveTextToParentTag(textData, currentNode, jPath, false);
             }
           }
-          if (tagName !== xmlObj.tagname) {
-            jPath += jPath ? "." + tagName : tagName;
-          }
           const lastTag = currentNode;
           if (lastTag && this.options.unpairedTags.indexOf(lastTag.tagname) !== -1) {
             currentNode = this.tagsNodeStack.pop();
+            jPath = jPath.substring(0, jPath.lastIndexOf("."));
+          }
+          if (tagName !== xmlObj.tagname) {
+            jPath += jPath ? "." + tagName : tagName;
           }
           if (this.isItStopNode(this.options.stopNodes, jPath, tagName)) {
             let tagContent = "";
@@ -1815,14 +1921,14 @@ var __publicField = (obj, key, value) => {
             }
             const childNode = new xmlNode(tagName);
             if (tagName !== tagExp && attrExpPresent) {
-              childNode[":@"] = this.buildAttributesMap(tagExp, jPath);
+              childNode[":@"] = this.buildAttributesMap(tagExp, jPath, tagName);
             }
             if (tagContent) {
               tagContent = this.parseTextData(tagContent, tagName, jPath, true, attrExpPresent, true, true);
             }
             jPath = jPath.substr(0, jPath.lastIndexOf("."));
             childNode.add(this.options.textNodeName, tagContent);
-            currentNode.addChild(childNode);
+            this.addChild(currentNode, childNode, jPath);
           } else {
             if (tagExp.length > 0 && tagExp.lastIndexOf("/") === tagExp.length - 1) {
               if (tagName[tagName.length - 1] === "/") {
@@ -1836,17 +1942,17 @@ var __publicField = (obj, key, value) => {
               }
               const childNode = new xmlNode(tagName);
               if (tagName !== tagExp && attrExpPresent) {
-                childNode[":@"] = this.buildAttributesMap(tagExp, jPath);
+                childNode[":@"] = this.buildAttributesMap(tagExp, jPath, tagName);
               }
+              this.addChild(currentNode, childNode, jPath);
               jPath = jPath.substr(0, jPath.lastIndexOf("."));
-              currentNode.addChild(childNode);
             } else {
               const childNode = new xmlNode(tagName);
               this.tagsNodeStack.push(currentNode);
               if (tagName !== tagExp && attrExpPresent) {
-                childNode[":@"] = this.buildAttributesMap(tagExp, jPath);
+                childNode[":@"] = this.buildAttributesMap(tagExp, jPath, tagName);
               }
-              currentNode.addChild(childNode);
+              this.addChild(currentNode, childNode, jPath);
               currentNode = childNode;
             }
             textData = "";
@@ -1859,30 +1965,49 @@ var __publicField = (obj, key, value) => {
     }
     return xmlObj.child;
   };
-  const replaceEntitiesValue$2 = function(val) {
+  function addChild(currentNode, childNode, jPath) {
+    const result = this.options.updateTag(childNode.tagname, jPath, childNode[":@"]);
+    if (result === false)
+      ;
+    else if (typeof result === "string") {
+      childNode.tagname = result;
+      currentNode.addChild(childNode);
+    } else {
+      currentNode.addChild(childNode);
+    }
+  }
+  const replaceEntitiesValue$1 = function(val2) {
     if (this.options.processEntities) {
-      for (let entityName in this.docTypeEntities) {
-        const entity = this.docTypeEntities[entityName];
-        val = val.replace(entity.regx, entity.val);
+      for (let entityName2 in this.docTypeEntities) {
+        const entity = this.docTypeEntities[entityName2];
+        val2 = val2.replace(entity.regx, entity.val);
       }
-      for (let entityName in this.lastEntities) {
-        const entity = this.lastEntities[entityName];
-        val = val.replace(entity.regex, entity.val);
+      for (let entityName2 in this.lastEntities) {
+        const entity = this.lastEntities[entityName2];
+        val2 = val2.replace(entity.regex, entity.val);
       }
       if (this.options.htmlEntities) {
-        for (let entityName in this.htmlEntities) {
-          const entity = this.htmlEntities[entityName];
-          val = val.replace(entity.regex, entity.val);
+        for (let entityName2 in this.htmlEntities) {
+          const entity = this.htmlEntities[entityName2];
+          val2 = val2.replace(entity.regex, entity.val);
         }
       }
+      val2 = val2.replace(this.ampEntity.regex, this.ampEntity.val);
     }
-    return val;
+    return val2;
   };
   function saveTextToParentTag(textData, currentNode, jPath, isLeafNode) {
     if (textData) {
       if (isLeafNode === void 0)
         isLeafNode = Object.keys(currentNode.child).length === 0;
-      textData = this.parseTextData(textData, currentNode.tagname, jPath, false, currentNode[":@"] ? Object.keys(currentNode[":@"]).length !== 0 : false, isLeafNode);
+      textData = this.parseTextData(
+        textData,
+        currentNode.tagname,
+        jPath,
+        false,
+        currentNode[":@"] ? Object.keys(currentNode[":@"]).length !== 0 : false,
+        isLeafNode
+      );
       if (textData !== void 0 && textData !== "")
         currentNode.add(this.options.textNodeName, textData);
       textData = "";
@@ -2003,18 +2128,18 @@ var __publicField = (obj, key, value) => {
       }
     }
   }
-  function parseValue(val, shouldParse, options) {
-    if (shouldParse && typeof val === "string") {
-      const newval = val.trim();
+  function parseValue(val2, shouldParse, options) {
+    if (shouldParse && typeof val2 === "string") {
+      const newval = val2.trim();
       if (newval === "true")
         return true;
       else if (newval === "false")
         return false;
       else
-        return toNumber(val, options);
+        return toNumber(val2, options);
     } else {
-      if (util.isExist(val)) {
-        return val;
+      if (util.isExist(val2)) {
+        return val2;
       } else {
         return "";
       }
@@ -2044,28 +2169,28 @@ var __publicField = (obj, key, value) => {
       } else if (property === void 0) {
         continue;
       } else if (tagObj[property]) {
-        let val = compress(tagObj[property], options, newJpath);
-        const isLeaf = isLeafTag(val, options);
+        let val2 = compress(tagObj[property], options, newJpath);
+        const isLeaf = isLeafTag(val2, options);
         if (tagObj[":@"]) {
-          assignAttributes(val, tagObj[":@"], newJpath, options);
-        } else if (Object.keys(val).length === 1 && val[options.textNodeName] !== void 0 && !options.alwaysCreateTextNode) {
-          val = val[options.textNodeName];
-        } else if (Object.keys(val).length === 0) {
+          assignAttributes(val2, tagObj[":@"], newJpath, options);
+        } else if (Object.keys(val2).length === 1 && val2[options.textNodeName] !== void 0 && !options.alwaysCreateTextNode) {
+          val2 = val2[options.textNodeName];
+        } else if (Object.keys(val2).length === 0) {
           if (options.alwaysCreateTextNode)
-            val[options.textNodeName] = "";
+            val2[options.textNodeName] = "";
           else
-            val = "";
+            val2 = "";
         }
         if (compressedObj[property] !== void 0 && compressedObj.hasOwnProperty(property)) {
           if (!Array.isArray(compressedObj[property])) {
             compressedObj[property] = [compressedObj[property]];
           }
-          compressedObj[property].push(val);
+          compressedObj[property].push(val2);
         } else {
           if (options.isArray(property, newJpath, isLeaf)) {
-            compressedObj[property] = [val];
+            compressedObj[property] = [val2];
           } else {
-            compressedObj[property] = val;
+            compressedObj[property] = val2;
           }
         }
       }
@@ -2100,21 +2225,31 @@ var __publicField = (obj, key, value) => {
     }
   }
   function isLeafTag(obj, options) {
+    const { textNodeName } = options;
     const propCount = Object.keys(obj).length;
-    if (propCount === 0 || propCount === 1 && obj[options.textNodeName])
+    if (propCount === 0) {
       return true;
+    }
+    if (propCount === 1 && (obj[textNodeName] || typeof obj[textNodeName] === "boolean" || obj[textNodeName] === 0)) {
+      return true;
+    }
     return false;
   }
   node2json.prettify = prettify$1;
   const { buildOptions } = OptionsBuilder;
-  const OrderedObjParser = OrderedObjParser_1;
+  const OrderedObjParser2 = OrderedObjParser_1;
   const { prettify } = node2json;
   const validator$1 = validator$2;
-  class XMLParser$1 {
+  let XMLParser$1 = class XMLParser {
     constructor(options) {
       this.externalEntities = {};
       this.options = buildOptions(options);
     }
+    /**
+     * Parse XML dats to JS object 
+     * @param {string|Buffer} xmlData 
+     * @param {boolean|Object} validationOption 
+     */
     parse(xmlData, validationOption) {
       if (typeof xmlData === "string")
         ;
@@ -2131,7 +2266,7 @@ var __publicField = (obj, key, value) => {
           throw Error(`${result.err.msg}:${result.err.line}:${result.err.col}`);
         }
       }
-      const orderedObjParser = new OrderedObjParser(this.options);
+      const orderedObjParser = new OrderedObjParser2(this.options);
       orderedObjParser.addExternalEntities(this.externalEntities);
       const orderedResult = orderedObjParser.parseXml(xmlData);
       if (this.options.preserveOrder || orderedResult === void 0)
@@ -2139,27 +2274,35 @@ var __publicField = (obj, key, value) => {
       else
         return prettify(orderedResult, this.options);
     }
+    /**
+     * Add Entity which is not by default supported by this library
+     * @param {string} key 
+     * @param {string} value 
+     */
     addEntity(key, value) {
       if (value.indexOf("&") !== -1) {
         throw new Error("Entity value can't have '&'");
       } else if (key.indexOf("&") !== -1 || key.indexOf(";") !== -1) {
         throw new Error("An entity must be set without '&' and ';'. Eg. use '#xD' for '&#xD;'");
+      } else if (value === "&") {
+        throw new Error("An entity with value '&' is not permitted");
       } else {
         this.externalEntities[key] = value;
       }
     }
-  }
+  };
   var XMLParser_1 = XMLParser$1;
   const EOL = "\n";
   function toXml(jArray, options) {
-    return arrToStr(jArray, options, "", 0);
-  }
-  function arrToStr(arr, options, jPath, level) {
-    let xmlStr = "";
     let indentation = "";
     if (options.format && options.indentBy.length > 0) {
-      indentation = EOL + "" + options.indentBy.repeat(level);
+      indentation = EOL;
     }
+    return arrToStr(jArray, options, "", indentation);
+  }
+  function arrToStr(arr, options, jPath, indentation) {
+    let xmlStr = "";
+    let isPreviousElementTag = false;
     for (let i = 0; i < arr.length; i++) {
       const tagObj = arr[i];
       const tagName = propName(tagObj);
@@ -2172,15 +2315,24 @@ var __publicField = (obj, key, value) => {
         let tagText = tagObj[tagName];
         if (!isStopNode(newJPath, options)) {
           tagText = options.tagValueProcessor(tagName, tagText);
-          tagText = replaceEntitiesValue$1(tagText, options);
+          tagText = replaceEntitiesValue(tagText, options);
         }
-        xmlStr += indentation + tagText;
+        if (isPreviousElementTag) {
+          xmlStr += indentation;
+        }
+        xmlStr += tagText;
+        isPreviousElementTag = false;
         continue;
       } else if (tagName === options.cdataPropName) {
-        xmlStr += indentation + `<![CDATA[${tagObj[tagName][0][options.textNodeName]}]]>`;
+        if (isPreviousElementTag) {
+          xmlStr += indentation;
+        }
+        xmlStr += `<![CDATA[${tagObj[tagName][0][options.textNodeName]}]]>`;
+        isPreviousElementTag = false;
         continue;
       } else if (tagName === options.commentPropName) {
         xmlStr += indentation + `<!--${tagObj[tagName][0][options.textNodeName]}-->`;
+        isPreviousElementTag = true;
         continue;
       } else if (tagName[0] === "?") {
         const attStr2 = attr_to_str(tagObj[":@"], options);
@@ -2188,11 +2340,16 @@ var __publicField = (obj, key, value) => {
         let piTextNodeName = tagObj[tagName][0][options.textNodeName];
         piTextNodeName = piTextNodeName.length !== 0 ? " " + piTextNodeName : "";
         xmlStr += tempInd + `<${tagName}${piTextNodeName}${attStr2}?>`;
+        isPreviousElementTag = true;
         continue;
       }
+      let newIdentation = indentation;
+      if (newIdentation !== "") {
+        newIdentation += options.indentBy;
+      }
       const attStr = attr_to_str(tagObj[":@"], options);
-      let tagStart = indentation + `<${tagName}${attStr}`;
-      let tagValue = arrToStr(tagObj[tagName], options, newJPath, level + 1);
+      const tagStart = indentation + `<${tagName}${attStr}`;
+      const tagValue = arrToStr(tagObj[tagName], options, newJPath, newIdentation);
       if (options.unpairedTags.indexOf(tagName) !== -1) {
         if (options.suppressUnpairedNode)
           xmlStr += tagStart + ">";
@@ -2200,9 +2357,18 @@ var __publicField = (obj, key, value) => {
           xmlStr += tagStart + "/>";
       } else if ((!tagValue || tagValue.length === 0) && options.suppressEmptyNode) {
         xmlStr += tagStart + "/>";
-      } else {
+      } else if (tagValue && tagValue.endsWith(">")) {
         xmlStr += tagStart + `>${tagValue}${indentation}</${tagName}>`;
+      } else {
+        xmlStr += tagStart + ">";
+        if (tagValue && indentation !== "" && (tagValue.includes("/>") || tagValue.includes("</"))) {
+          xmlStr += indentation + options.indentBy + tagValue + indentation;
+        } else {
+          xmlStr += tagValue;
+        }
+        xmlStr += `</${tagName}>`;
       }
+      isPreviousElementTag = true;
     }
     return xmlStr;
   }
@@ -2219,7 +2385,7 @@ var __publicField = (obj, key, value) => {
     if (attrMap && !options.ignoreAttributes) {
       for (let attr2 in attrMap) {
         let attrVal = options.attributeValueProcessor(attr2, attrMap[attr2]);
-        attrVal = replaceEntitiesValue$1(attrVal, options);
+        attrVal = replaceEntitiesValue(attrVal, options);
         if (attrVal === true && options.suppressBooleanAttributes) {
           attrStr += ` ${attr2.substr(options.attributeNamePrefix.length)}`;
         } else {
@@ -2238,7 +2404,7 @@ var __publicField = (obj, key, value) => {
     }
     return false;
   }
-  function replaceEntitiesValue$1(textValue, options) {
+  function replaceEntitiesValue(textValue, options) {
     if (textValue && textValue.length > 0 && options.processEntities) {
       for (let i = 0; i < options.entities.length; i++) {
         const entity = options.entities[i];
@@ -2271,6 +2437,7 @@ var __publicField = (obj, key, value) => {
     unpairedTags: [],
     entities: [
       { regex: new RegExp("&", "g"), val: "&amp;" },
+      //it must be on top
       { regex: new RegExp(">", "g"), val: "&gt;" },
       { regex: new RegExp("<", "g"), val: "&lt;" },
       { regex: new RegExp("'", "g"), val: "&apos;" },
@@ -2278,7 +2445,9 @@ var __publicField = (obj, key, value) => {
     ],
     processEntities: true,
     stopNodes: [],
-    transformTagName: false
+    // transformTagName: false,
+    // transformAttributeName: false,
+    oneListGroup: false
   };
   function Builder(options) {
     this.options = Object.assign({}, defaultOptions, options);
@@ -2302,17 +2471,6 @@ var __publicField = (obj, key, value) => {
       this.tagEndChar = ">";
       this.newLine = "";
     }
-    if (this.options.suppressEmptyNode) {
-      this.buildTextNode = buildEmptyTextNode;
-      this.buildObjNode = buildEmptyObjNode;
-    } else {
-      this.buildTextNode = buildTextValNode;
-      this.buildObjNode = buildObjectNode;
-    }
-    this.buildTextValNode = buildTextValNode;
-    this.buildObjectNode = buildObjectNode;
-    this.replaceEntitiesValue = replaceEntitiesValue;
-    this.buildAttrPairStr = buildAttrPairStr;
   }
   Builder.prototype.build = function(jObj) {
     if (this.options.preserveOrder) {
@@ -2328,17 +2486,17 @@ var __publicField = (obj, key, value) => {
   };
   Builder.prototype.j2x = function(jObj, level) {
     let attrStr = "";
-    let val = "";
+    let val2 = "";
     for (let key in jObj) {
       if (typeof jObj[key] === "undefined")
         ;
       else if (jObj[key] === null) {
         if (key[0] === "?")
-          val += this.indentate(level) + "<" + key + "?" + this.tagEndChar;
+          val2 += this.indentate(level) + "<" + key + "?" + this.tagEndChar;
         else
-          val += this.indentate(level) + "<" + key + "/" + this.tagEndChar;
+          val2 += this.indentate(level) + "<" + key + "/" + this.tagEndChar;
       } else if (jObj[key] instanceof Date) {
-        val += this.buildTextNode(jObj[key], key, "", level);
+        val2 += this.buildTextValNode(jObj[key], key, "", level);
       } else if (typeof jObj[key] !== "object") {
         const attr2 = this.isAttribute(key);
         if (attr2) {
@@ -2346,28 +2504,37 @@ var __publicField = (obj, key, value) => {
         } else {
           if (key === this.options.textNodeName) {
             let newval = this.options.tagValueProcessor(key, "" + jObj[key]);
-            val += this.replaceEntitiesValue(newval);
+            val2 += this.replaceEntitiesValue(newval);
           } else {
-            val += this.buildTextNode(jObj[key], key, "", level);
+            val2 += this.buildTextValNode(jObj[key], key, "", level);
           }
         }
       } else if (Array.isArray(jObj[key])) {
         const arrLen = jObj[key].length;
+        let listTagVal = "";
         for (let j = 0; j < arrLen; j++) {
           const item = jObj[key][j];
           if (typeof item === "undefined")
             ;
           else if (item === null) {
             if (key[0] === "?")
-              val += this.indentate(level) + "<" + key + "?" + this.tagEndChar;
+              val2 += this.indentate(level) + "<" + key + "?" + this.tagEndChar;
             else
-              val += this.indentate(level) + "<" + key + "/" + this.tagEndChar;
+              val2 += this.indentate(level) + "<" + key + "/" + this.tagEndChar;
           } else if (typeof item === "object") {
-            val += this.processTextOrObjNode(item, key, level);
+            if (this.options.oneListGroup) {
+              listTagVal += this.j2x(item, level + 1).val;
+            } else {
+              listTagVal += this.processTextOrObjNode(item, key, level);
+            }
           } else {
-            val += this.buildTextNode(item, key, "", level);
+            listTagVal += this.buildTextValNode(item, key, "", level);
           }
         }
+        if (this.options.oneListGroup) {
+          listTagVal = this.buildObjectNode(listTagVal, key, "", level);
+        }
+        val2 += listTagVal;
       } else {
         if (this.options.attributesGroupName && key === this.options.attributesGroupName) {
           const Ks = Object.keys(jObj[key]);
@@ -2376,73 +2543,81 @@ var __publicField = (obj, key, value) => {
             attrStr += this.buildAttrPairStr(Ks[j], "" + jObj[key][Ks[j]]);
           }
         } else {
-          val += this.processTextOrObjNode(jObj[key], key, level);
+          val2 += this.processTextOrObjNode(jObj[key], key, level);
         }
       }
     }
-    return { attrStr, val };
+    return { attrStr, val: val2 };
   };
-  function buildAttrPairStr(attrName, val) {
-    val = this.options.attributeValueProcessor(attrName, "" + val);
-    val = this.replaceEntitiesValue(val);
-    if (this.options.suppressBooleanAttributes && val === "true") {
+  Builder.prototype.buildAttrPairStr = function(attrName, val2) {
+    val2 = this.options.attributeValueProcessor(attrName, "" + val2);
+    val2 = this.replaceEntitiesValue(val2);
+    if (this.options.suppressBooleanAttributes && val2 === "true") {
       return " " + attrName;
     } else
-      return " " + attrName + '="' + val + '"';
-  }
+      return " " + attrName + '="' + val2 + '"';
+  };
   function processTextOrObjNode(object, key, level) {
     const result = this.j2x(object, level + 1);
     if (object[this.options.textNodeName] !== void 0 && Object.keys(object).length === 1) {
-      return this.buildTextNode(object[this.options.textNodeName], key, result.attrStr, level);
+      return this.buildTextValNode(object[this.options.textNodeName], key, result.attrStr, level);
     } else {
-      return this.buildObjNode(result.val, key, result.attrStr, level);
+      return this.buildObjectNode(result.val, key, result.attrStr, level);
     }
   }
-  function buildObjectNode(val, key, attrStr, level) {
-    let tagEndExp = "</" + key + this.tagEndChar;
-    let piClosingChar = "";
-    if (key[0] === "?") {
-      piClosingChar = "?";
-      tagEndExp = "";
-    }
-    if (attrStr && val.indexOf("<") === -1) {
-      return this.indentate(level) + "<" + key + attrStr + piClosingChar + ">" + val + tagEndExp;
-    } else if (this.options.commentPropName !== false && key === this.options.commentPropName && piClosingChar.length === 0) {
-      return this.indentate(level) + `<!--${val}-->` + this.newLine;
-    } else {
-      return this.indentate(level) + "<" + key + attrStr + piClosingChar + this.tagEndChar + val + this.indentate(level) + tagEndExp;
-    }
-  }
-  function buildEmptyObjNode(val, key, attrStr, level) {
-    if (val !== "") {
-      return this.buildObjectNode(val, key, attrStr, level);
-    } else {
+  Builder.prototype.buildObjectNode = function(val2, key, attrStr, level) {
+    if (val2 === "") {
       if (key[0] === "?")
         return this.indentate(level) + "<" + key + attrStr + "?" + this.tagEndChar;
-      else
-        return this.indentate(level) + "<" + key + attrStr + "/" + this.tagEndChar;
-    }
-  }
-  function buildTextValNode(val, key, attrStr, level) {
-    if (this.options.cdataPropName !== false && key === this.options.cdataPropName) {
-      return this.indentate(level) + `<![CDATA[${val}]]>` + this.newLine;
-    } else if (this.options.commentPropName !== false && key === this.options.commentPropName) {
-      return this.indentate(level) + `<!--${val}-->` + this.newLine;
+      else {
+        return this.indentate(level) + "<" + key + attrStr + this.closeTag(key) + this.tagEndChar;
+      }
     } else {
-      let textValue = this.options.tagValueProcessor(key, val);
+      let tagEndExp = "</" + key + this.tagEndChar;
+      let piClosingChar = "";
+      if (key[0] === "?") {
+        piClosingChar = "?";
+        tagEndExp = "";
+      }
+      if (attrStr && val2.indexOf("<") === -1) {
+        return this.indentate(level) + "<" + key + attrStr + piClosingChar + ">" + val2 + tagEndExp;
+      } else if (this.options.commentPropName !== false && key === this.options.commentPropName && piClosingChar.length === 0) {
+        return this.indentate(level) + `<!--${val2}-->` + this.newLine;
+      } else {
+        return this.indentate(level) + "<" + key + attrStr + piClosingChar + this.tagEndChar + val2 + this.indentate(level) + tagEndExp;
+      }
+    }
+  };
+  Builder.prototype.closeTag = function(key) {
+    let closeTag = "";
+    if (this.options.unpairedTags.indexOf(key) !== -1) {
+      if (!this.options.suppressUnpairedNode)
+        closeTag = "/";
+    } else if (this.options.suppressEmptyNode) {
+      closeTag = "/";
+    } else {
+      closeTag = `></${key}`;
+    }
+    return closeTag;
+  };
+  Builder.prototype.buildTextValNode = function(val2, key, attrStr, level) {
+    if (this.options.cdataPropName !== false && key === this.options.cdataPropName) {
+      return this.indentate(level) + `<![CDATA[${val2}]]>` + this.newLine;
+    } else if (this.options.commentPropName !== false && key === this.options.commentPropName) {
+      return this.indentate(level) + `<!--${val2}-->` + this.newLine;
+    } else if (key[0] === "?") {
+      return this.indentate(level) + "<" + key + attrStr + "?" + this.tagEndChar;
+    } else {
+      let textValue = this.options.tagValueProcessor(key, val2);
       textValue = this.replaceEntitiesValue(textValue);
-      if (textValue === "" && this.options.unpairedTags.indexOf(key) !== -1) {
-        if (this.options.suppressUnpairedNode) {
-          return this.indentate(level) + "<" + key + this.tagEndChar;
-        } else {
-          return this.indentate(level) + "<" + key + "/" + this.tagEndChar;
-        }
+      if (textValue === "") {
+        return this.indentate(level) + "<" + key + attrStr + this.closeTag(key) + this.tagEndChar;
       } else {
         return this.indentate(level) + "<" + key + attrStr + ">" + textValue + "</" + key + this.tagEndChar;
       }
     }
-  }
-  function replaceEntitiesValue(textValue) {
+  };
+  Builder.prototype.replaceEntitiesValue = function(textValue) {
     if (textValue && textValue.length > 0 && this.options.processEntities) {
       for (let i = 0; i < this.options.entities.length; i++) {
         const entity = this.options.entities[i];
@@ -2450,23 +2625,7 @@ var __publicField = (obj, key, value) => {
       }
     }
     return textValue;
-  }
-  function buildEmptyTextNode(val, key, attrStr, level) {
-    if (val === "" && this.options.unpairedTags.indexOf(key) !== -1) {
-      if (this.options.suppressUnpairedNode) {
-        return this.indentate(level) + "<" + key + this.tagEndChar;
-      } else {
-        return this.indentate(level) + "<" + key + "/" + this.tagEndChar;
-      }
-    } else if (val !== "") {
-      return this.buildTextValNode(val, key, attrStr, level);
-    } else {
-      if (key[0] === "?")
-        return this.indentate(level) + "<" + key + attrStr + "?" + this.tagEndChar;
-      else
-        return this.indentate(level) + "<" + key + attrStr + "/" + this.tagEndChar;
-    }
-  }
+  };
   function indentate(level) {
     return this.options.indentBy.repeat(level);
   }
@@ -2479,10 +2638,10 @@ var __publicField = (obj, key, value) => {
   }
   var json2xml = Builder;
   const validator = validator$2;
-  const XMLParser = XMLParser_1;
+  const XMLParser2 = XMLParser_1;
   const XMLBuilder = json2xml;
   var fxp = {
-    XMLParser,
+    XMLParser: XMLParser2,
     XMLValidator: validator,
     XMLBuilder
   };
@@ -2498,7 +2657,7 @@ var __publicField = (obj, key, value) => {
   }
   function getImage(imageUrl) {
     return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
+      _GM_xmlhttpRequest({
         method: "GET",
         url: imageUrl,
         responseType: "arraybuffer",
@@ -2557,7 +2716,15 @@ var __publicField = (obj, key, value) => {
     }
     return ret === void 0 ? null : ret;
   }
-  var mp3tag = { exports: {} };
+  var mp3tagExports = {};
+  var mp3tag = {
+    get exports() {
+      return mp3tagExports;
+    },
+    set exports(v) {
+      mp3tagExports = v;
+    }
+  };
   (function(module, exports) {
     (function(global2, factory) {
       module.exports = factory();
@@ -2574,7 +2741,7 @@ var __publicField = (obj, key, value) => {
       }
       function _objectSpread2(target) {
         for (var i = 1; i < arguments.length; i++) {
-          var source = arguments[i] != null ? arguments[i] : {};
+          var source = null != arguments[i] ? arguments[i] : {};
           i % 2 ? ownKeys$2(Object(source), true).forEach(function(key2) {
             _defineProperty(target, key2, source[key2]);
           }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$2(Object(source)).forEach(function(key2) {
@@ -2585,10 +2752,10 @@ var __publicField = (obj, key, value) => {
       }
       function _typeof(obj) {
         "@babel/helpers - typeof";
-        return _typeof = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(obj2) {
+        return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(obj2) {
           return typeof obj2;
         } : function(obj2) {
-          return obj2 && typeof Symbol == "function" && obj2.constructor === Symbol && obj2 !== Symbol.prototype ? "symbol" : typeof obj2;
+          return obj2 && "function" == typeof Symbol && obj2.constructor === Symbol && obj2 !== Symbol.prototype ? "symbol" : typeof obj2;
         }, _typeof(obj);
       }
       function _classCallCheck(instance, Constructor2) {
@@ -2854,9 +3021,14 @@ var __publicField = (obj, key, value) => {
       var check = function(it) {
         return it && it.Math == Math && it;
       };
-      var global$u = check(typeof globalThis == "object" && globalThis) || check(typeof window == "object" && window) || check(typeof self == "object" && self) || check(typeof commonjsGlobal$1 == "object" && commonjsGlobal$1) || function() {
-        return this;
-      }() || Function("return this")();
+      var global$u = (
+        // eslint-disable-next-line es-x/no-global-this -- safe
+        check(typeof globalThis == "object" && globalThis) || check(typeof window == "object" && window) || // eslint-disable-next-line no-restricted-globals -- safe
+        check(typeof self == "object" && self) || check(typeof commonjsGlobal$1 == "object" && commonjsGlobal$1) || // eslint-disable-next-line no-new-func -- fallback
+        function() {
+          return this;
+        }() || Function("return this")()
+      );
       var isCallable$n = function(argument) {
         return typeof argument == "function";
       };
@@ -2943,7 +3115,8 @@ var __publicField = (obj, key, value) => {
       var fails$y = fails$D;
       var symbolConstructorDetection = !!Object.getOwnPropertySymbols && !fails$y(function() {
         var symbol = Symbol();
-        return !String(symbol) || !(Object(symbol) instanceof Symbol) || !Symbol.sham && V8_VERSION$2 && V8_VERSION$2 < 41;
+        return !String(symbol) || !(Object(symbol) instanceof Symbol) || // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
+        !Symbol.sham && V8_VERSION$2 && V8_VERSION$2 < 41;
       });
       var NATIVE_SYMBOL$6 = symbolConstructorDetection;
       var useSymbolAsUid = NATIVE_SYMBOL$6 && !Symbol.sham && typeof Symbol.iterator == "symbol";
@@ -2985,13 +3158,13 @@ var __publicField = (obj, key, value) => {
       var isObject$c = isObject$f;
       var $TypeError$d = TypeError;
       var ordinaryToPrimitive$1 = function(input, pref) {
-        var fn, val;
-        if (pref === "string" && isCallable$i(fn = input.toString) && !isObject$c(val = call$j(fn, input)))
-          return val;
-        if (isCallable$i(fn = input.valueOf) && !isObject$c(val = call$j(fn, input)))
-          return val;
-        if (pref !== "string" && isCallable$i(fn = input.toString) && !isObject$c(val = call$j(fn, input)))
-          return val;
+        var fn, val2;
+        if (pref === "string" && isCallable$i(fn = input.toString) && !isObject$c(val2 = call$j(fn, input)))
+          return val2;
+        if (isCallable$i(fn = input.valueOf) && !isObject$c(val2 = call$j(fn, input)))
+          return val2;
+        if (pref !== "string" && isCallable$i(fn = input.toString) && !isObject$c(val2 = call$j(fn, input)))
+          return val2;
         throw $TypeError$d("Can't convert object to primitive value");
       };
       var shared$7 = { exports: {} };
@@ -3020,7 +3193,7 @@ var __publicField = (obj, key, value) => {
       })("versions", []).push({
         version: "3.25.1",
         mode: "global",
-        copyright: "\xA9 2014-2022 Denis Pushkarev (zloirock.ru)",
+        copyright: "© 2014-2022 Denis Pushkarev (zloirock.ru)",
         license: "https://github.com/zloirock/core-js/blob/v3.25.1/LICENSE",
         source: "https://github.com/zloirock/core-js"
       });
@@ -3452,7 +3625,11 @@ var __publicField = (obj, key, value) => {
         };
       };
       var arrayIncludes = {
+        // `Array.prototype.includes` method
+        // https://tc39.es/ecma262/#sec-array.prototype.includes
         includes: createMethod$4(true),
+        // `Array.prototype.indexOf` method
+        // https://tc39.es/ecma262/#sec-array.prototype.indexof
         indexOf: createMethod$4(false)
       };
       var uncurryThis$v = functionUncurryThis;
@@ -4024,7 +4201,11 @@ var __publicField = (obj, key, value) => {
         };
       };
       var stringMultibyte = {
+        // `String.prototype.codePointAt` method
+        // https://tc39.es/ecma262/#sec-string.prototype.codepointat
         codeAt: createMethod$3(false),
+        // `String.prototype.at` method
+        // https://github.com/mathiasbynens/String.prototype.at
         charAt: createMethod$3(true)
       };
       var charAt$3 = stringMultibyte.charAt;
@@ -4110,7 +4291,9 @@ var __publicField = (obj, key, value) => {
       });
       fixRegExpWellKnownSymbolLogic$2("split", function(SPLIT, nativeSplit, maybeCallNative) {
         var internalSplit;
-        if ("abbc".split(/(b)*/)[1] == "c" || "test".split(/(?:)/, -1).length != 4 || "ab".split(/(?:ab)*/).length != 2 || ".".split(/(.?)(.?)/).length != 4 || ".".split(/()()/).length > 1 || "".split(/.?/).length) {
+        if ("abbc".split(/(b)*/)[1] == "c" || // eslint-disable-next-line regexp/no-empty-group -- required for testing
+        "test".split(/(?:)/, -1).length != 4 || "ab".split(/(?:ab)*/).length != 2 || ".".split(/(.?)(.?)/).length != 4 || // eslint-disable-next-line regexp/no-empty-capturing-group, regexp/no-empty-group -- required for testing
+        ".".split(/()()/).length > 1 || "".split(/.?/).length) {
           internalSplit = function(separator, limit) {
             var string = toString$b(requireObjectCoercible$5(this));
             var lim = limit === void 0 ? MAX_UINT32 : limit >>> 0;
@@ -4154,11 +4337,18 @@ var __publicField = (obj, key, value) => {
         } else
           internalSplit = nativeSplit;
         return [
+          // `String.prototype.split` method
+          // https://tc39.es/ecma262/#sec-string.prototype.split
           function split2(separator, limit) {
             var O = requireObjectCoercible$5(this);
             var splitter = isNullOrUndefined$3(separator) ? void 0 : getMethod$3(separator, SPLIT);
             return splitter ? call$d(splitter, separator, O, limit) : call$d(internalSplit, toString$b(O), separator, limit);
           },
+          // `RegExp.prototype[@@split]` method
+          // https://tc39.es/ecma262/#sec-regexp.prototype-@@split
+          //
+          // NOTE: This cannot be properly polyfilled in engines that don't support
+          // the 'y' flag.
           function(string, limit) {
             var rx = anObject$8(this);
             var S = toString$b(string);
@@ -4463,8 +4653,11 @@ var __publicField = (obj, key, value) => {
         setInternalState$3(this, {
           type: ARRAY_ITERATOR,
           target: toIndexedObject$5(iterated),
+          // target
           index: 0,
+          // next index
           kind
+          // kind
         });
       }, function() {
         var state = getInternalState$5(this);
@@ -5353,13 +5546,29 @@ var __publicField = (obj, key, value) => {
         };
       };
       var arrayIteration = {
+        // `Array.prototype.forEach` method
+        // https://tc39.es/ecma262/#sec-array.prototype.foreach
         forEach: createMethod$2(0),
+        // `Array.prototype.map` method
+        // https://tc39.es/ecma262/#sec-array.prototype.map
         map: createMethod$2(1),
+        // `Array.prototype.filter` method
+        // https://tc39.es/ecma262/#sec-array.prototype.filter
         filter: createMethod$2(2),
+        // `Array.prototype.some` method
+        // https://tc39.es/ecma262/#sec-array.prototype.some
         some: createMethod$2(3),
+        // `Array.prototype.every` method
+        // https://tc39.es/ecma262/#sec-array.prototype.every
         every: createMethod$2(4),
+        // `Array.prototype.find` method
+        // https://tc39.es/ecma262/#sec-array.prototype.find
         find: createMethod$2(5),
+        // `Array.prototype.findIndex` method
+        // https://tc39.es/ecma262/#sec-array.prototype.findIndex
         findIndex: createMethod$2(6),
+        // `Array.prototype.filterReject` method
+        // https://github.com/tc39/proposal-array-filtering
         filterReject: createMethod$2(7)
       };
       var getBuiltIn$3 = getBuiltIn$9;
@@ -5384,7 +5593,11 @@ var __publicField = (obj, key, value) => {
       var setPrototypeOf$1 = objectSetPrototypeOf;
       var inheritIfRequired$2 = function($this, dummy, Wrapper) {
         var NewTarget, NewTargetPrototype;
-        if (setPrototypeOf$1 && isCallable$4(NewTarget = dummy.constructor) && NewTarget !== Wrapper && isObject$4(NewTargetPrototype = NewTarget.prototype) && NewTargetPrototype !== Wrapper.prototype)
+        if (
+          // it can work only with native `setPrototypeOf`
+          setPrototypeOf$1 && // we haven't completely correct pre-ES6 way for getting `new.target`, so use this
+          isCallable$4(NewTarget = dummy.constructor) && NewTarget !== Wrapper && isObject$4(NewTargetPrototype = NewTarget.prototype) && NewTargetPrototype !== Wrapper.prototype
+        )
           setPrototypeOf$1($this, NewTargetPrototype);
         return $this;
       };
@@ -5883,7 +6096,11 @@ var __publicField = (obj, key, value) => {
         };
       };
       var arrayReduce = {
+        // `Array.prototype.reduce` method
+        // https://tc39.es/ecma262/#sec-array.prototype.reduce
         left: createMethod$1(false),
+        // `Array.prototype.reduceRight` method
+        // https://tc39.es/ecma262/#sec-array.prototype.reduceright
         right: createMethod$1(true)
       };
       var ArrayBufferViewCore$9 = arrayBufferViewCore;
@@ -6270,6 +6487,7 @@ var __publicField = (obj, key, value) => {
         arity: 1,
         forced: FORCED$3
       }, {
+        // eslint-disable-next-line no-unused-vars -- required for `.length`
         concat: function concat2(arg) {
           var O = toObject$3(this);
           var A = arraySpeciesCreate(O, 0);
@@ -6767,11 +6985,15 @@ var __publicField = (obj, key, value) => {
       fixRegExpWellKnownSymbolLogic$1("replace", function(_, nativeReplace2, maybeCallNative) {
         var UNSAFE_SUBSTITUTE = REGEXP_REPLACE_SUBSTITUTES_UNDEFINED_CAPTURE ? "$" : "$0";
         return [
+          // `String.prototype.replace` method
+          // https://tc39.es/ecma262/#sec-string.prototype.replace
           function replace2(searchValue, replaceValue) {
             var O = requireObjectCoercible$3(this);
             var replacer = isNullOrUndefined$1(searchValue) ? void 0 : getMethod$1(searchValue, REPLACE);
             return replacer ? call$6(replacer, searchValue, O, replaceValue) : call$6(nativeReplace2, toString$8(O), searchValue, replaceValue);
           },
+          // `RegExp.prototype[@@replace]` method
+          // https://tc39.es/ecma262/#sec-regexp.prototype-@@replace
           function(string, replaceValue) {
             var rx = anObject$4(this);
             var S = toString$8(string);
@@ -6834,7 +7056,7 @@ var __publicField = (obj, key, value) => {
       var TO_STRING$1 = "toString";
       var nativeDateToString = uncurryThis$8(DatePrototype[TO_STRING$1]);
       var thisTimeValue = uncurryThis$8(DatePrototype.getTime);
-      if (String(new Date(NaN)) != INVALID_DATE) {
+      if (String(/* @__PURE__ */ new Date(NaN)) != INVALID_DATE) {
         defineBuiltIn$4(DatePrototype, TO_STRING$1, function toString2() {
           var value = thisTimeValue(this);
           return value === value ? nativeDateToString(this) : INVALID_DATE;
@@ -6875,7 +7097,7 @@ var __publicField = (obj, key, value) => {
           unsafe: true
         });
       }
-      var whitespaces$2 = "	\n\v\f\r \xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF";
+      var whitespaces$2 = "	\n\v\f\r                　\u2028\u2029\uFEFF";
       var uncurryThis$7 = functionUncurryThis;
       var requireObjectCoercible$2 = requireObjectCoercible$9;
       var toString$7 = toString$e;
@@ -6895,8 +7117,14 @@ var __publicField = (obj, key, value) => {
         };
       };
       var stringTrim = {
+        // `String.prototype.{ trimLeft, trimStart }` methods
+        // https://tc39.es/ecma262/#sec-string.prototype.trimstart
         start: createMethod(1),
+        // `String.prototype.{ trimRight, trimEnd }` methods
+        // https://tc39.es/ecma262/#sec-string.prototype.trimend
         end: createMethod(2),
+        // `String.prototype.trim` method
+        // https://tc39.es/ecma262/#sec-string.prototype.trim
         trim: createMethod(3)
       };
       var global$6 = global$u;
@@ -7550,11 +7778,15 @@ var __publicField = (obj, key, value) => {
       var regExpExec = regexpExecAbstract;
       fixRegExpWellKnownSymbolLogic("match", function(MATCH2, nativeMatch, maybeCallNative) {
         return [
+          // `String.prototype.match` method
+          // https://tc39.es/ecma262/#sec-string.prototype.match
           function match2(regexp2) {
             var O = requireObjectCoercible(this);
             var matcher = isNullOrUndefined(regexp2) ? void 0 : getMethod(regexp2, MATCH2);
             return matcher ? call$4(matcher, regexp2, O) : new RegExp(regexp2)[MATCH2](toString$4(O));
           },
+          // `RegExp.prototype[@@match]` method
+          // https://tc39.es/ecma262/#sec-regexp.prototype-@@match
           function(string) {
             var rx = anObject$2(this);
             var S = toString$4(string);
@@ -7863,9 +8095,17 @@ var __publicField = (obj, key, value) => {
         forced: !NATIVE_SYMBOL$4,
         sham: !DESCRIPTORS$3
       }, {
+        // `Object.create` method
+        // https://tc39.es/ecma262/#sec-object.create
         create: $create,
+        // `Object.defineProperty` method
+        // https://tc39.es/ecma262/#sec-object.defineproperty
         defineProperty: $defineProperty,
+        // `Object.defineProperties` method
+        // https://tc39.es/ecma262/#sec-object.defineproperties
         defineProperties: $defineProperties,
+        // `Object.getOwnPropertyDescriptor` method
+        // https://tc39.es/ecma262/#sec-object.getownpropertydescriptors
         getOwnPropertyDescriptor: $getOwnPropertyDescriptor
       });
       $$7({
@@ -7873,6 +8113,8 @@ var __publicField = (obj, key, value) => {
         stat: true,
         forced: !NATIVE_SYMBOL$4
       }, {
+        // `Object.getOwnPropertyNames` method
+        // https://tc39.es/ecma262/#sec-object.getownpropertynames
         getOwnPropertyNames: $getOwnPropertyNames
       });
       defineSymbolToPrimitive();
@@ -7982,6 +8224,7 @@ var __publicField = (obj, key, value) => {
           arity: 3,
           forced: WRONG_SYMBOLS_CONVERSION || ILL_FORMED_UNICODE
         }, {
+          // eslint-disable-next-line no-unused-vars -- required for `.length`
           stringify: function stringify(it, replacer, space) {
             var args = arraySlice(arguments);
             var result = apply(WRONG_SYMBOLS_CONVERSION ? stringifyWithSymbolsFix : $stringify, null, args);
@@ -8019,7 +8262,8 @@ var __publicField = (obj, key, value) => {
       var copyConstructorProperties = copyConstructorProperties$2;
       var NativeSymbol = global$2.Symbol;
       var SymbolPrototype = NativeSymbol && NativeSymbol.prototype;
-      if (DESCRIPTORS$2 && isCallable$1(NativeSymbol) && (!("description" in SymbolPrototype) || NativeSymbol().description !== void 0)) {
+      if (DESCRIPTORS$2 && isCallable$1(NativeSymbol) && (!("description" in SymbolPrototype) || // Safari 12 bug
+      NativeSymbol().description !== void 0)) {
         var EmptyStringDescriptionStore = {};
         var SymbolWrapper = function Symbol2() {
           var description = arguments.length < 1 || arguments[0] === void 0 ? void 0 : toString$2(arguments[0]);
@@ -10311,7 +10555,7 @@ var __publicField = (obj, key, value) => {
       return MP3Tag2;
     });
   })(mp3tag);
-  var MP3Tag = mp3tag.exports;
+  const MP3Tag = mp3tagExports;
   class Downloader {
     constructor() {
       __publicField(this, "name", "Downloader");
@@ -10611,5 +10855,5 @@ var __publicField = (obj, key, value) => {
     });
   }
   $(main);
+
 })();
- 
