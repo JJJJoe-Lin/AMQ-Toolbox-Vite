@@ -30,7 +30,7 @@ export class View implements IComponent {
 }
 
 export class ViewBlock extends Container<View> implements IContainer<View> {
-    constructor (opt: ContainerOpt<View>) {
+    constructor (opt: ContainerOpt) {
         super(opt);
         this.self.attr('id', 'qpToolboxContainer')
             .addClass('container floatingContainer');

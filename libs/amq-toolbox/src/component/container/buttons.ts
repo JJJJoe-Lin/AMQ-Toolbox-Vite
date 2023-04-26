@@ -1,7 +1,7 @@
 import { Button } from '../button';
 import { Container, ContainerOpt, IContainer } from './container';
 
-export interface ButtonsOpt extends ContainerOpt<Button> {}
+export interface ButtonsOpt extends ContainerOpt {}
 
 export interface IButtons extends IContainer<Button> {}; 
 

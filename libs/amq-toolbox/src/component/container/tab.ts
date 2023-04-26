@@ -1,7 +1,7 @@
 import { IComponent } from '../component';
 import { Container, ContainerOpt, IContainer } from './container';
 
-export interface TabOpt extends ContainerOpt<IComponent> {
+export interface TabOpt extends ContainerOpt {
     tabName: string;
     contentId?: string;
     contentClass?: string;

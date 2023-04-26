@@ -1,7 +1,7 @@
 {
   "name": "amq-toolbox",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "./src/main.ts",
   "scripts": {
     "dev": "vite",
