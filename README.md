@@ -27,3 +27,16 @@ It can merge any public anime lists to one list.
 
 #### Known issue
 * Merging to MAL account would got failed sometimes after overwrote and imported too many entries.
+
+## Build
+You can build the plugins on your own. Before start, ensure that you have installed node.js 18 and npm 9 on your system.  
+
+After `git clone` this repo, use the command below to build the plugin:
+
+```shell
+cd ./AMQ-Toolbox-Vite
+npm run pre-build
+npm -w <plugin-folderName> run build
+```
+
+If you want to create a new plugin with this library, see [Guide (Tradionnal Chinese)](./docs/Guide_zh.md) for more imformation.

@@ -13,6 +13,6 @@
     "vite-plugin-monkey": "^3.0.1"
   },
   "dependencies": {
-    "amq-toolbox": "0.1.0"
+    "amq-toolbox": "0.1.1"
   }
 }
