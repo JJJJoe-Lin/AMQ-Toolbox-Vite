@@ -53,15 +53,15 @@ class ExamplePlugin implements IPlugin {
     }
 
     enable(): void {
-			this._enabled = true;
+      this._enabled = true;
     }
 
     disable(): void {
-			this._enabled = false;
+      this._enabled = false;
     }
 
     enabled(): boolean {
-        return this._enabled;
+      return this._enabled;
     }
 }
 
