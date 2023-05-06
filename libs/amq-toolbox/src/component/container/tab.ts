@@ -19,7 +19,7 @@ export class Tab extends Container<IComponent> implements ITab {
         super(opt);
         const contentId = opt.contentId === undefined ? '' : opt.contentId;
         const contentClass = opt.contentClass === undefined ? '' : opt.contentClass;
-        this.self.addClass('tab leftRightButtonTop clickAble')
+        this.self.addClass('tab clickAble')
             .append($(`<h5></h5>`).text(opt.tabName));
         this.content = $(`<div></div>`)
             .attr('id', contentId)
