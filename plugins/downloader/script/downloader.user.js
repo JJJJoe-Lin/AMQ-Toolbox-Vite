@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         AMQ Downloader(dev)
+// @name         AMQ Downloader
 // @namespace    https://github.com/JJJJoe-Lin
 // @version      0.4.0
 // @author       JJJJoe
 // @description  AMQ song downloader
-// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js
-// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js
+// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
+// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js
 // @include      /^https:\/\/animemusicquiz\.com\/(\?.*|#.*)?$/
 // @connect      cdn.animenewsnetwork.com
 // @grant        GM_addStyle
