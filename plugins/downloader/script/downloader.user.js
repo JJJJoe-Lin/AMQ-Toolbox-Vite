@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Downloader(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.0
+// @version      0.4.1
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js

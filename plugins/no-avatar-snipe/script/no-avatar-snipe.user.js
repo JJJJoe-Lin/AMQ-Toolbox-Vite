@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ No Avatar Snipe(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.0
+// @version      0.4.1
 // @author       JJJJoe
 // @description  Avatar would not change when players answered
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/no-avatar-snipe/script/no-avatar-snipe.user.js

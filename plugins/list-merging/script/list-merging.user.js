@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ List Merging(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.0
+// @version      0.2.1
 // @author       JJJJoe
 // @description  Merge multiple list to one
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js
