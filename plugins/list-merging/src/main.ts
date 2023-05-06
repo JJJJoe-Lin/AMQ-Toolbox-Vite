@@ -12,7 +12,6 @@ import {
 import { AnimeListSite, Entry, redirectPathName, redirectURLHandler, Status } from 'anime-list';
 import { EntrySet, Included } from './animeEntries';
 import { AnimeListAccount } from './component';
-// import { doTest } from './test';
 import './style.css';
 
 declare var displayMessage: (title: string, msg: string, callback?: Function) => void;
@@ -195,7 +194,6 @@ function main() {
     onStartPageLoaded(() => {
         registerPlugin(new ListMerging());
     });
-    // doTest();
 }
 
 const path = new URL(document.URL);

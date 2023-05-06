@@ -1,3 +1,4 @@
+import { GM_setValue, GM_getValue } from '$';
 import { loadFromCookie, saveToCookie } from '../../../utils/cookies';
 import { loadFromLocalStorage, saveToLocalStorage } from '../../../utils/localStorage';
 import { IValuable, ValuableOpt } from '../valuable';

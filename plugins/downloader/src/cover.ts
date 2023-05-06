@@ -1,3 +1,4 @@
+import { GM_xmlhttpRequest } from '$';
 import { XMLParser } from 'fast-xml-parser';
 
 export interface Image {
