@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ List Merging(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.1
+// @version      0.2.2
 // @author       JJJJoe
 // @description  Merge multiple list to one
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js
@@ -1047,7 +1047,7 @@
           data: authGrantData.toString()
         });
         if (authGrantResp === null || authGrantResp.status !== 200) {
-          console.log(authGrantResp);
+          console.error("Authoriation Grant failed", authGrantResp);
           return new Error("Authoriation Grant failed");
         }
         const token = JSON.parse(authGrantResp.responseText);
@@ -1103,8 +1103,8 @@
         data: data.toString()
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${query2}`);
+        console.error(`Update entry (anime ID: ${id}) failed, query: ${query2}`, resp);
+        return new Error(`Query failed: Update entry (anime ID: ${id})`);
       }
       return null;
     }
@@ -1122,8 +1122,8 @@
         url: query2
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${query2}`);
+        console.error(`Delete entry (animeID: ${id}) failed, query: ${query2}`, resp);
+        return new Error(`Query failed: Delete entry (animeID: ${id})`);
       }
       return null;
     }
@@ -1167,8 +1167,8 @@
           url: query2
         });
         if (resp === null || resp.status !== 200) {
-          console.log(resp);
-          return new Error(`Query failed: ${query2}`);
+          console.error(`Get ${user.name}'s list failed, query: ${query2}`, resp);
+          return new Error(`Query failed: Get ${user.name}'s list`);
         }
         const respData = JSON.parse(resp.responseText);
         for (let entry of respData.data) {
@@ -1277,8 +1277,8 @@
         url: query2
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${query2}`);
+        console.error(`Get user failed, query: ${query2}`, resp);
+        return new Error(`Query failed: Get user`);
       }
       const user = JSON.parse(resp.responseText);
       return {
@@ -1398,7 +1398,7 @@
         });
         if (authGrantResp === null || authGrantResp.status !== 200) {
           if (authGrantResp !== null) {
-            console.log(authGrantResp);
+            console.error(`Authoriation Grant failed`, authGrantResp);
           }
           return new Error(`Authoriation Grant failed`);
         }
@@ -1547,7 +1547,7 @@
         data: JSON.stringify(data)
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
+        console.error(`Refresh token failed`, resp);
         return new Error("Refresh token failed");
       }
       const newToken = JSON.parse(resp.responseText);
@@ -1601,8 +1601,8 @@
         data: JSON.stringify(data)
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${data.query}`);
+        console.error(`Get ${userName}'s entry (animeID: ${animeId}) failed, query data: ${data.query}`, resp);
+        return new Error(`Query failed: Get ${userName}'s entry (animeID: ${animeId})`);
       }
       const entry = JSON.parse(resp.responseText).data.query;
       return {
@@ -1622,7 +1622,9 @@
       let varStr;
       let paramStr;
       let variables;
+      let userInfo;
       if ("id" in user) {
+        userInfo = user.id;
         varStr = "($userId: Int, $statuses: [MediaListStatus])";
         paramStr = "(userId: $userId, type: ANIME, status_in: $statuses)";
         variables = {
@@ -1630,6 +1632,7 @@
           statuses: stats
         };
       } else {
+        userInfo = user.name;
         varStr = "($userName: String, $statuses: [MediaListStatus])";
         paramStr = "(userName: $userName, type: ANIME, status_in: $statuses)";
         variables = {
@@ -1673,8 +1676,8 @@
         data: JSON.stringify(data)
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${data.query}`);
+        console.error(`Get ${userInfo}'s Entries failed, query data: ${data.query}`, resp);
+        return new Error(`Query failed: Get ${userInfo}'s Entries`);
       }
       const lists = JSON.parse(resp.responseText).data.query.lists;
       const ret = [];
@@ -1722,8 +1725,8 @@
             data: JSON.stringify(data)
           });
           if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${data.query}`);
+            console.error(`Query failed: Update entry (animeID: ${anime.id}) failed, query data: ${data.query}`, resp);
+            return new Error(`Query failed: Update entry (animeID: ${anime.id})`);
           }
           data.query = `mutation addAnimes {`;
         }
@@ -1757,8 +1760,8 @@
             data: JSON.stringify(data)
           });
           if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${data.query}`);
+            console.error(`Delete entries failed, query data: ${data.query}`, resp);
+            return new Error(`Query failed: Delete entries`);
           }
           data.query = `mutation delEntries {`;
         }
@@ -1803,8 +1806,8 @@
                 return this.getIds(entries);
               }
             }
-            console.log(resp);
-            return new Error(`Query failed: ${data.query}`);
+            console.error(`Get animeIDs from MAL IDs failed, query data: ${data.query}`, resp);
+            return new Error(`Query failed: Get animeIDs from MAL IDs`);
           }
           const medium = JSON.parse(resp.responseText).data;
           for (let [key, media] of Object.entries(medium)) {
@@ -2224,7 +2227,7 @@
           data: authData.toString()
         });
         if (resp === null || resp.status !== 200) {
-          console.log(resp);
+          console.error(`Password Grant failed, login data: ${authData}`, resp);
           return new Error("Password Grant failed");
         }
         const token = JSON.parse(resp.responseText);
@@ -2305,12 +2308,13 @@
     }
     async importList(entries, overwrite) {
       if (overwrite) {
+        console.log("[importList] overwrite enable, delete all entries");
         const err = await this.deleteList(["Completed", "Dropped", "On-Hold", "Plan to Watch", "Watching"]);
         if (err) {
           return err;
         }
-        console.log("[importList] delete all entries successfully");
       }
+      console.log("[importList] get exist entries of all status");
       const user = await this.getMyInfo();
       if (user instanceof Error) {
         return user;
@@ -2322,7 +2326,7 @@
       if (existEntries instanceof Error) {
         return existEntries;
       }
-      console.log("[importList] get exist entries successfully", existEntries);
+      console.log("[importList] import entries to list", existEntries);
       const tasks = [];
       for (let entry of entries) {
         await asyncWait(this.reqDelay);
@@ -2346,7 +2350,8 @@
           console.log(`[importList] all animes are updated`);
           break;
         } else if (retry === 0) {
-          return new Error(`${count} animes are not updated`);
+          console.warn(`[importList] ${count} entries are not updated`);
+          return new Error(`${count} entries are not updated`);
         } else {
           console.log(`[importList] ${count} entries are not updated, retry...`);
         }
@@ -2360,20 +2365,13 @@
       }
       let retry = 3;
       while (retry--) {
+        console.log(`[deleteList] get ${statuses} entries`);
         const entries = await this.getEntries({ id: user.id }, statuses);
         if (entries instanceof Error) {
           return entries;
         }
-        console.log(`[deleteList] get ${statuses} entries successfully`, entries);
-        const count = entries.length;
-        if (count === 0) {
-          console.log(`[deleteList] all entries are deleted`);
-          break;
-        } else if (retry === 0) {
-          return new Error(`Some ${count} entries are not deleted`);
-        } else {
-          console.log(`[deleteList] ${count} entries are ready to delete`);
-        }
+        console.log(`[deleteList] delete entries form list`, entries);
+        let count = 0;
         const reqs = [];
         for (let entry of entries) {
           await asyncWait(this.reqDelay);
@@ -2382,12 +2380,21 @@
         const errs = await Promise.all(reqs);
         for (let [idx, err] of errs.entries()) {
           if (err) {
+            count++;
             if (entries[idx].media) {
-              console.warn(`Anime "${entries[idx].media.title}" delete failed:`, err);
+              console.warn(`[deleteList] Anime "${entries[idx].media.title}" delete failed:`, err);
             } else {
-              console.warn(`Entry ID "${entries[idx].id}" delete failed:`, err);
+              console.warn(`[deleteList] Entry ID "${entries[idx].id}" delete failed:`, err);
             }
           }
+        }
+        if (count === 0) {
+          console.log(`[deleteList] all entries are deleted`);
+          break;
+        } else if (retry === 0) {
+          return new Error(`${count} entries are not deleted`);
+        } else {
+          console.log(`[deleteList] ${count} entries are not deleted, retry...`);
         }
       }
       return null;
@@ -2465,14 +2472,63 @@
         });
       }
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${query$1}`);
+        console.error(`Get user failed, query: ${query$1}`, resp);
+        return new Error(`Query failed: Get user`);
       }
       const user = JSON.parse(resp.responseText).data[0];
       return {
         id: user.id,
         name: user.attributes.name
       };
+    }
+    handleEntriesResp(resp) {
+      let ret = [];
+      if (resp === null || resp.status !== 200) {
+        return new Error(`Query failed: Get `);
+      }
+      const entries = deserialise(JSON.parse(resp.responseText));
+      if (!entries) {
+        return new Error(`Invalid query response: Can't deserialise `);
+      } else if (!entries.data) {
+        return new Error(`Invalid query response of query: No data in `);
+      }
+      for (let entry of entries.data) {
+        const kitsuEntry = {
+          id: entry.id,
+          selfLink: entry.links.self
+        };
+        const anime = entry.anime.data;
+        if (anime === void 0) {
+          console.warn(`[handleEntry] No anime data in entry`, entry);
+          ret.push(kitsuEntry);
+          continue;
+        }
+        let mappings = anime.mappings.data;
+        if (mappings === void 0) {
+          console.warn(`[handleEntry] No mappings data in entry`, entry);
+          mappings = [];
+        }
+        let malID;
+        const malMapping = mappings.find((mapping) => {
+          return mapping.externalSite === "myanimelist/anime";
+        });
+        if (malMapping === void 0) {
+          console.warn(`[handleEntry] No MAL mapping data in entry`, entry);
+          malID = 0;
+        } else {
+          malID = parseInt(malMapping.externalId, 10);
+        }
+        kitsuEntry.media = {
+          malID,
+          status: ToGlobalStatus[entry.status],
+          title: anime.canonicalTitle,
+          type: ToGlobalSeriesType[anime.subtype],
+          updateOnImport: true,
+          numEpisodes: anime.episodeCount
+        };
+        ret.push(kitsuEntry);
+      }
+      return ret;
     }
     async getEntry(user, animeId) {
       const token = await this.getToken();
@@ -2504,49 +2560,18 @@
         },
         url: query$1
       });
-      if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${query$1}`);
+      const kitsuEntry = this.handleEntriesResp(resp);
+      if (kitsuEntry instanceof Error) {
+        kitsuEntry.message += `user ${userId}'s entry`;
+        console.error(`${kitsuEntry.message}, query: ${query$1}`, resp);
+        return kitsuEntry;
       }
-      const entries = deserialise(JSON.parse(resp.responseText));
-      if (!entries) {
-        return new Error(`[getEntry] Invalid response of ${query$1}: Can't deserialise`);
-      } else if (!entries.data) {
-        return new Error(`[getEntry] Invalid response of ${query$1}: No data in entries`);
-      } else if (entries.data.length === 0) {
+      if (kitsuEntry.length == 0) {
         return null;
+      } else if (kitsuEntry.length != 1) {
+        console.warn(`[getEntry] There are more than 1 result for ${query$1}`);
       }
-      const entry = entries.data[0];
-      const kitsuEntry = {
-        id: entry.id,
-        selfLink: entry.links.self
-      };
-      const anime = entry.anime.data;
-      if (anime === void 0) {
-        console.warn(`[getEntry] No anime data in entry`, entry);
-        return kitsuEntry;
-      }
-      const mappings = anime.mappings.data;
-      if (mappings === void 0) {
-        console.warn(`[getEntry] No mappings data in entry`, entry);
-        return kitsuEntry;
-      }
-      const malMapping = mappings.find((mapping) => {
-        return mapping.externalSite === "myanimelist/anime";
-      });
-      if (malMapping === void 0) {
-        console.warn(`[getEntry] No MAL mapping data in entry`, entry);
-        return kitsuEntry;
-      }
-      kitsuEntry.media = {
-        malID: parseInt(malMapping.externalId, 10),
-        status: ToGlobalStatus[entry.status],
-        title: anime.canonicalTitle,
-        type: ToGlobalSeriesType[anime.subtype],
-        updateOnImport: true,
-        numEpisodes: anime.episodeCount
-      };
-      return kitsuEntry;
+      return kitsuEntry[0];
     }
     async getEntries(user, statuses) {
       let headers = {
@@ -2586,51 +2611,15 @@
           headers,
           url: query$1
         });
-        if (resp === null || resp.status !== 200) {
-          console.log(resp);
-          return new Error(`Query failed: ${query$1}`);
+        const kitsuEntries = this.handleEntriesResp(resp);
+        if (kitsuEntries instanceof Error) {
+          kitsuEntries.message += `user ${userId}'s entries`;
+          console.error(`${kitsuEntries.message}, query: ${query$1}`, resp);
+          return kitsuEntries;
+        } else {
+          ret.push(...kitsuEntries);
         }
         const entries = deserialise(JSON.parse(resp.responseText));
-        if (!entries) {
-          return new Error(`[getEntries] Invalid response of ${query$1}: Can't deserialise`);
-        } else if (!entries.data) {
-          return new Error(`[getEntries] Invalid response of ${query$1}: No data in entries`);
-        }
-        for (let entry of entries.data) {
-          const kitsuEntry = {
-            id: entry.id,
-            selfLink: entry.links.self
-          };
-          const anime = entry.anime.data;
-          if (anime === void 0) {
-            console.warn(`[getEntries] No anime data in entry`, entry);
-            ret.push(kitsuEntry);
-            continue;
-          }
-          const mappings = anime.mappings.data;
-          if (mappings === void 0) {
-            console.warn(`[getEntries] No mappings data in entry`, entry);
-            ret.push(kitsuEntry);
-            continue;
-          }
-          const malMapping = mappings.find((mapping) => {
-            return mapping.externalSite === "myanimelist/anime";
-          });
-          if (malMapping === void 0) {
-            console.warn(`[getEntries] No MAL mapping data in entry`, entry);
-            ret.push(kitsuEntry);
-            continue;
-          }
-          kitsuEntry.media = {
-            malID: parseInt(malMapping.externalId, 10),
-            status: ToGlobalStatus[entry.status],
-            title: anime.canonicalTitle,
-            type: ToGlobalSeriesType[anime.subtype],
-            updateOnImport: true,
-            numEpisodes: anime.episodeCount
-          };
-          ret.push(kitsuEntry);
-        }
         query$1 = entries.links.next;
       }
       return ret;
@@ -2650,8 +2639,8 @@
         url: entry.selfLink
       });
       if (resp === null || resp.status !== 204) {
-        console.log(resp);
-        return new Error(`Delete query failed: ${entry.selfLink}`);
+        console.error(`Failed query: ${entry.selfLink}`, resp);
+        return new Error(`Query failed: Delete entry (animeID: ${entry.id})`);
       }
       return null;
     }
@@ -2690,8 +2679,8 @@
         data: JSON.stringify(serialise("libraryEntries", data))
       });
       if (resp === null || resp.status !== 201) {
-        console.log(resp);
-        return new Error(`Update anime query failed: ${JSON.stringify(data)}`);
+        console.error(`Add entry (animeID: ${animeId}) failed, query data: ${JSON.stringify(data)}`, resp);
+        return new Error(`Query failed: Add entry (animeID: ${animeId})`);
       }
       return null;
     }
@@ -2715,8 +2704,8 @@
         data: JSON.stringify(serialise("libraryEntries", data))
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Update entry failed: ${JSON.stringify(data)}`);
+        console.error(`Update entry (animeID: ${entry.id}) failed, query data: ${JSON.stringify(data)}`, resp);
+        return new Error(`Query failed: Update entry (animeID: ${entry.id})`);
       }
       return null;
     }
@@ -2731,7 +2720,7 @@
       } else {
         const animeId = await this.getAnimeId(entry.malID);
         if (animeId === null) {
-          return new Error(`No anime '${entry.title}' in Kitsu`);
+          return new Error(`No anime '${entry.title}' (MAL ID: ${entry.malID}) in Kitsu`);
         } else if (animeId instanceof Error) {
           return animeId;
         } else {
@@ -2756,12 +2745,13 @@
         url: query$1
       });
       if (resp === null || resp.status !== 200) {
-        console.log(resp);
-        return new Error(`Query failed: ${query$1}`);
+        console.error(`Get anime ID from MAL ID (${malId}) failed, query: ${query$1}`, resp);
+        return new Error(`Query failed: Get anime ID from MAL ID (${malId})`);
       }
       const mappings = deserialise(JSON.parse(resp.responseText));
       if (!mappings) {
-        return new Error(`Invalid response of ${query$1}: Can't deserialise`);
+        console.error(`Get anime ID from MAL ID (${malId}) failed, can't deserialise response of ${query$1}`, resp);
+        return new Error(`Get anime ID from MAL ID (${malId}) failed, can't deserialise response`);
       } else if (!mappings.data) {
         console.warn(`No data in mappings of malId=${malId}`);
         return null;
@@ -3046,12 +3036,12 @@
       const spinner = saveBtn.self.find("i");
       saveBtn.self.on("click", async () => {
         spinner.removeClass("hide");
-        const err = await this.mergeLists();
+        const errMessage = await this.mergeLists();
         spinner.addClass("hide");
-        if (err) {
-          displayMessage("Merge Failed", err.message);
+        if (errMessage) {
+          displayHtmlMessage("Merge Failed", errMessage, "OK");
         } else {
-          displayMessage("Merge Successful", "The lists has been merged to the target");
+          displayHtmlMessage("Merge Successful", "The lists has been merged to the target", "OK");
         }
       });
       tableBlock.append(this.mergedLists.self);
@@ -3071,36 +3061,52 @@
       const site = this.site.getValue();
       const status = this.status.getValue();
       if (site === void 0 || status === void 0) {
-        return new Error("missing some target account information");
+        return "Missing target account information";
       }
       const account = this.account.getAccount(site);
-      console.log(`[mergeLists] get merged entries`);
-      const entries = await this.getMergedEntries();
-      if (entries instanceof Error) {
-        return new Error(`failed to merge lists: ${entries}`);
+      if (!account.logined()) {
+        return "You should login target account first";
       }
-      for (let entry of entries) {
-        entry.status = status;
+      console.log(`[List Merging] Get merged entries from source lists`);
+      const result = await this.getMergedEntries();
+      if (result.entries.length == 0 && result.errors.length != 0) {
+        return `<p><b>Failed to merge lists:</b></p>${genErrorMessage(result.errors)}`;
+      } else if (result.entries.length == 0) {
+        return "No entry to be import";
       }
-      console.log(`[mergeLists] delete target's '${status}' list`);
+      console.log(`[List Merging] Delete target's '${status}' list`);
       let err = await account.deleteList([status]);
       if (err) {
-        return new Error(`failed to delete entries of target: ${err}`);
+        return `<p>Failed to delete entries of target:</p><p>${err.message}</p>`;
       }
-      console.log(`[mergeLists] import merged entries to target`);
-      err = await account.importList(entries, false);
+      for (let entry of result.entries) {
+        entry.status = status;
+      }
+      console.log(`[List Merging] Import merged entries to target`);
+      err = await account.importList(result.entries, false);
       if (err) {
-        return new Error(`failed to import entries to target: ${err}`);
+        return `<p>Failed to import entries to target:</p><p>${err.message}</p>`;
+      }
+      if (result.errors.length != 0) {
+        return `<p><b>Merge done, but some lists are skipped:</b></p>${genErrorMessage(result.errors)}`;
       }
       return null;
     }
     async getMergedEntries() {
       const entrySet = new EntrySet();
       const mergedLists = this.mergedLists.getValue();
+      const ret = {
+        entries: [],
+        errors: []
+      };
       for (let list of mergedLists) {
         if (list.accountType === void 0 || !list.user || list.included === void 0) {
-          return new Error("missing some list information");
-        } else if (list.status.length === 0 || list.included === "Skip") {
+          ret.errors.push(new Error("Missing some list information"));
+          return ret;
+        }
+      }
+      for (let list of mergedLists) {
+        if (list.status.length === 0 || list.included === "Skip" || list.included === void 0) {
           continue;
         }
         console.log(`[getMergedEntries] get ${list.user} List`);
@@ -3117,12 +3123,34 @@
           );
         }
         if (entries instanceof Error) {
-          return new Error(`Failed to get [${list.accountType}]${list.user}'s list: ${entries}`);
+          entries.message = `❌ Failed to get ${list.user}'s ${list.accountType} list:<br>${entries.message}`;
+          ret.errors.push(entries);
+          continue;
+        } else {
+          let isError = false;
+          for (let entry of entries) {
+            if (entry.malID === 0) {
+              ret.errors.push(new Error(`❌ Anime "${entry.title}" has no MAL ID in ${list.user}'s ${list.accountType} list`));
+              isError = true;
+            }
+          }
+          if (isError) {
+            continue;
+          } else {
+            entrySet.update(entries, list.included);
+          }
         }
-        entrySet.update(entries, list.included);
       }
-      return entrySet.getResult();
+      ret.entries = entrySet.getResult();
+      return ret;
     }
+  }
+  function genErrorMessage(errs) {
+    let ret = "";
+    for (let err of errs) {
+      ret += `<p>${err.message}</p>`;
+    }
+    return ret;
   }
   function main() {
     onStartPageLoaded(() => {

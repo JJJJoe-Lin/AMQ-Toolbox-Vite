@@ -111,7 +111,7 @@ export class AniList implements AnimeList.AnimeList {
             });
             if (authGrantResp === null || authGrantResp.status !== 200) {
                 if (authGrantResp !== null) {
-                    console.log(authGrantResp);
+                    console.error(`Authoriation Grant failed`, authGrantResp);
                 }
                 return new Error(`Authoriation Grant failed`);
             }
@@ -271,7 +271,7 @@ export class AniList implements AnimeList.AnimeList {
             data: JSON.stringify(data),
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
+            console.error(`Refresh token failed`, resp);
             return new Error('Refresh token failed');
         }
         const newToken: AniListAccessToken = JSON.parse(resp.responseText);
@@ -327,8 +327,8 @@ export class AniList implements AnimeList.AnimeList {
             data: JSON.stringify(data),
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${data.query}`);
+            console.error(`Get ${userName}'s entry (animeID: ${animeId}) failed, query data: ${data.query}`, resp);
+            return new Error(`Query failed: Get ${userName}'s entry (animeID: ${animeId})`);
         }
         const entry = JSON.parse(resp.responseText).data.query;
         return {
@@ -350,7 +350,9 @@ export class AniList implements AnimeList.AnimeList {
         let varStr: string;
         let paramStr: string;
         let variables: GraphQLData['variables'];
+        let userInfo: number | string;
         if ('id' in user) {
+            userInfo = user.id;
             varStr = '($userId: Int, $statuses: [MediaListStatus])';
             paramStr = '(userId: $userId, type: ANIME, status_in: $statuses)';
             variables = {
@@ -358,6 +360,7 @@ export class AniList implements AnimeList.AnimeList {
                 statuses: stats,
             };
         } else {
+            userInfo = user.name;
             varStr = '($userName: String, $statuses: [MediaListStatus])';
             paramStr = '(userName: $userName, type: ANIME, status_in: $statuses)';
             variables = {
@@ -401,8 +404,8 @@ export class AniList implements AnimeList.AnimeList {
             data: JSON.stringify(data),
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${data.query}`);
+            console.error(`Get ${userInfo}'s Entries failed, query data: ${data.query}`, resp);
+            return new Error(`Query failed: Get ${userInfo}'s Entries`);
         }
         const lists = JSON.parse(resp.responseText).data.query.lists;
         const ret: AniListEntry[] = [];
@@ -451,8 +454,8 @@ export class AniList implements AnimeList.AnimeList {
                     data: JSON.stringify(data),
                 });
                 if (resp === null || resp.status !== 200) {
-                    console.log(resp);
-                    return new Error(`Query failed: ${data.query}`);
+                    console.error(`Query failed: Update entry (animeID: ${anime.id}) failed, query data: ${data.query}`, resp);
+                    return new Error(`Query failed: Update entry (animeID: ${anime.id})`);
                 }
                 data.query = `mutation addAnimes {`;
             }
@@ -487,8 +490,8 @@ export class AniList implements AnimeList.AnimeList {
                     data: JSON.stringify(data),
                 });
                 if (resp === null || resp.status !== 200) {
-                    console.log(resp);
-                    return new Error(`Query failed: ${data.query}`);
+                    console.error(`Delete entries failed, query data: ${data.query}`, resp);
+                    return new Error(`Query failed: Delete entries`);
                 }
                 // TODO: check deleted of response
                 data.query = `mutation delEntries {`;
@@ -536,8 +539,8 @@ export class AniList implements AnimeList.AnimeList {
                             return this.getIds(entries);
                         }
                     }
-                    console.log(resp);
-                    return new Error(`Query failed: ${data.query}`);
+                    console.error(`Get animeIDs from MAL IDs failed, query data: ${data.query}`, resp);
+                    return new Error(`Query failed: Get animeIDs from MAL IDs`);
                 }
                 const medium: Record<string, any> = JSON.parse(resp.responseText).data;
                 for (let [key, media] of Object.entries(medium)) {
