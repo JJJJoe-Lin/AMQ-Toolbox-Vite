@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         AMQ List Merging(dev)
+// @name         AMQ List Merging
 // @namespace    https://github.com/JJJJoe-Lin
 // @version      0.2.2
 // @author       JJJJoe
 // @description  Merge multiple list to one
-// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js
-// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js
+// @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js
+// @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js
 // @include      /^https:\/\/animemusicquiz\.com\/(\?.*|#.*)?$/
 // @include      https://animemusicquiz.com/amqToolbox/oauth2?*
 // @connect      myanimelist.net
