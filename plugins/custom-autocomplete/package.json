@@ -1,0 +1,22 @@
+{
+  "name": "custom-autocomplete",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.14",
+    "@types/node": "^18.0.0",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4",
+    "vite-plugin-monkey": "^3.0.1"
+  },
+  "dependencies": {
+    "amq-toolbox": "0.1.1",
+    "fzf": "^0.5.2"
+  }
+}
