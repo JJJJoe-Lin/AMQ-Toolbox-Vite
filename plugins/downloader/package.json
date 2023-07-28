@@ -14,7 +14,7 @@
     "vite-plugin-monkey": "^3.0.1"
   },
   "dependencies": {
-    "amq-toolbox": "0.1.1",
+    "amq-toolbox": "0.1.2",
     "fast-xml-parser": "^4.0.9",
     "mp3tag.js": "^3.3.2"
   }

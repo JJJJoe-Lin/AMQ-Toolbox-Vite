@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Quick Answer
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.1
+// @version      0.4.2
 // @author       JJJJoe
 // @description  AMQ Quick-Answer Buttons
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js
@@ -130,6 +130,37 @@
       this.self.modal("hide");
     }
   }
+  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
+  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
+  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
+  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
+  const attr = {
+    expires: 365,
+    Domain: "animemusicquiz.com",
+    secure: true
+  };
+  function saveToCookie(key, entry) {
+    Cookies.set(key, JSON.stringify(entry), attr);
+  }
+  function loadFromCookie(key, defaultVal) {
+    let val = Cookies.get(key);
+    if (val === void 0) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val);
+    }
+  }
+  function saveToLocalStorage(key, entry) {
+    localStorage.setItem(key, JSON.stringify(entry));
+  }
+  function loadFromLocalStorage(key, defaultVal) {
+    const val = localStorage.getItem(key);
+    if (val === null) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val);
+    }
+  }
   class Tab extends Container {
     constructor(opt) {
       super(opt);
@@ -225,37 +256,6 @@
       tab.self.off("click");
       tab.self.detach();
       tab.content.detach();
-    }
-  }
-  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
-  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
-  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
-  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
-  const attr = {
-    expires: 365,
-    Domain: "animemusicquiz.com",
-    secure: true
-  };
-  function saveToCookie(key, entry) {
-    Cookies.set(key, JSON.stringify(entry), attr);
-  }
-  function loadFromCookie(key, defaultVal) {
-    let val = Cookies.get(key);
-    if (val === void 0) {
-      return defaultVal;
-    } else {
-      return JSON.parse(val);
-    }
-  }
-  function saveToLocalStorage(key, entry) {
-    localStorage.setItem(key, JSON.stringify(entry));
-  }
-  function loadFromLocalStorage(key, defaultVal) {
-    const val = localStorage.getItem(key);
-    if (val === null) {
-      return defaultVal;
-    } else {
-      return JSON.parse(val);
     }
   }
   class TextInput {
@@ -718,9 +718,17 @@
       const prevOrder = this.prevPluginsInfo.findIndex((info) => info.pluginName === plugin.name);
       if (prevOrder !== -1) {
         if (this.prevPluginsInfo[prevOrder].enabled) {
-          plugin.enable();
+          if (!plugin.enabled()) {
+            plugin.enable();
+          }
         } else {
-          plugin.disable();
+          if (plugin.enabled()) {
+            plugin.disable();
+          }
+        }
+      } else {
+        if (!plugin.enabled()) {
+          plugin.enable();
         }
       }
       const pluginInfos = this.pluginTable.getValue();
@@ -760,7 +768,9 @@
           throw new Error(`Reload Error`);
         }
         if (pluginInfo.enabled) {
-          plugin.enable();
+          if (!plugin.enabled()) {
+            plugin.enable();
+          }
           if (plugin.view) {
             this.viewBlock.push(new View({
               title: plugin.name,
@@ -774,7 +784,9 @@
             this.settingModal.push(plugin.settingTab);
           }
         } else {
-          plugin.disable();
+          if (plugin.enabled()) {
+            plugin.disable();
+          }
         }
       }
     }

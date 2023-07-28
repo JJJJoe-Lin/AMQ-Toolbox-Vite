@@ -1,4 +1,5 @@
 import { IOptionComponent } from '../valuable/option/option';
+import { RadioOption } from '../valuable/option/radioOption';
 import { Container, ContainerOpt, IContainer } from './container';
 
 type AnyOption = IOptionComponent<any>;
@@ -66,6 +67,9 @@ export class Options extends Container<AnyOption> implements IOptions {
                     option.disable();
                 }
             }
+        }
+        if (opt instanceof RadioOption) {
+            opt.relayout();
         }
     }
 }

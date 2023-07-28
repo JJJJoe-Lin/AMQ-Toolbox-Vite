@@ -51,9 +51,7 @@ export class RadioOption<T extends string | number | boolean> implements IRadioO
                 label.popover({
                     content: opt.description,
                     trigger: 'hover',
-                    html: true,
                     placement: 'top',
-                    container: '#settingModal',
                 });
             }
             this.self.append(label);

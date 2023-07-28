@@ -8,6 +8,11 @@ Changelog of library
 - modify amq-toolbox internal arch
 - fix render of amq-toolbox tab
 
+### 0.1.2
+- fix bug: plugin would enable many time
+- fix bug: option popover description can't work
+- fix bug: ratio option render
+
 ## anime-list
 ### 0.1.1
 - Add documentations
