@@ -118,10 +118,20 @@ export class Toolbox {
         this.plugins.set(plugin.name, plugin);
         const prevOrder = this.prevPluginsInfo.findIndex(info => info.pluginName === plugin.name);
         if (prevOrder !== -1) {
+            // plugin info existed, enable/disable plugin by info
             if (this.prevPluginsInfo[prevOrder].enabled) {
-                plugin.enable();
+                if (!plugin.enabled()) {
+                    plugin.enable();
+                }
             } else {
-                plugin.disable();
+                if (plugin.enabled()) {
+                    plugin.disable();
+                }
+            }
+        } else {
+            // plugin info didn't exist, enable plugin by default
+            if (!plugin.enabled()) {
+                plugin.enable();
             }
         }
         const pluginInfos = this.pluginTable.getValue();
@@ -164,7 +174,9 @@ export class Toolbox {
                 throw new Error(`Reload Error`);
             }
             if (pluginInfo.enabled) {
-                plugin.enable();
+                if (!plugin.enabled()) {
+                    plugin.enable();
+                }
                 if (plugin.view) {
                     this.viewBlock.push(new View({
                         title: plugin.name,
@@ -178,7 +190,9 @@ export class Toolbox {
                     this.settingModal.push(plugin.settingTab);
                 }
             } else {
-                plugin.disable();
+                if (plugin.enabled()) {
+                    plugin.disable();
+                }
             }
         }
     }

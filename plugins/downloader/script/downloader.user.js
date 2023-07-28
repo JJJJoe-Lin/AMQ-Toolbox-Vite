@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Downloader(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.1
+// @version      0.4.2
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js
@@ -132,6 +132,147 @@
       this.self.modal("hide");
     }
   }
+  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
+  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
+  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
+  var _GM_xmlhttpRequest = /* @__PURE__ */ (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
+  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
+  const attr = {
+    expires: 365,
+    Domain: "animemusicquiz.com",
+    secure: true
+  };
+  function saveToCookie(key, entry) {
+    Cookies.set(key, JSON.stringify(entry), attr);
+  }
+  function loadFromCookie(key, defaultVal) {
+    let val2 = Cookies.get(key);
+    if (val2 === void 0) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val2);
+    }
+  }
+  function saveToLocalStorage(key, entry) {
+    localStorage.setItem(key, JSON.stringify(entry));
+  }
+  function loadFromLocalStorage(key, defaultVal) {
+    const val2 = localStorage.getItem(key);
+    if (val2 === null) {
+      return defaultVal;
+    } else {
+      return JSON.parse(val2);
+    }
+  }
+  function saveStorable(comp, type) {
+    switch (type) {
+      case "Script":
+        _GM_setValue(comp.name, comp.getValue());
+        break;
+      case "LocalStorage":
+        saveToLocalStorage(comp.name, comp.getValue());
+        break;
+      case "Cookie":
+        saveToCookie(comp.name, comp.getValue());
+        break;
+    }
+  }
+  function loadStorable(comp, type) {
+    let val2;
+    switch (type) {
+      case "Script":
+        val2 = _GM_getValue(comp.name);
+        break;
+      case "LocalStorage":
+        val2 = loadFromLocalStorage(comp.name);
+        break;
+      case "Cookie":
+        val2 = loadFromCookie(comp.name);
+        break;
+    }
+    if (val2 !== void 0) {
+      comp.setValue(val2);
+    }
+  }
+  class RadioOption {
+    constructor(opt) {
+      __publicField(this, "name");
+      __publicField(this, "self");
+      __publicField(this, "input");
+      __publicField(this, "enables");
+      __publicField(this, "saveIn");
+      __publicField(this, "choices");
+      const id = opt.id === void 0 ? "" : opt.id;
+      const cls = opt.class === void 0 ? "" : opt.class;
+      this.saveIn = opt.saveIn;
+      this.enables = opt.enables;
+      this.name = opt.name;
+      if (opt.choices.length > 10) {
+        this.choices = opt.choices.slice(0, 10);
+      } else {
+        this.choices = opt.choices;
+      }
+      this.self = $(`<div class='amqtbRadio'></div>`).attr("id", id).addClass(cls).addClass(opt.offset !== 0 ? `offset${opt.offset}` : "");
+      if (opt.label) {
+        const label = $(`<label></label>`).text(opt.label).css("width", "100%");
+        if (opt.description) {
+          label.popover({
+            content: opt.description,
+            trigger: "hover",
+            placement: "top"
+          });
+        }
+        this.self.append(label);
+      }
+      this.input = $(`<input class='sliderInput' type='text'>`);
+      this.self.append(this.input);
+      this.input.bootstrapSlider({
+        id: opt.inputId,
+        ticks: this.choices.map((_, idx) => idx),
+        ticks_labels: this.choices.map((ch) => ch.label),
+        value: 0,
+        formatter: (idx) => this.choices[idx].label,
+        selection: "none"
+      });
+      this.input.on("change", () => {
+        this.save();
+        this.input.trigger("amqtoolbox.option.enables", this.getValue());
+      });
+      const val2 = opt.defaultValue === void 0 ? this.choices[0].value : opt.defaultValue;
+      this.setValue(val2);
+      this.load();
+      this.input.trigger("amqtoolbox.option.enables", this.getValue());
+    }
+    getValue() {
+      const idx = this.input.bootstrapSlider("getValue");
+      return this.choices[idx].value;
+    }
+    setValue(val2) {
+      const idx = this.choices.findIndex((c) => c.value === val2);
+      if (idx !== -1) {
+        this.input.bootstrapSlider("setValue", idx);
+      }
+    }
+    enabled() {
+      return this.input.bootstrapSlider("isEnabled");
+    }
+    enable() {
+      this.self.show();
+      this.relayout();
+    }
+    disable() {
+      this.self.hide();
+    }
+    save() {
+      saveStorable(this, this.saveIn);
+    }
+    load() {
+      loadStorable(this, this.saveIn);
+    }
+    relayout() {
+      this.input.bootstrapSlider("relayout");
+    }
+  }
   class Options extends Container {
     constructor(opt) {
       super(opt);
@@ -178,6 +319,9 @@
             option.disable();
           }
         }
+      }
+      if (opt instanceof RadioOption) {
+        opt.relayout();
       }
     }
   }
@@ -314,68 +458,6 @@
       tab.content.detach();
     }
   }
-  var _GM_addStyle = /* @__PURE__ */ (() => typeof GM_addStyle != "undefined" ? GM_addStyle : void 0)();
-  var _GM_getValue = /* @__PURE__ */ (() => typeof GM_getValue != "undefined" ? GM_getValue : void 0)();
-  var _GM_setValue = /* @__PURE__ */ (() => typeof GM_setValue != "undefined" ? GM_setValue : void 0)();
-  var _GM_xmlhttpRequest = /* @__PURE__ */ (() => typeof GM_xmlhttpRequest != "undefined" ? GM_xmlhttpRequest : void 0)();
-  var _unsafeWindow = /* @__PURE__ */ (() => typeof unsafeWindow != "undefined" ? unsafeWindow : void 0)();
-  const attr = {
-    expires: 365,
-    Domain: "animemusicquiz.com",
-    secure: true
-  };
-  function saveToCookie(key, entry) {
-    Cookies.set(key, JSON.stringify(entry), attr);
-  }
-  function loadFromCookie(key, defaultVal) {
-    let val2 = Cookies.get(key);
-    if (val2 === void 0) {
-      return defaultVal;
-    } else {
-      return JSON.parse(val2);
-    }
-  }
-  function saveToLocalStorage(key, entry) {
-    localStorage.setItem(key, JSON.stringify(entry));
-  }
-  function loadFromLocalStorage(key, defaultVal) {
-    const val2 = localStorage.getItem(key);
-    if (val2 === null) {
-      return defaultVal;
-    } else {
-      return JSON.parse(val2);
-    }
-  }
-  function saveStorable(comp, type) {
-    switch (type) {
-      case "Script":
-        _GM_setValue(comp.name, comp.getValue());
-        break;
-      case "LocalStorage":
-        saveToLocalStorage(comp.name, comp.getValue());
-        break;
-      case "Cookie":
-        saveToCookie(comp.name, comp.getValue());
-        break;
-    }
-  }
-  function loadStorable(comp, type) {
-    let val2;
-    switch (type) {
-      case "Script":
-        val2 = _GM_getValue(comp.name);
-        break;
-      case "LocalStorage":
-        val2 = loadFromLocalStorage(comp.name);
-        break;
-      case "Cookie":
-        val2 = loadFromCookie(comp.name);
-        break;
-    }
-    if (val2 !== void 0) {
-      comp.setValue(val2);
-    }
-  }
   class CheckboxOption {
     constructor(opt) {
       __publicField(this, "name");
@@ -399,9 +481,7 @@
         textLabel.popover({
           content: opt.description,
           trigger: "hover",
-          html: true,
-          placement: "top",
-          container: "#settingModal"
+          placement: "top"
         });
       }
       this.self = $(`<div class='customCheckboxContainer'></div>`).attr("id", id).addClass(cls).addClass(opt.offset !== 0 ? `offset${opt.offset}` : "").append(
@@ -432,87 +512,6 @@
     }
     load() {
       loadStorable(this, this.saveIn);
-    }
-  }
-  class RadioOption {
-    constructor(opt) {
-      __publicField(this, "name");
-      __publicField(this, "self");
-      __publicField(this, "input");
-      __publicField(this, "enables");
-      __publicField(this, "saveIn");
-      __publicField(this, "choices");
-      const id = opt.id === void 0 ? "" : opt.id;
-      const cls = opt.class === void 0 ? "" : opt.class;
-      this.saveIn = opt.saveIn;
-      this.enables = opt.enables;
-      this.name = opt.name;
-      if (opt.choices.length > 10) {
-        this.choices = opt.choices.slice(0, 10);
-      } else {
-        this.choices = opt.choices;
-      }
-      this.self = $(`<div class='amqtbRadio'></div>`).attr("id", id).addClass(cls).addClass(opt.offset !== 0 ? `offset${opt.offset}` : "");
-      if (opt.label) {
-        const label = $(`<label></label>`).text(opt.label).css("width", "100%");
-        if (opt.description) {
-          label.popover({
-            content: opt.description,
-            trigger: "hover",
-            html: true,
-            placement: "top",
-            container: "#settingModal"
-          });
-        }
-        this.self.append(label);
-      }
-      this.input = $(`<input class='sliderInput' type='text'>`);
-      this.self.append(this.input);
-      this.input.bootstrapSlider({
-        id: opt.inputId,
-        ticks: this.choices.map((_, idx) => idx),
-        ticks_labels: this.choices.map((ch) => ch.label),
-        value: 0,
-        formatter: (idx) => this.choices[idx].label,
-        selection: "none"
-      });
-      this.input.on("change", () => {
-        this.save();
-        this.input.trigger("amqtoolbox.option.enables", this.getValue());
-      });
-      const val2 = opt.defaultValue === void 0 ? this.choices[0].value : opt.defaultValue;
-      this.setValue(val2);
-      this.load();
-      this.input.trigger("amqtoolbox.option.enables", this.getValue());
-    }
-    getValue() {
-      const idx = this.input.bootstrapSlider("getValue");
-      return this.choices[idx].value;
-    }
-    setValue(val2) {
-      const idx = this.choices.findIndex((c) => c.value === val2);
-      if (idx !== -1) {
-        this.input.bootstrapSlider("setValue", idx);
-      }
-    }
-    enabled() {
-      return this.input.bootstrapSlider("isEnabled");
-    }
-    enable() {
-      this.self.show();
-      this.relayout();
-    }
-    disable() {
-      this.self.hide();
-    }
-    save() {
-      saveStorable(this, this.saveIn);
-    }
-    load() {
-      loadStorable(this, this.saveIn);
-    }
-    relayout() {
-      this.input.bootstrapSlider("relayout");
     }
   }
   function toTitle(str) {
@@ -946,9 +945,17 @@
       const prevOrder = this.prevPluginsInfo.findIndex((info) => info.pluginName === plugin.name);
       if (prevOrder !== -1) {
         if (this.prevPluginsInfo[prevOrder].enabled) {
-          plugin.enable();
+          if (!plugin.enabled()) {
+            plugin.enable();
+          }
         } else {
-          plugin.disable();
+          if (plugin.enabled()) {
+            plugin.disable();
+          }
+        }
+      } else {
+        if (!plugin.enabled()) {
+          plugin.enable();
         }
       }
       const pluginInfos = this.pluginTable.getValue();
@@ -988,7 +995,9 @@
           throw new Error(`Reload Error`);
         }
         if (pluginInfo.enabled) {
-          plugin.enable();
+          if (!plugin.enabled()) {
+            plugin.enable();
+          }
           if (plugin.view) {
             this.viewBlock.push(new View({
               title: plugin.name,
@@ -1002,7 +1011,9 @@
             this.settingModal.push(plugin.settingTab);
           }
         } else {
-          plugin.disable();
+          if (plugin.enabled()) {
+            plugin.disable();
+          }
         }
       }
     }
