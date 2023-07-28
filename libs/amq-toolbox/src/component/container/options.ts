@@ -3,7 +3,7 @@ import { Container, ContainerOpt, IContainer } from './container';
 
 type AnyOption = IOptionComponent<any>;
 
-export interface OptionsOpt extends ContainerOpt<AnyOption> {
+export interface OptionsOpt extends ContainerOpt {
     title: string;
 }
 

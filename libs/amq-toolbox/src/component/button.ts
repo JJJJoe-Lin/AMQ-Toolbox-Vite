@@ -29,7 +29,13 @@ export interface ButtonOpt extends ComponentOpt {
     style: ButtonStyle;
 }
 
-export class Button implements IComponent {
+export interface IButton extends IComponent {
+    size: ButtonSize;
+    style: ButtonStyle;
+    label: string;
+}
+
+export class Button implements IButton {
     readonly self: JQuery<HTMLElement>;
     readonly name;
     private _size: ButtonSizeBS;

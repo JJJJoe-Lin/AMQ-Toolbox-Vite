@@ -16,13 +16,13 @@ export interface IContainer<T extends IComponent> extends IComponent {
     isVisible(): boolean;
 }
 
-export interface ContainerOpt<T extends IComponent> extends ComponentOpt {}
+export interface ContainerOpt extends ComponentOpt {}
 
 export abstract class Container<T extends IComponent> implements IContainer<T> {
     readonly self: JQuery<HTMLElement>;
     readonly name;
     protected readonly container: T[];
-    constructor (opt: ContainerOpt<T>) {
+    constructor (opt: ContainerOpt) {
         const id = opt.id === undefined ? '' : opt.id;
         const cls = opt.class === undefined ? '' : opt.class;
         this.name = opt.name;

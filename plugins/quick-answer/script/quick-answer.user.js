@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Quick Answer
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.0
+// @version      0.4.1
 // @author       JJJJoe
 // @description  AMQ Quick-Answer Buttons
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/quick-answer/script/quick-answer.user.js
@@ -137,7 +137,7 @@
       __publicField(this, "components", this.container);
       const contentId = opt.contentId === void 0 ? "" : opt.contentId;
       const contentClass = opt.contentClass === void 0 ? "" : opt.contentClass;
-      this.self.addClass("tab leftRightButtonTop clickAble").append($(`<h5></h5>`).text(opt.tabName));
+      this.self.addClass("tab clickAble").append($(`<h5></h5>`).text(opt.tabName));
       this.content = $(`<div></div>`).attr("id", contentId).addClass(contentClass);
       this.content.hide();
     }

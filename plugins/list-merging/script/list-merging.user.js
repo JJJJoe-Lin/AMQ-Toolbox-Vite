@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ List Merging
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.0
+// @version      0.2.1
 // @author       JJJJoe
 // @description  Merge multiple list to one
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js
@@ -149,7 +149,7 @@
       __publicField(this, "components", this.container);
       const contentId = opt.contentId === void 0 ? "" : opt.contentId;
       const contentClass = opt.contentClass === void 0 ? "" : opt.contentClass;
-      this.self.addClass("tab leftRightButtonTop clickAble").append($(`<h5></h5>`).text(opt.tabName));
+      this.self.addClass("tab clickAble").append($(`<h5></h5>`).text(opt.tabName));
       this.content = $(`<div></div>`).attr("id", contentId).addClass(contentClass);
       this.content.hide();
     }

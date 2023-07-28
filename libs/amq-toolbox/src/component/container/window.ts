@@ -1,7 +1,7 @@
 import { IComponent } from '../component';
 import { Container, ContainerOpt, IContainer } from './container';
 
-export interface WindowOpt extends ContainerOpt<IComponent> {
+export interface WindowOpt extends ContainerOpt {
     title: string;
     width: number;
     height: number;

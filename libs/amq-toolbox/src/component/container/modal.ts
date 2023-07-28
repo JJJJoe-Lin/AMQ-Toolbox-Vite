@@ -9,7 +9,7 @@ const SIZE_MAP = {
 
 type ModalSize = keyof (typeof SIZE_MAP);
 
-export interface ModalOpt extends ContainerOpt<IComponent> {
+export interface ModalOpt extends ContainerOpt {
     title: string;
     size: ModalSize;
 }

@@ -5,7 +5,9 @@ export interface TextInputOpt extends ValuableOpt<string> {
     placeholder?: string;
 }
 
-export class TextInput implements IValuable<string> {
+export interface ITextInput extends IValuable<string> {}
+
+export class TextInput implements ITextInput {
     readonly name;
     readonly self: JQuery<HTMLElement>;
     protected readonly input: JQuery<HTMLElement>;

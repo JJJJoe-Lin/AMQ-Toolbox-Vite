@@ -2,7 +2,7 @@ import { GM_setValue, GM_getValue } from '$';
 import { loadFromCookie, saveToCookie } from '../../utils/cookies';
 import { loadFromLocalStorage, saveToLocalStorage } from '../../utils/localStorage';
 import { toTitle } from '../../utils/string';
-import { Button } from '../button';
+import { Button, IButton } from '../button';
 import { ComponentOpt, IComponent } from '../component';
 import { Buttons } from '../container/buttons';
 import { IValuable } from '../valuable/valuable';
@@ -45,7 +45,7 @@ export interface ITable<T extends Schema> extends IComponent {
     splice(start: number, deleteCount?: number): Row<T>[];
     splice(start: number, deleteCount: number, ...rows: Row<T>[]): Row<T>[];
     append(row: Row<T>): void;
-    getButton(name: 'add' | 'save' | 'reset'): Button | undefined;
+    getButton(name: 'add' | 'save' | 'reset'): IButton | undefined;
 }
 
 export class Table<T extends Schema> implements ITable<T> {
@@ -232,7 +232,7 @@ export class Table<T extends Schema> implements ITable<T> {
         return deleted;
     }
 
-    getButton(name: 'add' | 'save' | 'reset'): Button | undefined {
+    getButton(name: 'add' | 'save' | 'reset'): IButton | undefined {
         if (this.buttonBlock) {
             return this.buttonBlock.find(btn => btn.name === name);
         } else {
