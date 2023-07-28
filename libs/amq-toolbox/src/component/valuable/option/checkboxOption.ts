@@ -39,9 +39,7 @@ export class CheckboxOption implements ICheckboxOption {
             textLabel.popover({
                 content: opt.description,
                 trigger: 'hover',
-                html: true,
                 placement: 'top',
-                container: '#settingModal',
             });
         }
         this.self = $(`<div class='customCheckboxContainer'></div>`)

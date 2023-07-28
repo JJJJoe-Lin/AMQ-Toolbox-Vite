@@ -13,7 +13,7 @@
     "vite-plugin-monkey": "^3.0.1"
   },
   "dependencies": {
-    "amq-toolbox": "0.1.1",
+    "amq-toolbox": "0.1.2",
     "anime-list": "0.2.0"
   }
 }

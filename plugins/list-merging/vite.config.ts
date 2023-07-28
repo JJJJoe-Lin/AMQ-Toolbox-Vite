@@ -11,7 +11,7 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ List Merging(dev)',
-                version: '0.2.2',
+                version: '0.2.3',
                 description: 'Merge multiple list to one',
                 author: 'JJJJoe',
                 include: [
