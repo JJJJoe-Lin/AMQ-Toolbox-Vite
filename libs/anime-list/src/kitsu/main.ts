@@ -88,7 +88,7 @@ export class Kitsu implements AnimeList.AnimeList {
                 data: authData.toString(),
             });
             if (resp === null || resp.status !== 200) {
-                console.log(resp);
+                console.error(`Password Grant failed, login data: ${authData}`, resp);
                 return new Error('Password Grant failed');
             }
             const token: KitsuAccessToken = JSON.parse(resp.responseText);
@@ -177,24 +177,25 @@ export class Kitsu implements AnimeList.AnimeList {
 
     public async importList(entries: AnimeList.Entry[], overwrite: boolean): Promise<Error | null> {
         if (overwrite) {
+            console.log('[importList] overwrite enable, delete all entries');
             const err = await this.deleteList(['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
             if (err) {
                 return err;
             }
-            console.log('[importList] delete all entries successfully');
         }
         // get exist entries
+        console.log('[importList] get exist entries of all status');
         const user = await this.getMyInfo();
         if (user instanceof Error) {
             return user;
         }
         const existEntries = await this.getEntries({id: user.id},
             ['Completed', 'Dropped', 'On-Hold', 'Plan to Watch', 'Watching']);
-        if (existEntries instanceof Error) {
-            return existEntries;
-        }
-        console.log('[importList] get exist entries successfully', existEntries);
+            if (existEntries instanceof Error) {
+                return existEntries;
+            }
         // create importEntry tasks
+        console.log('[importList] import entries to list', existEntries);
         const tasks: Promise<Error | null>[] = [];
         for (let entry of entries) {
             await asyncWait(this.reqDelay);
@@ -219,7 +220,8 @@ export class Kitsu implements AnimeList.AnimeList {
                 console.log(`[importList] all animes are updated`);
                 break;
             } else if (retry === 0) {
-                return new Error(`${count} animes are not updated`);
+                console.warn(`[importList] ${count} entries are not updated`);
+                return new Error(`${count} entries are not updated`);
             } else {
                 console.log(`[importList] ${count} entries are not updated, retry...`);
             }
@@ -232,22 +234,18 @@ export class Kitsu implements AnimeList.AnimeList {
         if (user instanceof Error) {
             return user;
         }
+        // do tasks, retry the task if it failed
         let retry = 3;
         while (retry--) {
+            // get exist entries
+            console.log(`[deleteList] get ${statuses} entries`);
             const entries = await this.getEntries({id: user.id}, statuses);
             if (entries instanceof Error) {
                 return entries;
             }
-            console.log(`[deleteList] get ${statuses} entries successfully`, entries);
-            const count = entries.length;
-            if (count === 0) {
-                console.log(`[deleteList] all entries are deleted`);
-                break;
-            } else if (retry === 0) {
-                return new Error(`Some ${count} entries are not deleted`);
-            } else {
-                console.log(`[deleteList] ${count} entries are ready to delete`);
-            }
+            // delete entires from list
+            console.log(`[deleteList] delete entries form list`, entries);
+            let count = 0;
             const reqs: Promise<Error | null>[] = [];
             for (let entry of entries) {
                 await asyncWait(this.reqDelay);
@@ -256,12 +254,22 @@ export class Kitsu implements AnimeList.AnimeList {
             const errs = await Promise.all(reqs);
             for (let [idx, err] of errs.entries()) {
                 if (err) {
+                    count++;
                     if (entries[idx].media) {
-                        console.warn(`Anime "${entries[idx].media!.title}" delete failed:`, err);
+                        console.warn(`[deleteList] Anime "${entries[idx].media!.title}" delete failed:`, err);
                     } else {
-                        console.warn(`Entry ID "${entries[idx].id}" delete failed:`, err);
+                        console.warn(`[deleteList] Entry ID "${entries[idx].id}" delete failed:`, err);
                     }
                 }
+            }
+
+            if (count === 0) {
+                console.log(`[deleteList] all entries are deleted`);
+                break;
+            } else if (retry === 0) {
+                return new Error(`${count} entries are not deleted`);
+            } else {
+                console.log(`[deleteList] ${count} entries are not deleted, retry...`);
             }
         }
         return null;
@@ -343,14 +351,64 @@ export class Kitsu implements AnimeList.AnimeList {
             });
         }
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${query}`);
+            console.error(`Get user failed, query: ${query}`, resp);
+            return new Error(`Query failed: Get user`);
         }
         const user = JSON.parse(resp.responseText).data[0];
         return {
             id: user.id,
             name: user.attributes.name,
         };
+    }
+
+    private handleEntriesResp(resp: TResponse<object> | null): KitsuEntry[] | Error {
+        let ret: KitsuEntry[] = [];
+        if (resp === null || resp.status !== 200) {
+            return new Error(`Query failed: Get `);
+        }
+        const entries = kitsuCore.deserialise(JSON.parse(resp.responseText));
+        if (!entries) {
+            return new Error(`Invalid query response: Can't deserialise `);
+        } else if (!entries.data) {
+            return new Error(`Invalid query response of query: No data in `);
+        }
+        for (let entry of entries.data as any[]) {
+            const kitsuEntry: KitsuEntry = {
+                id: entry.id,
+                selfLink: entry.links.self,
+            }
+            const anime = entry.anime.data;
+            if (anime === undefined) {
+                console.warn(`[handleEntry] No anime data in entry`, entry);
+                ret.push(kitsuEntry);   // no media in this entry
+                continue;
+            }
+            let mappings: any[] = anime.mappings.data;
+            if (mappings === undefined) {
+                console.warn(`[handleEntry] No mappings data in entry`, entry);
+                mappings = [];
+            }
+            let malID: number;
+            const malMapping = mappings.find(mapping => {
+                return mapping.externalSite === 'myanimelist/anime';
+            });
+            if (malMapping === undefined) {
+                console.warn(`[handleEntry] No MAL mapping data in entry`, entry);
+                malID = 0; // invalid MAL animeID 
+            } else {
+                malID = parseInt(malMapping.externalId, 10);
+            }
+            kitsuEntry.media = {
+                malID: malID,
+                status: ToGlobalStatus[entry.status as KitsuStatus],
+                title: anime.canonicalTitle,
+                type: ToGlobalSeriesType[anime.subtype as KitsuSeriesType],
+                updateOnImport: true,
+                numEpisodes: anime.episodeCount,
+            };
+            ret.push(kitsuEntry);
+        }
+        return ret;
     }
 
     private async getEntry(user: { id: number; } | { name: string; }, animeId: number)
@@ -391,50 +449,19 @@ export class Kitsu implements AnimeList.AnimeList {
             },
             url: query,
         });
-        if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${query}`);
+        // handle response
+        const kitsuEntry = this.handleEntriesResp(resp);
+        if (kitsuEntry instanceof Error) {
+            kitsuEntry.message += `user ${userId}'s entry`;
+            console.error(`${kitsuEntry.message}, query: ${query}`, resp);
+            return kitsuEntry;
         }
-        const entries = kitsuCore.deserialise(JSON.parse(resp.responseText));
-        // console.log('[getEntry] deserialised data:', entries);
-        if (!entries) {
-            return new Error(`[getEntry] Invalid response of ${query}: Can't deserialise`);
-        } else if (!entries.data) {
-            return new Error(`[getEntry] Invalid response of ${query}: No data in entries`);
-        } else if (entries.data.length === 0) {
+        if (kitsuEntry.length == 0) {
             return null;
+        } else if (kitsuEntry.length != 1) {
+            console.warn(`[getEntry] There are more than 1 result for ${query}`);
         }
-        const entry = entries.data[0];
-        const kitsuEntry: KitsuEntry = {
-            id: entry.id,
-            selfLink: entry.links.self,
-        }
-        const anime = entry.anime.data;
-        if (anime === undefined) {
-            console.warn(`[getEntry] No anime data in entry`, entry);
-            return kitsuEntry;
-        }
-        const mappings: any[] = anime.mappings.data;
-        if (mappings === undefined) {
-            console.warn(`[getEntry] No mappings data in entry`, entry);
-            return kitsuEntry;
-        }
-        const malMapping = mappings.find(mapping => {
-            return mapping.externalSite === 'myanimelist/anime';
-        });
-        if (malMapping === undefined) {
-            console.warn(`[getEntry] No MAL mapping data in entry`, entry);
-            return kitsuEntry;
-        }
-        kitsuEntry.media = {
-            malID: parseInt(malMapping.externalId, 10),
-            status: ToGlobalStatus[entry.status as KitsuStatus],
-            title: anime.canonicalTitle,
-            type: ToGlobalSeriesType[anime.subtype as KitsuSeriesType],
-            updateOnImport: true,
-            numEpisodes: anime.episodeCount,
-        };
-        return kitsuEntry;
+        return kitsuEntry[0];
     }
 
     private async getEntries(user: { id: number; } | { name: string; }, statuses: AnimeList.Status[])
@@ -479,52 +506,15 @@ export class Kitsu implements AnimeList.AnimeList {
                 headers: headers,
                 url: query,
             });
-            if (resp === null || resp.status !== 200) {
-                console.log(resp);
-                return new Error(`Query failed: ${query}`);
+            const kitsuEntries = this.handleEntriesResp(resp);
+            if (kitsuEntries instanceof Error) {
+                kitsuEntries.message += `user ${userId}'s entries`;
+                console.error(`${kitsuEntries.message}, query: ${query}`, resp);
+                return kitsuEntries;
+            } else {
+                ret.push(...kitsuEntries);
             }
-            const entries = kitsuCore.deserialise(JSON.parse(resp.responseText));
-            // console.log('[getEntries] deserialised data:', entries);
-            if (!entries) {
-                return new Error(`[getEntries] Invalid response of ${query}: Can't deserialise`);
-            } else if (!entries.data) {
-                return new Error(`[getEntries] Invalid response of ${query}: No data in entries`);
-            }
-            for (let entry of entries.data as any[]) {
-                const kitsuEntry: KitsuEntry = {
-                    id: entry.id,
-                    selfLink: entry.links.self,
-                }
-                const anime = entry.anime.data;
-                if (anime === undefined) {
-                    console.warn(`[getEntries] No anime data in entry`, entry);
-                    ret.push(kitsuEntry);
-                    continue;
-                }
-                const mappings: any[] = anime.mappings.data;
-                if (mappings === undefined) {
-                    console.warn(`[getEntries] No mappings data in entry`, entry);
-                    ret.push(kitsuEntry);
-                    continue;
-                }
-                const malMapping = mappings.find(mapping => {
-                    return mapping.externalSite === 'myanimelist/anime';
-                });
-                if (malMapping === undefined) {
-                    console.warn(`[getEntries] No MAL mapping data in entry`, entry);
-                    ret.push(kitsuEntry);
-                    continue;
-                }
-                kitsuEntry.media = {
-                    malID: parseInt(malMapping.externalId, 10),
-                    status: ToGlobalStatus[entry.status as KitsuStatus],
-                    title: anime.canonicalTitle,
-                    type: ToGlobalSeriesType[anime.subtype as KitsuSeriesType],
-                    updateOnImport: true,
-                    numEpisodes: anime.episodeCount,
-                };
-                ret.push(kitsuEntry);
-            }
+            const entries = kitsuCore.deserialise(JSON.parse(resp!.responseText));
             query = entries.links.next;
         }
         return ret;
@@ -545,8 +535,8 @@ export class Kitsu implements AnimeList.AnimeList {
             url: entry.selfLink,
         });
         if (resp === null || resp.status !== 204) {
-            console.log(resp);
-            return new Error(`Delete query failed: ${entry.selfLink}`);
+            console.error(`Failed query: ${entry.selfLink}`, resp);
+            return new Error(`Query failed: Delete entry (animeID: ${entry.id})`);
         }
         return null;
     }
@@ -586,8 +576,8 @@ export class Kitsu implements AnimeList.AnimeList {
             data: JSON.stringify(kitsuCore.serialise('libraryEntries', data)),
         });
         if (resp === null || resp.status !== 201) {
-            console.log(resp);
-            return new Error(`Update anime query failed: ${JSON.stringify(data)}`);
+            console.error(`Add entry (animeID: ${animeId}) failed, query data: ${JSON.stringify(data)}`, resp);
+            return new Error(`Query failed: Add entry (animeID: ${animeId})`);
         }
         // console.log(`[addEntry] response:`, resp);
         return null;
@@ -613,8 +603,8 @@ export class Kitsu implements AnimeList.AnimeList {
             data: JSON.stringify(kitsuCore.serialise('libraryEntries', data)),
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Update entry failed: ${JSON.stringify(data)}`);
+            console.error(`Update entry (animeID: ${entry.id}) failed, query data: ${JSON.stringify(data)}`, resp);
+            return new Error(`Query failed: Update entry (animeID: ${entry.id})`);
         }
         // console.log(`[updateEntry] response:`, resp);
         return null;
@@ -635,7 +625,7 @@ export class Kitsu implements AnimeList.AnimeList {
             // add entry
             const animeId = await this.getAnimeId(entry.malID);
             if (animeId === null) {
-                return new Error(`No anime '${entry.title}' in Kitsu`);
+                return new Error(`No anime '${entry.title}' (MAL ID: ${entry.malID}) in Kitsu`);
             } else if (animeId instanceof Error) {
                 return animeId;
             } else {
@@ -661,12 +651,13 @@ export class Kitsu implements AnimeList.AnimeList {
             url: query,
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${query}`);
+            console.error(`Get anime ID from MAL ID (${malId}) failed, query: ${query}`, resp);
+            return new Error(`Query failed: Get anime ID from MAL ID (${malId})`);
         }
         const mappings = kitsuCore.deserialise(JSON.parse(resp.responseText));
         if (!mappings) {
-            return new Error(`Invalid response of ${query}: Can't deserialise`);
+            console.error(`Get anime ID from MAL ID (${malId}) failed, can't deserialise response of ${query}`, resp);
+            return new Error(`Get anime ID from MAL ID (${malId}) failed, can't deserialise response`);
         } else if (!mappings.data) {
             console.warn(`No data in mappings of malId=${malId}`);
             return null;

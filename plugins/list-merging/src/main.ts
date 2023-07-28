@@ -15,6 +15,12 @@ import { AnimeListAccount } from './component';
 import './style.css';
 
 declare var displayMessage: (title: string, msg: string, callback?: Function) => void;
+declare var displayHtmlMessage: (title: string, html: string, buttonText: string, callback?: Function) => void;
+
+interface MergeResult {
+    entries: Entry[];
+    errors: Error[];
+}
 
 class ListMerging implements IPlugin {
     public name = 'List Merging';
@@ -116,12 +122,12 @@ class ListMerging implements IPlugin {
         const spinner = saveBtn.self.find('i');
         saveBtn.self.on('click', async () => {
             spinner.removeClass('hide');
-            const err = await this.mergeLists();
+            const errMessage = await this.mergeLists();
             spinner.addClass('hide');
-            if (err) {
-                displayMessage('Merge Failed', err.message);
+            if (errMessage) {
+                displayHtmlMessage('Merge Failed', errMessage, "OK");
             } else {
-                displayMessage('Merge Successful', 'The lists has been merged to the target');
+                displayHtmlMessage('Merge Successful', 'The lists has been merged to the target', "OK");
             }
         });
         tableBlock.append(this.mergedLists.self);
@@ -133,41 +139,61 @@ class ListMerging implements IPlugin {
     disable(): void { this._enabled = false; }
     enabled(): boolean { return this._enabled; }
     
-    private async mergeLists(): Promise<null | Error> {
+    private async mergeLists(): Promise<null | string> {
         const site = this.site.getValue();
         const status = this.status.getValue();
         if (site === undefined || status === undefined) {
-            return new Error('missing some target account information');
+            return 'Missing target account information';
         }
         const account = this.account.getAccount(site);
-        console.log(`[mergeLists] get merged entries`);
-        const entries = await this.getMergedEntries();
-        if (entries instanceof Error) {
-            return new Error(`failed to merge lists: ${entries}`);
+        if (!account.logined()) {
+            return 'You should login target account first';
         }
-        for (let entry of entries) { entry.status = status; }
-        console.log(`[mergeLists] delete target's '${status}' list`);
+        // Get merged entries from source lists
+        console.log(`[List Merging] Get merged entries from source lists`);
+        const result = await this.getMergedEntries();
+        if (result.entries.length == 0 && result.errors.length != 0) {
+            return `<p><b>Failed to merge lists:</b></p>${genErrorMessage(result.errors)}`;
+        } else if (result.entries.length == 0) {
+            return 'No entry to be import';
+        }
+        // Delete target list in "status"
+        console.log(`[List Merging] Delete target's '${status}' list`);
         let err = await account.deleteList([status]);
         if (err) {
-            return new Error(`failed to delete entries of target: ${err}`);
+            return `<p>Failed to delete entries of target:</p><p>${err.message}</p>`;
         }
-        console.log(`[mergeLists] import merged entries to target`);
-        err = await account.importList(entries, false);
+        // Import entries to target list
+        for (let entry of result.entries) { entry.status = status; }
+        console.log(`[List Merging] Import merged entries to target`);
+        err = await account.importList(result.entries, false);
         if (err) {
-            return new Error(`failed to import entries to target: ${err}`);
+            return `<p>Failed to import entries to target:</p><p>${err.message}</p>`;
+        }
+        if (result.errors.length != 0) {
+            return `<p><b>Merge done, but some lists are skipped:</b></p>${genErrorMessage(result.errors)}`;
         }
         return null;
     }
     
-    private async getMergedEntries(): Promise<Entry[] | Error> {
+    private async getMergedEntries(): Promise<MergeResult> {
         const entrySet = new EntrySet();
         const mergedLists = this.mergedLists.getValue();
+        const ret: MergeResult = {
+            entries: [],
+            errors: [],
+        };
         for (let list of mergedLists) {
             if (list.accountType === undefined || !list.user || list.included === undefined) {
-                return new Error('missing some list information');
-            } else if (list.status.length === 0 || list.included === 'Skip') {
+                ret.errors.push(new Error('Missing some list information'));
+                return ret;
+            }
+        }
+        for (let list of mergedLists) {
+            if (list.status.length === 0 || list.included === 'Skip' || list.included === undefined) {
                 continue;
             }
+            // Get List
             console.log(`[getMergedEntries] get ${list.user} List`);
             let entries: Error | Entry[];
             if (list.accountType === 'Kitsu') {
@@ -176,18 +202,44 @@ class ListMerging implements IPlugin {
                     list.status,
                 );
             } else {
-                entries = await this.account.getAccount(list.accountType).getList(
+                entries = await this.account.getAccount(list.accountType!).getList(
                     {name: list.user},
                     list.status,
                 );
             }
+            // Check Error
             if (entries instanceof Error) {
-                return new Error(`Failed to get [${list.accountType}]${list.user}'s list: ${entries}`);
+                // Skip this list if has error during getList
+                entries.message = `❌ Failed to get ${list.user}'s ${list.accountType} list:<br>${entries.message}`;
+                ret.errors.push(entries);
+                continue;
+            } else {
+                // Check each entry has malID, otherwise skip this list
+                let isError = false;
+                for (let entry of entries) {
+                    if (entry.malID === 0) {
+                        ret.errors.push(new Error(`❌ Anime "${entry.title}" has no MAL ID in ${list.user}'s ${list.accountType} list`));
+                        isError = true;
+                    }
+                }
+                if (isError) {
+                    continue;
+                } else {
+                    entrySet.update(entries, list.included);
+                }
             }
-            entrySet.update(entries, list.included);
         }
-        return entrySet.getResult();
+        ret.entries = entrySet.getResult();
+        return ret;
     }
+}
+
+function genErrorMessage(errs: Error[]): string {
+    let ret = "";
+    for (let err of errs) {
+        ret += `<p>${err.message}</p>`;
+    }
+    return ret;
 }
 
 function main() {

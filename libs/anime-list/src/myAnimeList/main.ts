@@ -104,7 +104,7 @@ export class MyAnimeList implements AnimeList.AnimeList {
                 data: authGrantData.toString(),
             });
             if (authGrantResp === null || authGrantResp.status !== 200) {
-                console.log(authGrantResp);
+                console.error('Authoriation Grant failed', authGrantResp);
                 return new Error('Authoriation Grant failed');
             }
             const token: MyAnimeListAccessToken = JSON.parse(authGrantResp.responseText);
@@ -164,8 +164,8 @@ export class MyAnimeList implements AnimeList.AnimeList {
             data: data.toString(),
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${query}`);
+            console.error(`Update entry (anime ID: ${id}) failed, query: ${query}`, resp);
+            return new Error(`Query failed: Update entry (anime ID: ${id})`);
         }
         return null;
     }
@@ -184,8 +184,8 @@ export class MyAnimeList implements AnimeList.AnimeList {
             url: query,
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${query}`);
+            console.error(`Delete entry (animeID: ${id}) failed, query: ${query}`, resp);
+            return new Error(`Query failed: Delete entry (animeID: ${id})`);
         }
         return null;
     }
@@ -232,8 +232,8 @@ export class MyAnimeList implements AnimeList.AnimeList {
                 url: query,
             });
             if (resp === null || resp.status !== 200) {
-                console.log(resp);
-                return new Error(`Query failed: ${query}`);
+                console.error(`Get ${user.name}'s list failed, query: ${query}`, resp);
+                return new Error(`Query failed: Get ${user.name}'s list`);
             }
             const respData = JSON.parse(resp.responseText);
             for (let entry of respData.data) {
@@ -345,8 +345,8 @@ export class MyAnimeList implements AnimeList.AnimeList {
             url: query,
         });
         if (resp === null || resp.status !== 200) {
-            console.log(resp);
-            return new Error(`Query failed: ${query}`);
+            console.error(`Get user failed, query: ${query}`, resp);
+            return new Error(`Query failed: Get user`);
         }
         const user = JSON.parse(resp.responseText);
         return {
