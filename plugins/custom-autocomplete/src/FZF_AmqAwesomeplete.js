@@ -4,6 +4,7 @@ import {
     extendedMatch,
     byLengthAsc,
     byStartAsc,
+    AsyncFzf
 } from 'fzf';
 
 function NormalizeName(name) {
@@ -53,7 +54,8 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
     this.o.list.forEach(inputEntry => {
         fzfList.push({name: inputEntry, NormalizedName: NormalizeName(inputEntry)});
     });
-    this.fzf = new Fzf(fzfList, {
+    this.async_fzf = new AsyncFzf(fzfList, {
+        limit: 100,
         casing: "case-insensitive",
         selector: (item) => item.NormalizedName,
         match: extendedMatch,
@@ -118,19 +120,21 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
 }
 
 export function FzfEvaluate() {
+    if (this.once_disable_evaluate) {
+        this.once_disable_evaluate = false;
+        return;
+    }
     var me = this;
     let unescapedValue = this.input.value;
     var value = createAnimeSearchRegexQuery(unescapedValue);
 
-    if (value.length >= this.minChars && this.fzf) {
+    if (value.length >= this.minChars && this.async_fzf) {
         this.searchId++;
         var currentSearchId = this.searchId;
         $("#qpAnswerInputLoadingContainer").removeClass("hide");
         this.index = -1;
         // Populate list with options that match
         this.$ul.children('li').remove();
-
-        var suggestions = [];
 
         let handlePassedSuggestions = function (me) {
             this.suggestions = this.suggestions.slice(0, this.maxItems);
@@ -152,54 +156,58 @@ export function FzfEvaluate() {
 
         // fzf search
         let normalizedValue = NormalizeName(unescapedValue)
-        const entries = this.fzf.find(normalizedValue);
-        // add basic match score
-        for (let entry of entries) {
-            let basic_fzf = new Fzf([entry.item.NormalizedName], {
-                casing: "case-insensitive",
-                match: basicMatch,
-            });
-            let basic_entries = basic_fzf.find(normalizedValue);
-            if (basic_entries.length == 0) {
-                entry.basic_score = 0
-            } else {
-                entry.basic_score = basic_entries[0].score;
-                entry.basic_positions = basic_entries[0].positions;
-            }
-        }
-        // sort by extended match score and basic match score
-        entries.sort(function(a, b) {
-            let factor_a = [-a.score, -a.basic_score, a.length, a.item.start]
-            let factor_b = [-b.score, -b.basic_score, b.length, b.item.start]
-            for (let i in factor_a) {
-                if (factor_a[i] > factor_b[i]){
-                    return 1;
-                }
-                if (factor_a[i] < factor_b[i]){
-                    return -1;
-                }
-            }
-            return 0;
-        })
-        //console.log("fzf entry: ", entries);
-        // fill the suggestions
-        let fzf_suggestions = [];
-        for (let entry of entries) {
-            let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
-            let name = entry.item.name;
-            let label = ""
-            for (let i = 0; i < name.length; ++i) {
-                if (positions.has(i)) {
-                    label += "<mark>" + name[i] + "</mark>";
+        this.async_fzf.find(normalizedValue).then((entries) => {
+            // add basic match score
+            for (let entry of entries) {
+                let basic_fzf = new Fzf([entry.item.NormalizedName], {
+                    casing: "case-insensitive",
+                    match: basicMatch,
+                });
+                let basic_entries = basic_fzf.find(normalizedValue);
+                if (basic_entries.length == 0) {
+                    entry.basic_score = 0
                 } else {
-                    label += name[i];
+                    entry.basic_score = basic_entries[0].score;
+                    entry.basic_positions = basic_entries[0].positions;
                 }
             }
-            let suggestion = new Suggestion([label, name]);
-            fzf_suggestions.push(suggestion);
-        }
-        this.suggestions = fzf_suggestions;
-        handlePassedSuggestions(me);
+            // sort by extended match score and basic match score
+            entries.sort(function(a, b) {
+                let factor_a = [-a.score, -a.basic_score, a.length, a.item.start]
+                let factor_b = [-b.score, -b.basic_score, b.length, b.item.start]
+                for (let i in factor_a) {
+                    if (factor_a[i] > factor_b[i]){
+                        return 1;
+                    }
+                    if (factor_a[i] < factor_b[i]){
+                        return -1;
+                    }
+                }
+                return 0;
+            })
+            //console.log("fzf entry: ", entries);
+            // fill the suggestions
+            let fzf_suggestions = [];
+            for (let entry of entries) {
+                let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
+                let name = entry.item.name;
+                let label = ""
+                for (let i = 0; i < name.length; ++i) {
+                    if (positions.has(i)) {
+                        label += "<mark>" + name[i] + "</mark>";
+                    } else {
+                        label += name[i];
+                    }
+                }
+                let suggestion = new Suggestion([label, name]);
+                fzf_suggestions.push(suggestion);
+            }
+            this.suggestions = fzf_suggestions;
+            handlePassedSuggestions(me);
+        })
+        .catch(() => {
+            console.log("failed to async fzf")
+        });
     }
     else {
         this.close({ reason: "nomatches" });

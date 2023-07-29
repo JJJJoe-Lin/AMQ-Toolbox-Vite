@@ -110,9 +110,11 @@ class CustomAutocomplete implements IPlugin {
             }
             // setup replace method
             if (redoOpt) {
+                acc.once_disable_evaluate = false;
                 acc.awesomepleteInstance.replace = function (suggestion: any) {
                     (this as any).input.focus();
                     (this as any).input.select();
+                    (this as any).once_disable_evaluate = true;
                     document.execCommand('insertText', false, suggestion.value);
                 }
             }
