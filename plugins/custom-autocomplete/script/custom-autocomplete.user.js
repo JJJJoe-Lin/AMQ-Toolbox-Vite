@@ -2254,41 +2254,6 @@
     }
     return getResultFromScoreMap(scoreMap, this.opts.limit);
   }
-  const isNode = typeof require !== "undefined" && typeof window === "undefined";
-  function asyncMatcher(token, len, iter2, onFinish) {
-    return new Promise((resolve, reject) => {
-      const INCREMENT = 1e3;
-      let i = 0, end = Math.min(INCREMENT, len);
-      const step = () => {
-        if (token.cancelled)
-          return reject("search cancelled");
-        for (; i < end; ++i) {
-          iter2(i);
-        }
-        if (end < len) {
-          end = Math.min(end + INCREMENT, len);
-          isNode ? setImmediate(step) : setTimeout(step);
-        } else {
-          resolve(onFinish());
-        }
-      };
-      step();
-    });
-  }
-  function asyncBasicMatch(query, token) {
-    const { queryRunes, caseSensitive } = buildPatternForBasicMatch(
-      query,
-      this.opts.casing,
-      this.opts.normalize
-    );
-    const scoreMap = {};
-    return asyncMatcher(
-      token,
-      this.runesList.length,
-      getBasicMatchIter.bind(this)(scoreMap, queryRunes, caseSensitive),
-      () => getResultFromScoreMap(scoreMap, this.opts.limit)
-    );
-  }
   const defaultOpts = {
     limit: Infinity,
     selector: (v) => v,
@@ -2332,26 +2297,6 @@
       return postProcessResultItems(result, this.opts);
     }
   }
-  const asyncDefaultOpts = {
-    ...defaultOpts,
-    match: asyncBasicMatch
-  };
-  class AsyncFinder extends BaseFinder {
-    constructor(list, ...optionsTuple) {
-      super(list, ...optionsTuple);
-      this.opts = { ...asyncDefaultOpts, ...optionsTuple[0] };
-      this.token = { cancelled: false };
-    }
-    async find(query) {
-      this.token.cancelled = true;
-      this.token = { cancelled: false };
-      if (query.length === 0 || this.items.length === 0)
-        return this.items.slice(0, this.opts.limit).map(createResultItemWithEmptyPos);
-      query = query.normalize();
-      let result = await this.opts.match.bind(this)(query, this.token);
-      return postProcessResultItems(result, this.opts);
-    }
-  }
   const createResultItemWithEmptyPos = (item) => ({
     item,
     start: -1,
@@ -2391,12 +2336,6 @@
       this.find = this.finder.find.bind(this.finder);
     }
   }
-  class AsyncFzf {
-    constructor(list, ...optionsTuple) {
-      this.finder = new AsyncFinder(list, ...optionsTuple);
-      this.find = this.finder.find.bind(this.finder);
-    }
-  }
   function NormalizeName(name) {
     const rules = [
       { input: "[aä@âàáạåæā]", output: "a" },
@@ -2424,6 +2363,13 @@
     });
     return ret.replace(/\s\s+/g, " ");
   }
+  function ToItemList(fzf_entries) {
+    let items = [];
+    for (let entry of fzf_entries) {
+      items.push(entry.item);
+    }
+    return items;
+  }
   function FzfAmqAwesomplete(input, o, scrollable) {
     console.log("AmqAwesomeplete init");
     o.autoFirst = true;
@@ -2434,18 +2380,32 @@
     this.searchId = 0;
     this.currentSubList = null;
     this.o = o;
-    console.log("fzf init");
     let fzfList = [];
     this.o.list.forEach((inputEntry) => {
       fzfList.push({ name: inputEntry, NormalizedName: NormalizeName(inputEntry) });
     });
-    this.async_fzf = new AsyncFzf(fzfList, {
+    this.fzf_opt = {
+      casing: "case-insensitive",
       limit: 100,
+      selector: (item) => item.NormalizedName,
+      match: extendedMatch,
+      tiebreakers: [byLengthAsc, byStartAsc]
+    };
+    this.default_fzf = new Fzf(fzfList, this.fzf_opt);
+    this.fzf_map = /* @__PURE__ */ new Map();
+    this.full_fzf_opt = {
       casing: "case-insensitive",
       selector: (item) => item.NormalizedName,
       match: extendedMatch,
       tiebreakers: [byLengthAsc, byStartAsc]
-    });
+    };
+    let full_fzf = new Fzf(fzfList, this.full_fzf_opt);
+    const alphabet = [..."qxzjvwfpbycldgkmhutrsnoiea"];
+    for (let a of alphabet) {
+      let entries = full_fzf.find(a);
+      let items = ToItemList(entries);
+      this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
+    }
     this.currentQuery = "";
     this.$ul = $(this.ul);
     if (scrollable) {
@@ -2496,81 +2456,86 @@
       return;
     }
     var me = this;
-    let unescapedValue = this.input.value;
-    var value = createAnimeSearchRegexQuery(unescapedValue);
-    if (value.length >= this.minChars && this.async_fzf) {
-      this.searchId++;
-      this.searchId;
-      $("#qpAnswerInputLoadingContainer").removeClass("hide");
-      this.index = -1;
-      this.$ul.children("li").remove();
-      let handlePassedSuggestions = function(me2) {
-        this.suggestions = this.suggestions.slice(0, this.maxItems);
-        for (let i = this.suggestions.length - 1; i >= 0; i--) {
-          let suggestion = this.suggestions[i].label;
-          me2.ul.insertBefore(me2.item(suggestion, i), me2.ul.firstChild);
-        }
-        if (this.ul.children.length === 0) {
-          this.status.textContent = "No results found";
-          this.close({ reason: "nomatches" });
-        } else {
-          this.open();
-          this.status.textContent = this.ul.children.length + " results found";
-        }
-        $("#qpAnswerInputLoadingContainer").addClass("hide");
-      }.bind(this);
-      let normalizedValue = NormalizeName(unescapedValue);
-      this.async_fzf.find(normalizedValue).then((entries) => {
-        for (let entry of entries) {
-          let basic_fzf = new Fzf([entry.item.NormalizedName], {
-            casing: "case-insensitive",
-            match: basicMatch
-          });
-          let basic_entries = basic_fzf.find(normalizedValue);
-          if (basic_entries.length == 0) {
-            entry.basic_score = 0;
-          } else {
-            entry.basic_score = basic_entries[0].score;
-            entry.basic_positions = basic_entries[0].positions;
-          }
-        }
-        entries.sort(function(a, b) {
-          let factor_a = [-a.score, -a.basic_score, a.length, a.item.start];
-          let factor_b = [-b.score, -b.basic_score, b.length, b.item.start];
-          for (let i in factor_a) {
-            if (factor_a[i] > factor_b[i]) {
-              return 1;
-            }
-            if (factor_a[i] < factor_b[i]) {
-              return -1;
-            }
-          }
-          return 0;
-        });
-        let fzf_suggestions = [];
-        for (let entry of entries) {
-          let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
-          let name = entry.item.name;
-          let label = "";
-          for (let i = 0; i < name.length; ++i) {
-            if (positions.has(i)) {
-              label += "<mark>" + name[i] + "</mark>";
-            } else {
-              label += name[i];
-            }
-          }
-          let suggestion = new Suggestion([label, name]);
-          fzf_suggestions.push(suggestion);
-        }
-        this.suggestions = fzf_suggestions;
-        handlePassedSuggestions(me);
-      }).catch(() => {
-        console.log("failed to async fzf");
-      });
-    } else {
+    let value = this.input.value;
+    if (value.length < this.minChars) {
       this.close({ reason: "nomatches" });
       this.status.textContent = "No results found";
+      return;
     }
+    this.searchId++;
+    this.searchId;
+    $("#qpAnswerInputLoadingContainer").removeClass("hide");
+    this.index = -1;
+    this.$ul.children("li").remove();
+    let handlePassedSuggestions = function(me2) {
+      this.suggestions = this.suggestions.slice(0, this.maxItems);
+      for (let i = this.suggestions.length - 1; i >= 0; i--) {
+        let suggestion = this.suggestions[i].label;
+        me2.ul.insertBefore(me2.item(suggestion, i), me2.ul.firstChild);
+      }
+      if (this.ul.children.length === 0) {
+        this.status.textContent = "No results found";
+        this.close({ reason: "nomatches" });
+      } else {
+        this.open();
+        this.status.textContent = this.ul.children.length + " results found";
+      }
+      $("#qpAnswerInputLoadingContainer").addClass("hide");
+    }.bind(this);
+    let normalizedValue = NormalizeName(value);
+    let fzf = this.default_fzf;
+    for (let [k, _] of this.fzf_map) {
+      if (normalizedValue.includes(k)) {
+        fzf = this.fzf_map.get(k);
+        break;
+      }
+    }
+    let t = Date.now();
+    let entries = fzf.find(normalizedValue);
+    for (let entry of entries) {
+      let basic_fzf = new Fzf([entry.item.NormalizedName], {
+        casing: "case-insensitive",
+        match: basicMatch
+      });
+      let basic_entries = basic_fzf.find(normalizedValue);
+      if (basic_entries.length == 0) {
+        entry.basic_score = 0;
+      } else {
+        entry.basic_score = basic_entries[0].score;
+        entry.basic_positions = basic_entries[0].positions;
+      }
+    }
+    entries.sort(function(a, b) {
+      let factor_a = [-a.score, -a.basic_score, a.length, a.start];
+      let factor_b = [-b.score, -b.basic_score, b.length, b.start];
+      for (let i in factor_a) {
+        if (factor_a[i] > factor_b[i]) {
+          return 1;
+        }
+        if (factor_a[i] < factor_b[i]) {
+          return -1;
+        }
+      }
+      return 0;
+    });
+    let fzf_suggestions = [];
+    for (let entry of entries) {
+      let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
+      let name = entry.item.name;
+      let label = "";
+      for (let i = 0; i < name.length; ++i) {
+        if (positions.has(i)) {
+          label += "<mark>" + name[i] + "</mark>";
+        } else {
+          label += name[i];
+        }
+      }
+      let suggestion = new Suggestion([label, name]);
+      fzf_suggestions.push(suggestion);
+    }
+    this.suggestions = fzf_suggestions;
+    handlePassedSuggestions(me);
+    console.log("fzf take", Date.now() - t, "ms");
   }
   class CustomAutocomplete {
     constructor() {
