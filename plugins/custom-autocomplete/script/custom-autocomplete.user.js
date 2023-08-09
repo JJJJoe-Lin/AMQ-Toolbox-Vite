@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Custom Autocomplete(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.0
+// @version      0.2.1
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
@@ -2324,12 +2324,6 @@
     }
     return result;
   }
-  function byLengthAsc(a, b, selector) {
-    return selector(a.item).length - selector(b.item).length;
-  }
-  function byStartAsc(a, b) {
-    return a.start - b.start;
-  }
   class Fzf {
     constructor(list, ...optionsTuple) {
       this.finder = new SyncFinder(list, ...optionsTuple);
@@ -2388,21 +2382,19 @@
       casing: "case-insensitive",
       limit: 100,
       selector: (item) => item.NormalizedName,
-      match: extendedMatch,
-      tiebreakers: [byLengthAsc, byStartAsc]
+      match: extendedMatch
     };
     this.default_fzf = new Fzf(fzfList, this.fzf_opt);
     this.fzf_map = /* @__PURE__ */ new Map();
-    this.full_fzf_opt = {
+    this.filter_opt = {
       casing: "case-insensitive",
       selector: (item) => item.NormalizedName,
-      match: extendedMatch,
-      tiebreakers: [byLengthAsc, byStartAsc]
+      match: extendedMatch
     };
-    let full_fzf = new Fzf(fzfList, this.full_fzf_opt);
+    let filter = new Fzf(fzfList, this.filter_opt);
     const alphabet = [..."qxzjvwfpbycldgkmhutrsnoiea"];
     for (let a of alphabet) {
-      let entries = full_fzf.find(a);
+      let entries = filter.find(a);
       let items = ToItemList(entries);
       this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
     }
@@ -2490,11 +2482,11 @@
         break;
       }
     }
-    let t = Date.now();
     let entries = fzf.find(normalizedValue);
     for (let entry of entries) {
-      let basic_fzf = new Fzf([entry.item.NormalizedName], {
+      let basic_fzf = new Fzf([entry.item], {
         casing: "case-insensitive",
+        selector: (item) => item.NormalizedName,
         match: basicMatch
       });
       let basic_entries = basic_fzf.find(normalizedValue);
@@ -2506,8 +2498,8 @@
       }
     }
     entries.sort(function(a, b) {
-      let factor_a = [-a.score, -a.basic_score, a.length, a.start];
-      let factor_b = [-b.score, -b.basic_score, b.length, b.start];
+      let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
+      let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start];
       for (let i in factor_a) {
         if (factor_a[i] > factor_b[i]) {
           return 1;
@@ -2535,7 +2527,6 @@
     }
     this.suggestions = fzf_suggestions;
     handlePassedSuggestions(me);
-    console.log("fzf take", Date.now() - t, "ms");
   }
   class CustomAutocomplete {
     constructor() {
