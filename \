@@ -40,88 +40,11 @@ function ToItemList(fzf_entries) {
   for (let entry of fzf_entries) {
     items.push(entry.item);
   }
-  return items;
+  return items; 
 }
 
-class CustomFzf {
-    constructor(itemList) {
-        let fzfList = [];
-        for (let item of itemList) {
-            fzfList.push({name: item, NormalizedName: NormalizeName(item)});
-        }
-        this.fzf_opt = {
-            casing: "case-insensitive",
-            selector: (item) => item.NormalizedName,
-            match: extendedMatch,
-            limit: 1000,
-            tiebreakers: [byLengthAsc, byStartAsc],
-        };
-        this.default_fzf = new Fzf(fzfList, this.fzf_opt);
-
-        // initialize the fzf map to pre-filter list to search
-        this.fzf_map = new Map();
-        this.filter_opt = {
-            casing: "case-insensitive",
-            selector: (item) => item.NormalizedName,
-            match: extendedMatch,
-            tiebreakers: [byLengthAsc, byStartAsc],
-        };
-        let filter = new Fzf(fzfList, this.filter_opt);
-        // alphabet sorted by occurrence frequency.
-        const alphabet = [...'qxzjvwfpbycldgkmhutrsnoiea'];
-        for (let a of alphabet) {
-            let entries = filter.find(a);
-            let items = ToItemList(entries);
-            this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
-        }
-    }
-    find(value) {
-        // find suitable fzf to search
-        let fzf = this.default_fzf;
-        for (let [k, _] of this.fzf_map) {
-            if (value.includes(k)) {
-                fzf = this.fzf_map.get(k);
-                break;
-            }
-        }
-
-        let entries = fzf.find(value);
-        let itemList = ToItemList(entries);
-
-        // add basic match score
-        let basic_fzf = new Fzf(itemList, {
-            casing: "case-insensitive",
-            selector: (item) => item.NormalizedName,
-            match: basicMatch,
-            sort: false,
-        });
-        let basic_entries = basic_fzf.find(value);
-        for (let e = 0, b = 0; e < entries.length && b < basic_entries.length; ++e) {
-            let entry = entries[e];
-            let basic_entry = basic_entries[b];
-            if (entry.item.name == basic_entry.item.name) {
-                entry.basic_score = basic_entry.score;
-                entry.basic_positions = basic_entry.positions;
-            }
-        }
-
-        // sort by extended match score and basic match score
-        entries.sort(function(a, b) {
-            let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start]
-            let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start]
-            for (let i in factor_a) {
-                if (factor_a[i] > factor_b[i]){
-                    return 1;
-                }
-                if (factor_a[i] < factor_b[i]){
-                    return -1;
-                }
-            }
-            return 0;
-        })
-        return entries;
-    }
-}
+class CustomFzf:
+    construct()
 
 export function FzfAmqAwesomplete(input, o, scrollable) {
     console.log("AmqAwesomeplete init");
@@ -135,7 +58,37 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
     this.currentSubList = null;
     this.o = o;
 
-    this.customFzf = new CustomFzf(this.o.list);
+    // initialize the default fzf
+    let fzfList = [];
+    this.o.list.forEach(inputEntry => {
+        fzfList.push({name: inputEntry, NormalizedName: NormalizeName(inputEntry)});
+    });
+    this.fzf_opt = {
+        casing: "case-insensitive",
+        limit: 100,
+        selector: (item) => item.NormalizedName,
+        match: extendedMatch,
+        tiebreakers: [byLengthAsc, byStartAsc],
+    };
+    this.default_fzf = new Fzf(fzfList, this.fzf_opt);
+
+    // initialize the fzf map to pre-filter list to search
+    this.fzf_map = new Map();
+    this.filter_opt = {
+        casing: "case-insensitive",
+        selector: (item) => item.NormalizedName,
+        match: extendedMatch,
+        tiebreakers: [byLengthAsc, byStartAsc],
+    };
+    let filter = new Fzf(fzfList, this.filter_opt);
+    // alphabet sorted by occurrence frequency.
+    const alphabet = [...'qxzjvwfpbycldgkmhutrsnoiea'];
+    for (let a of alphabet) {
+        let entries = filter.find(a);
+        let items = ToItemList(entries);
+        this.fzf_map.set(a, new Fzf(items, this.fzf_opt)); 
+    }
+
 
     this.currentQuery = "";
     this.$ul = $(this.ul);
@@ -223,14 +176,47 @@ export function FzfEvaluate() {
     }.bind(this);
 
     // fzf search
-    let normalizedValue = NormalizeName(value);
-    let startTime = Date.now();
-    let entries = this.customFzf.find(normalizedValue);
-    let timeTaken = Date.now() - startTime;
-    if (timeTaken > 100) {
-        console.log("fzf search took long time:", timeTaken, "ms");
+    let normalizedValue = NormalizeName(value)
+
+    // find suitable fzf to search
+    let fzf = this.default_fzf;
+    for (let [k, _] of this.fzf_map) {
+      if (normalizedValue.includes(k)) {
+          fzf = this.fzf_map.get(k);
+          break;
+      }
     }
 
+    let entries = fzf.find(normalizedValue);
+    // add basic match score
+    for (let entry of entries) {
+        let basic_fzf = new Fzf([entry.item], {
+            casing: "case-insensitive",
+            selector: (item) => item.NormalizedName,
+            match: basicMatch,
+        });
+        let basic_entries = basic_fzf.find(normalizedValue);
+        if (basic_entries.length == 0) {
+            entry.basic_score = 0
+        } else {
+            entry.basic_score = basic_entries[0].score;
+            entry.basic_positions = basic_entries[0].positions;
+        }
+    }
+    // sort by extended match score and basic match score
+    entries.sort(function(a, b) {
+        let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start]
+        let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start]
+        for (let i in factor_a) {
+            if (factor_a[i] > factor_b[i]){
+                return 1;
+            }
+            if (factor_a[i] < factor_b[i]){
+                return -1;
+            }
+        }
+        return 0;
+    })
     // fill the suggestions
     let fzf_suggestions = [];
     for (let entry of entries) {

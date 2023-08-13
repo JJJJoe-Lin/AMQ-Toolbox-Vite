@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Custom Autocomplete(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.1
+// @version      0.3.0
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
@@ -2324,6 +2324,12 @@
     }
     return result;
   }
+  function byLengthAsc(a, b, selector) {
+    return selector(a.item).length - selector(b.item).length;
+  }
+  function byStartAsc(a, b) {
+    return a.start - b.start;
+  }
   class Fzf {
     constructor(list, ...optionsTuple) {
       this.finder = new SyncFinder(list, ...optionsTuple);
@@ -2364,6 +2370,76 @@
     }
     return items;
   }
+  class CustomFzf {
+    constructor(itemList) {
+      let fzfList = [];
+      for (let item of itemList) {
+        fzfList.push({ name: item, NormalizedName: NormalizeName(item) });
+      }
+      this.fzf_opt = {
+        casing: "case-insensitive",
+        selector: (item) => item.NormalizedName,
+        match: extendedMatch,
+        limit: 1e3,
+        tiebreakers: [byLengthAsc, byStartAsc]
+      };
+      this.default_fzf = new Fzf(fzfList, this.fzf_opt);
+      this.fzf_map = /* @__PURE__ */ new Map();
+      this.filter_opt = {
+        casing: "case-insensitive",
+        selector: (item) => item.NormalizedName,
+        match: extendedMatch,
+        tiebreakers: [byLengthAsc, byStartAsc]
+      };
+      let filter = new Fzf(fzfList, this.filter_opt);
+      const alphabet = [..."qxzjvwfpbycldgkmhutrsnoiea"];
+      for (let a of alphabet) {
+        let entries = filter.find(a);
+        let items = ToItemList(entries);
+        this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
+      }
+    }
+    find(value) {
+      let fzf = this.default_fzf;
+      for (let [k, _] of this.fzf_map) {
+        if (value.includes(k)) {
+          fzf = this.fzf_map.get(k);
+          break;
+        }
+      }
+      let entries = fzf.find(value);
+      let itemList = ToItemList(entries);
+      let basic_fzf = new Fzf(itemList, {
+        casing: "case-insensitive",
+        selector: (item) => item.NormalizedName,
+        match: basicMatch,
+        sort: false
+      });
+      let basic_entries = basic_fzf.find(value);
+      for (let e = 0, b = 0; e < entries.length && b < basic_entries.length; ++e) {
+        let entry = entries[e];
+        let basic_entry = basic_entries[b];
+        if (entry.item.name == basic_entry.item.name) {
+          entry.basic_score = basic_entry.score;
+          entry.basic_positions = basic_entry.positions;
+        }
+      }
+      entries.sort(function(a, b) {
+        let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
+        let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start];
+        for (let i in factor_a) {
+          if (factor_a[i] > factor_b[i]) {
+            return 1;
+          }
+          if (factor_a[i] < factor_b[i]) {
+            return -1;
+          }
+        }
+        return 0;
+      });
+      return entries;
+    }
+  }
   function FzfAmqAwesomplete(input, o, scrollable) {
     console.log("AmqAwesomeplete init");
     o.autoFirst = true;
@@ -2374,30 +2450,7 @@
     this.searchId = 0;
     this.currentSubList = null;
     this.o = o;
-    let fzfList = [];
-    this.o.list.forEach((inputEntry) => {
-      fzfList.push({ name: inputEntry, NormalizedName: NormalizeName(inputEntry) });
-    });
-    this.fzf_opt = {
-      casing: "case-insensitive",
-      limit: 100,
-      selector: (item) => item.NormalizedName,
-      match: extendedMatch
-    };
-    this.default_fzf = new Fzf(fzfList, this.fzf_opt);
-    this.fzf_map = /* @__PURE__ */ new Map();
-    this.filter_opt = {
-      casing: "case-insensitive",
-      selector: (item) => item.NormalizedName,
-      match: extendedMatch
-    };
-    let filter = new Fzf(fzfList, this.filter_opt);
-    const alphabet = [..."qxzjvwfpbycldgkmhutrsnoiea"];
-    for (let a of alphabet) {
-      let entries = filter.find(a);
-      let items = ToItemList(entries);
-      this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
-    }
+    this.customFzf = new CustomFzf(this.o.list);
     this.currentQuery = "";
     this.$ul = $(this.ul);
     if (scrollable) {
@@ -2475,41 +2528,12 @@
       $("#qpAnswerInputLoadingContainer").addClass("hide");
     }.bind(this);
     let normalizedValue = NormalizeName(value);
-    let fzf = this.default_fzf;
-    for (let [k, _] of this.fzf_map) {
-      if (normalizedValue.includes(k)) {
-        fzf = this.fzf_map.get(k);
-        break;
-      }
+    let startTime = Date.now();
+    let entries = this.customFzf.find(normalizedValue);
+    let timeTaken = Date.now() - startTime;
+    if (timeTaken > 100) {
+      console.log("fzf search took long time:", timeTaken, "ms");
     }
-    let entries = fzf.find(normalizedValue);
-    for (let entry of entries) {
-      let basic_fzf = new Fzf([entry.item], {
-        casing: "case-insensitive",
-        selector: (item) => item.NormalizedName,
-        match: basicMatch
-      });
-      let basic_entries = basic_fzf.find(normalizedValue);
-      if (basic_entries.length == 0) {
-        entry.basic_score = 0;
-      } else {
-        entry.basic_score = basic_entries[0].score;
-        entry.basic_positions = basic_entries[0].positions;
-      }
-    }
-    entries.sort(function(a, b) {
-      let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
-      let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start];
-      for (let i in factor_a) {
-        if (factor_a[i] > factor_b[i]) {
-          return 1;
-        }
-        if (factor_a[i] < factor_b[i]) {
-          return -1;
-        }
-      }
-      return 0;
-    });
     let fzf_suggestions = [];
     for (let entry of entries) {
       let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
