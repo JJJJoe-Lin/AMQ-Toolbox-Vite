@@ -96,13 +96,21 @@ class CustomFzf {
             sort: false,
         });
         let basic_entries = basic_fzf.find(value);
-        for (let e = 0, b = 0; e < entries.length && b < basic_entries.length; ++e) {
+
+        let e = 0, b = 0;
+        for (; e < entries.length && b < basic_entries.length; ++e) {
             let entry = entries[e];
             let basic_entry = basic_entries[b];
             if (entry.item.name == basic_entry.item.name) {
                 entry.basic_score = basic_entry.score;
                 entry.basic_positions = basic_entry.positions;
+                b += 1;
+            } else {
+                entry.basic_score = 0;
             }
+        }
+        if (b != basic_entries.length) {
+            console.log("unmatched basic entires item")
         }
 
         // sort by extended match score and basic match score

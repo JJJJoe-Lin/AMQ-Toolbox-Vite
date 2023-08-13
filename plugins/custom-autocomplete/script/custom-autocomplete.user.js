@@ -2416,17 +2416,24 @@
         sort: false
       });
       let basic_entries = basic_fzf.find(value);
-      for (let e = 0, b = 0; e < entries.length && b < basic_entries.length; ++e) {
+      let e = 0, b = 0;
+      for (; e < entries.length && b < basic_entries.length; ++e) {
         let entry = entries[e];
         let basic_entry = basic_entries[b];
         if (entry.item.name == basic_entry.item.name) {
           entry.basic_score = basic_entry.score;
           entry.basic_positions = basic_entry.positions;
+          b += 1;
+        } else {
+          entry.basic_score = 0;
         }
       }
-      entries.sort(function(a, b) {
+      if (b != basic_entries.length) {
+        console.log("unmatched basic entires item");
+      }
+      entries.sort(function(a, b2) {
         let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
-        let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start];
+        let factor_b = [-b2.score, -b2.basic_score, b2.item.NormalizedName.length, b2.start];
         for (let i in factor_a) {
           if (factor_a[i] > factor_b[i]) {
             return 1;
