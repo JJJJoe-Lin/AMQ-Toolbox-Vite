@@ -66,6 +66,7 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
         limit: 100,
         selector: (item) => item.NormalizedName,
         match: extendedMatch,
+        tiebreakers: [byLengthAsc, byStartAsc],
     };
     this.default_fzf = new Fzf(fzfList, this.fzf_opt);
 
@@ -75,6 +76,7 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
         casing: "case-insensitive",
         selector: (item) => item.NormalizedName,
         match: extendedMatch,
+        tiebreakers: [byLengthAsc, byStartAsc],
     };
     let filter = new Fzf(fzfList, this.filter_opt);
     // alphabet sorted by occurrence frequency.
