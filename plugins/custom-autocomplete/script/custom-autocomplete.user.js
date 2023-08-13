@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Custom Autocomplete(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.3.0
+// @version      0.3.1
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
