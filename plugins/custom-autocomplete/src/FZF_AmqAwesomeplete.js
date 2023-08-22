@@ -95,7 +95,8 @@ class CustomFzf {
             match: basicMatch,
             sort: false,
         });
-        let basic_entries = basic_fzf.find(value);
+        let concat_value = value.replace(/\s+/g, '')
+        let basic_entries = basic_fzf.find(concat_value);
 
         let e = 0, b = 0;
         for (; e < entries.length && b < basic_entries.length; ++e) {
@@ -184,12 +185,13 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
 
     this.item = function (text, item_id) {
         var html = text;
-        return create("li", {
+        var element = create("li", {
             innerHTML: html,
             "role": "option",
             "aria-selected": "false",
             "id": "awesomplete_list_" + this.count + "_item_" + item_id
         });
+        return element;
     };
 }
 
