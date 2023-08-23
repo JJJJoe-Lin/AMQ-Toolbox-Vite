@@ -130,6 +130,27 @@ class CustomFzf {
         })
         return entries;
     }
+    goodScore(value) {
+        let concat_value = value.replace(/\s+/g, '');
+        let token_count = value.trim().split(/\s+/).length;
+        const score_match = 16;
+        const bonus_first = 8;
+        const bonus_consecutive = 8;
+        const len = concat_value.length;
+        return score_match * len + bonus_consecutive * (len - 1) + bonus_first * (token_count + 1);
+    }
+    badScore(value) {
+        let concat_value = value.replace(/\s+/g, '')
+        const score_match = 16;
+        const score_gap_start = -3;
+        const len = concat_value.length;
+        return score_match * len + score_gap_start * (len - 1);
+    }
+    normScore(value, score) {
+        let good_score = this.goodScore(value);
+        let bad_score = this.badScore(value);
+        return (score - bad_score) / (good_score - bad_score)
+    }
 }
 
 export function FzfAmqAwesomplete(input, o, scrollable) {
@@ -243,7 +264,11 @@ export function FzfEvaluate() {
 
     // fill the suggestions
     let fzf_suggestions = [];
-    for (let entry of entries) {
+    for (let i in entries) {
+        if (i >= this.maxItems) {
+            break;
+        }
+        let entry = entries[i];
         let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
         let name = entry.item.name;
         let label = ""
@@ -254,7 +279,12 @@ export function FzfEvaluate() {
                 label += name[i];
             }
         }
-        let suggestion = new Suggestion([label, name]);
+        let norm_score = this.customFzf.normScore(normalizedValue, entry.score);
+        norm_score = Math.min(1, norm_score);
+        norm_score = Math.max(0, norm_score);
+        let color_hue = 120 * (norm_score * norm_score);
+        let html = '<span style="color:hsl(' + color_hue + ', 60%, 80%);">' + label + "</span>"
+        let suggestion = new Suggestion([html, name]);
         fzf_suggestions.push(suggestion);
     }
     this.suggestions = fzf_suggestions;

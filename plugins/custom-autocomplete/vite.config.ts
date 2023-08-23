@@ -11,7 +11,7 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Custom Autocomplete(dev)',
-                version: '0.3.2',
+                version: '0.4.0',
                 description: 'AMQ Custom Autocomplete',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',
