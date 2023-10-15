@@ -31,6 +31,8 @@ interface Mp3Info {
 
 type MediaType = 'Audio' | 'Video';
 
+const CatboxUrlPrefix = 'https://files.catbox.moe/';
+
 class Downloader implements IPlugin {
     public name = 'Downloader';
     public options;
@@ -170,16 +172,16 @@ class Downloader implements IPlugin {
         // update video URL
         videoDlBtn.self.removeData("url").addClass("disabled");
         for (let resolution of resolutions) {
-            let videoURL = result.songInfo.urlMap.catbox[resolution];
+            let videoURL = result.songInfo.videoTargetMap.catbox[resolution];
             if (videoURL !== undefined) {
-                videoDlBtn.self.data("url", videoURL).removeClass("disabled");
+                videoDlBtn.self.data("url", CatboxUrlPrefix + videoURL).removeClass("disabled");
                 break;
             }
         }
         // update audio URL
-        const audioURL = result.songInfo.urlMap.catbox["0"];
+        const audioURL = result.songInfo.videoTargetMap.catbox["0"];
         if (audioURL !== undefined) {
-            audioDlBtn.self.data("url", audioURL).removeClass("disabled");
+            audioDlBtn.self.data("url", CatboxUrlPrefix + audioURL).removeClass("disabled");
         } else {
             audioDlBtn.self.removeData("url").addClass("disabled");
         }
@@ -258,8 +260,8 @@ class Downloader implements IPlugin {
     }
 
     private getMp3Info(): Mp3Info {
-        const catbox = this.currentSongInfo.urlMap['catbox'];
-        const opm = this.currentSongInfo.urlMap['openingsmoe'];
+        const catbox = this.currentSongInfo.videoTargetMap['catbox'];
+        const opm = this.currentSongInfo.videoTargetMap['openingsmoe'];
         return {
             animeName: this.currentSongInfo.animeNames.romaji,
             songName: this.currentSongInfo.songName,
@@ -268,9 +270,9 @@ class Downloader implements IPlugin {
             annId: this.currentSongInfo.annId,
             cover: null,
             videoUrl: {
-                'catbox_480': catbox ? (catbox['480'] ? catbox['480'] : undefined) : undefined,
-                'catbox_720': catbox ? (catbox['720'] ? catbox['720'] : undefined) : undefined,
-                'openingsmoe': opm ? (opm['720'] ? catbox['720'] : undefined) : undefined,
+                'catbox_480': catbox && catbox['480'] && CatboxUrlPrefix + catbox['480'],
+                'catbox_720': catbox && catbox['720'] && CatboxUrlPrefix + catbox['720'],
+                'openingsmoe': opm && opm['720'],
             },
         }
     }
