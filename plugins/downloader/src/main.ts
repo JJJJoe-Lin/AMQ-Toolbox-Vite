@@ -8,6 +8,7 @@ import {
     RadioOption,
     registerPlugin,
 } from 'amq-toolbox';
+import { GM_xmlhttpRequest } from '$';
 import { getAnimeImage, Image } from './cover';
 import MP3Tag from 'mp3tag.js';
 
@@ -31,7 +32,7 @@ interface Mp3Info {
 
 type MediaType = 'Audio' | 'Video';
 
-const CatboxUrlPrefix = 'https://files.catbox.moe/';
+const CatboxUrlPrefix = 'https://ladist1.catbox.video/';
 
 class Downloader implements IPlugin {
     public name = 'Downloader';
@@ -224,24 +225,26 @@ class Downloader implements IPlugin {
         if (interactive) {
             alert(`Downloading song: ${fileName}`);
         }
-        const response = await fetch(url);
-        let blob: Blob;
-        if (fileExt === 'mp3') {
-            const mp3 = await response.arrayBuffer();
-            mp3Info.cover = await getAnimeImage(mp3Info.annId);
-            const taggedMp3 = addMp3Tag(mp3, mp3Info);
-            if (taggedMp3 === null) {
-                console.warn(`Failed to add mp3 tag, download origin mp3...`);
-                blob = new Blob([mp3], {type: 'audio/mpeg'});
+        // const response = await fetch(url);
+        const rawMedia = await fetchRawMedia(url);
+        if (rawMedia) {
+            let blob: Blob;
+            if (fileExt === 'mp3') {
+                mp3Info.cover = await getAnimeImage(mp3Info.annId);
+                const taggedMp3 = addMp3Tag(rawMedia, mp3Info);
+                if (taggedMp3 === null) {
+                    console.warn(`Failed to add mp3 tag, download origin mp3...`);
+                    blob = new Blob([rawMedia], {type: 'audio/mpeg'});
+                } else {
+                    console.log('Download tagged mp3');
+                    blob = new Blob([taggedMp3], {type: 'audio/mpeg'});
+                }
+    
             } else {
-                console.log('Download tagged mp3');
-                blob = new Blob([taggedMp3], {type: 'audio/mpeg'});
+                blob = new Blob([rawMedia]);
             }
-
-        } else {
-            blob = await response.blob();
+            downloadBlob(blob, `${fileName}.${fileExt}`);
         }
-        downloadBlob(blob, `${fileName}.${fileExt}`);
     }
 
     private downloadSongInfo() {
@@ -289,6 +292,25 @@ class Downloader implements IPlugin {
                 return '';
         }
     }
+}
+
+async function fetchRawMedia (url: string): Promise<ArrayBuffer | null> {
+    return new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: url,
+            responseType: 'arraybuffer',
+            onload: (resp) => {
+                if (resp.status != 200) {
+                    console.warn('fetch media failed');
+                    resolve(null);
+                } else {
+                    resolve(resp.response);
+                }
+            },
+            
+        });
+    });
 }
 
 function downloadBlob(blob: Blob, fileName: string) {

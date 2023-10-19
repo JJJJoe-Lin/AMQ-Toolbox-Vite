@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         AMQ Downloader(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.3
+// @version      0.4.4
 // @author       JJJJoe
 // @description  AMQ song downloader
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js
 // @updateURL    https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js
 // @include      /^https:\/\/animemusicquiz\.com\/(\?.*|#.*)?$/
 // @connect      cdn.animenewsnetwork.com
+// @connect      ladist1.catbox.video
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -10567,7 +10568,7 @@
     });
   })(mp3tag);
   const MP3Tag = mp3tagExports;
-  const CatboxUrlPrefix = "https://files.catbox.moe/";
+  const CatboxUrlPrefix = "https://ladist1.catbox.video/";
   class Downloader {
     constructor() {
       __publicField(this, "name", "Downloader");
@@ -10746,23 +10747,24 @@
       if (interactive) {
         alert(`Downloading song: ${fileName}`);
       }
-      const response = await fetch(url);
-      let blob;
-      if (fileExt === "mp3") {
-        const mp3 = await response.arrayBuffer();
-        mp3Info.cover = await getAnimeImage(mp3Info.annId);
-        const taggedMp3 = addMp3Tag(mp3, mp3Info);
-        if (taggedMp3 === null) {
-          console.warn(`Failed to add mp3 tag, download origin mp3...`);
-          blob = new Blob([mp3], { type: "audio/mpeg" });
+      const rawMedia = await fetchRawMedia(url);
+      if (rawMedia) {
+        let blob;
+        if (fileExt === "mp3") {
+          mp3Info.cover = await getAnimeImage(mp3Info.annId);
+          const taggedMp3 = addMp3Tag(rawMedia, mp3Info);
+          if (taggedMp3 === null) {
+            console.warn(`Failed to add mp3 tag, download origin mp3...`);
+            blob = new Blob([rawMedia], { type: "audio/mpeg" });
+          } else {
+            console.log("Download tagged mp3");
+            blob = new Blob([taggedMp3], { type: "audio/mpeg" });
+          }
         } else {
-          console.log("Download tagged mp3");
-          blob = new Blob([taggedMp3], { type: "audio/mpeg" });
+          blob = new Blob([rawMedia]);
         }
-      } else {
-        blob = await response.blob();
+        downloadBlob(blob, `${fileName}.${fileExt}`);
       }
-      downloadBlob(blob, `${fileName}.${fileExt}`);
     }
     downloadSongInfo() {
       const fileName = this.nameFromSongInfo();
@@ -10806,6 +10808,23 @@
           return "";
       }
     }
+  }
+  async function fetchRawMedia(url) {
+    return new Promise((resolve, reject) => {
+      _GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        responseType: "arraybuffer",
+        onload: (resp) => {
+          if (resp.status != 200) {
+            console.warn("fetch media failed");
+            resolve(null);
+          } else {
+            resolve(resp.response);
+          }
+        }
+      });
+    });
   }
   function downloadBlob(blob, fileName) {
     const url = URL.createObjectURL(blob);
