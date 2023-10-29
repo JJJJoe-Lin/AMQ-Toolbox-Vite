@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Custom Autocomplete(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.1
+// @version      0.4.2
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
@@ -2426,7 +2426,6 @@
         let basic_entry = basic_entries[b];
         if (entry.item.name == basic_entry.item.name) {
           entry.basic_score = basic_entry.score;
-          entry.basic_positions = basic_entry.positions;
           b += 1;
         } else {
           entry.basic_score = 0;
@@ -2436,8 +2435,8 @@
         console.log("unmatched basic entires item");
       }
       entries.sort(function(a, b2) {
-        let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
-        let factor_b = [-b2.score, -b2.basic_score, b2.item.NormalizedName.length, b2.start];
+        let factor_a = [-a.score, a.basic_score == 0, a.item.NormalizedName.length, a.start];
+        let factor_b = [-b2.score, b2.basic_score == 0, b2.item.NormalizedName.length, b2.start];
         for (let i in factor_a) {
           if (factor_a[i] > factor_b[i]) {
             return 1;
@@ -2573,7 +2572,7 @@
         break;
       }
       let entry = entries[i];
-      let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
+      let positions = entry.positions;
       let name = entry.item.name;
       let label = "";
       for (let i2 = 0; i2 < name.length; ++i2) {

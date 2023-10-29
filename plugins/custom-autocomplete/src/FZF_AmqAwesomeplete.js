@@ -107,7 +107,6 @@ class CustomFzf {
             let basic_entry = basic_entries[b];
             if (entry.item.name == basic_entry.item.name) {
                 entry.basic_score = basic_entry.score;
-                entry.basic_positions = basic_entry.positions;
                 b += 1;
             } else {
                 entry.basic_score = 0;
@@ -119,8 +118,8 @@ class CustomFzf {
 
         // sort by extended match score and basic match score
         entries.sort(function(a, b) {
-            let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start]
-            let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start]
+            let factor_a = [-a.score, a.basic_score == 0, a.item.NormalizedName.length, a.start]
+            let factor_b = [-b.score, b.basic_score == 0, b.item.NormalizedName.length, b.start]
             for (let i in factor_a) {
                 if (factor_a[i] > factor_b[i]){
                     return 1;
@@ -272,7 +271,7 @@ export function FzfEvaluate() {
             break;
         }
         let entry = entries[i];
-        let positions = entry.basic_score > 0 ? entry.basic_positions : entry.positions;
+        let positions = entry.positions;
         let name = entry.item.name;
         let label = ""
         for (let i = 0; i < name.length; ++i) {
