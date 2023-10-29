@@ -9,28 +9,29 @@ import {
 
 function NormalizeName(name) {
     const rules = [
-        {input: "[aä@âàáạåæā]", output: "a"},
-        {input: "[bß]", output: "b"},
-        {input: "[č]", output: "c"},
-        {input: "[eéêëèæē]", output: "e"},
-        {input: "[ií]", output: "i"},
-        {input: "[nñ]", output: "n"},
-        {input: "[oōóòöôøΦ]", output: "o"},
-        {input: "[uuūûúùüǖ]", output: "u"},
-        {input: "[x×]", output: "x"},
-        {input: "[2²]", output: "2"},
-        {input: "[3³]", output: "3"},
-        {input: "[\'’]", output: "\'"},
-        {input: "[★☆·♥∽・〜†×♪→␣]", output: " "},
+        {input: "ä@âàáạåæā", output: "a"},
+        {input: "ß", output: "b"},
+        {input: "č", output: "c"},
+        {input: "éêëèæē", output: "e"},
+        {input: "í", output: "i"},
+        {input: "ñ", output: "n"},
+        {input: "ōóòöôøΦ", output: "o"},
+        {input: "uūûúùüǖ", output: "u"},
+        {input: "×", output: "x"},
+        {input: "²", output: "2"},
+        {input: "³", output: "3"},
+        {input: "’", output: "\'"},
+        {input: "★☆·♥∽・〜†×♪→␣", output: " "},
     ];
+    let rule_map = new Map();
+    for (let rule of rules) {
+      for (let c of rule.input) {
+        rule_map.set(c, rule.output)
+      }
+    }
     let ret = "";
     name.split('').forEach(c => {
-        rules.forEach(rule => {
-            if(RegExp(rule.input).test(c)) {
-                c = rule.output
-            }
-        })
-        ret += c;
+        ret += rule_map.get(c) ?? c;
     });
     return ret.replace(/\s\s+/g, ' ');
 }
@@ -70,9 +71,11 @@ class CustomFzf {
         // alphabet sorted by occurrence frequency.
         const alphabet = [...'qxzjvwfpbycldgkmhutrsnoiea'];
         for (let a of alphabet) {
-            let entries = filter.find(a);
-            let items = ToItemList(entries);
-            this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
+            setTimeout(() => {
+                let entries = filter.find(a);
+                let items = ToItemList(entries);
+                this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
+            }, 10);
         }
     }
     find(value) {
