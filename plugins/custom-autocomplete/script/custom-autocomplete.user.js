@@ -2435,8 +2435,8 @@
         console.log("unmatched basic entires item");
       }
       entries.sort(function(a, b2) {
-        let factor_a = [-a.score, a.basic_score == 0, a.item.NormalizedName.length, a.start];
-        let factor_b = [-b2.score, b2.basic_score == 0, b2.item.NormalizedName.length, b2.start];
+        let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
+        let factor_b = [-b2.score, -b2.basic_score, b2.item.NormalizedName.length, b2.start];
         for (let i in factor_a) {
           if (factor_a[i] > factor_b[i]) {
             return 1;

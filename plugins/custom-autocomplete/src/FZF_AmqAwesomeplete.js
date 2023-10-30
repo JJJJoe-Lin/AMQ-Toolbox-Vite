@@ -118,8 +118,8 @@ class CustomFzf {
 
         // sort by extended match score and basic match score
         entries.sort(function(a, b) {
-            let factor_a = [-a.score, a.basic_score == 0, a.item.NormalizedName.length, a.start]
-            let factor_b = [-b.score, b.basic_score == 0, b.item.NormalizedName.length, b.start]
+            let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start]
+            let factor_b = [-b.score, -b.basic_score, b.item.NormalizedName.length, b.start]
             for (let i in factor_a) {
                 if (factor_a[i] > factor_b[i]){
                     return 1;
