@@ -21,7 +21,7 @@ function NormalizeName(name) {
         {input: "²", output: "2"},
         {input: "³", output: "3"},
         {input: "’", output: "\'"},
-        {input: "★☆·♥∽・〜†×♪→␣", output: " "},
+        {input: "★☆·♥∽・〜†♪→␣", output: " "},
     ];
     let rule_map = new Map();
     for (let rule of rules) {

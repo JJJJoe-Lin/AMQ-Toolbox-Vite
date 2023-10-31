@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Custom Autocomplete(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.2
+// @version      0.4.3
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
@@ -2350,7 +2350,7 @@
       { input: "²", output: "2" },
       { input: "³", output: "3" },
       { input: "’", output: "'" },
-      { input: "★☆·♥∽・〜†×♪→␣", output: " " }
+      { input: "★☆·♥∽・〜†♪→␣", output: " " }
     ];
     let rule_map = /* @__PURE__ */ new Map();
     for (let rule of rules) {
