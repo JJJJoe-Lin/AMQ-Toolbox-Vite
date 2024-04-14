@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Custom Autocomplete(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.4.3
+// @version      0.5.0
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
@@ -22,6 +22,20 @@
     __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
     return value;
   };
+  var __accessCheck = (obj, member, msg) => {
+    if (!member.has(obj))
+      throw TypeError("Cannot " + msg);
+  };
+  var __privateAdd = (obj, member, value) => {
+    if (member.has(obj))
+      throw TypeError("Cannot add the same private member more than once");
+    member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+  };
+  var __privateMethod = (obj, member, method) => {
+    __accessCheck(obj, member, "access private method");
+    return method;
+  };
+  var _goodScore, goodScore_fn, _badScore, badScore_fn, _normScore, normScore_fn;
   class Container {
     constructor(opt) {
       __publicField(this, "self");
@@ -1278,34 +1292,12 @@
     return num1 > num2 ? num1 : num2;
   }
   const strToRunes = (str) => str.split("").map((s) => s.codePointAt(0));
-  const runesToStr = (runes) => runes.map((r) => String.fromCodePoint(r)).join("");
   const whitespaceRunes = new Set(
     " \f\n\r	\v  \u2028\u2029  　\uFEFF".split("").map((v) => v.codePointAt(0))
   );
   for (let codePoint = " ".codePointAt(0); codePoint <= " ".codePointAt(0); codePoint++) {
     whitespaceRunes.add(codePoint);
   }
-  const isWhitespace = (rune) => whitespaceRunes.has(rune);
-  const whitespacesAtStart = (runes) => {
-    let whitespaces = 0;
-    for (const rune of runes) {
-      if (isWhitespace(rune))
-        whitespaces++;
-      else
-        break;
-    }
-    return whitespaces;
-  };
-  const whitespacesAtEnd = (runes) => {
-    let whitespaces = 0;
-    for (let i = runes.length - 1; i >= 0; i--) {
-      if (isWhitespace(runes[i]))
-        whitespaces++;
-      else
-        break;
-    }
-    return whitespaces;
-  };
   const MAX_ASCII = "".codePointAt(0);
   const CAPITAL_A_RUNE = "A".codePointAt(0);
   const CAPITAL_Z_RUNE = "Z".codePointAt(0);
@@ -1810,120 +1802,6 @@
     }
     return [{ start: -1, end: -1, score: 0 }, null];
   };
-  const prefixMatch = (caseSensitive, normalize, forward, text, pattern, withPos, slab2) => {
-    if (pattern.length === 0) {
-      return [{ start: 0, end: 0, score: 0 }, null];
-    }
-    let trimmedLen = 0;
-    if (!isWhitespace(pattern[0])) {
-      trimmedLen = whitespacesAtStart(text);
-    }
-    if (text.length - trimmedLen < pattern.length) {
-      return [{ start: -1, end: -1, score: 0 }, null];
-    }
-    for (const [index, r] of pattern.entries()) {
-      let rune = text[trimmedLen + index];
-      if (!caseSensitive) {
-        rune = String.fromCodePoint(rune).toLowerCase().codePointAt(0);
-      }
-      if (normalize) {
-        rune = normalizeRune(rune);
-      }
-      if (rune !== r) {
-        return [{ start: -1, end: -1, score: 0 }, null];
-      }
-    }
-    const lenPattern = pattern.length;
-    const [score] = calculateScore(
-      caseSensitive,
-      normalize,
-      text,
-      pattern,
-      trimmedLen,
-      trimmedLen + lenPattern,
-      false
-    );
-    return [{ start: trimmedLen, end: trimmedLen + lenPattern, score }, null];
-  };
-  const suffixMatch = (caseSensitive, normalize, forward, text, pattern, withPos, slab2) => {
-    const lenRunes = text.length;
-    let trimmedLen = lenRunes;
-    if (pattern.length === 0 || !isWhitespace(pattern[pattern.length - 1])) {
-      trimmedLen -= whitespacesAtEnd(text);
-    }
-    if (pattern.length === 0) {
-      return [{ start: trimmedLen, end: trimmedLen, score: 0 }, null];
-    }
-    const diff = trimmedLen - pattern.length;
-    if (diff < 0) {
-      return [{ start: -1, end: -1, score: 0 }, null];
-    }
-    for (const [index, r] of pattern.entries()) {
-      let rune = text[index + diff];
-      if (!caseSensitive) {
-        rune = String.fromCodePoint(rune).toLowerCase().codePointAt(0);
-      }
-      if (normalize) {
-        rune = normalizeRune(rune);
-      }
-      if (rune !== r) {
-        return [{ start: -1, end: -1, score: 0 }, null];
-      }
-    }
-    const lenPattern = pattern.length;
-    const sidx = trimmedLen - lenPattern;
-    const eidx = trimmedLen;
-    const [score] = calculateScore(caseSensitive, normalize, text, pattern, sidx, eidx, false);
-    return [{ start: sidx, end: eidx, score }, null];
-  };
-  const equalMatch = (caseSensitive, normalize, forward, text, pattern, withPos, slab2) => {
-    const lenPattern = pattern.length;
-    if (lenPattern === 0) {
-      return [{ start: -1, end: -1, score: 0 }, null];
-    }
-    let trimmedLen = 0;
-    if (!isWhitespace(pattern[0])) {
-      trimmedLen = whitespacesAtStart(text);
-    }
-    let trimmedEndLen = 0;
-    if (!isWhitespace(pattern[lenPattern - 1])) {
-      trimmedEndLen = whitespacesAtEnd(text);
-    }
-    if (text.length - trimmedLen - trimmedEndLen != lenPattern) {
-      return [{ start: -1, end: -1, score: 0 }, null];
-    }
-    let match = true;
-    if (normalize) {
-      const runes = text;
-      for (const [idx, pchar] of pattern.entries()) {
-        let rune = runes[trimmedLen + idx];
-        if (!caseSensitive) {
-          rune = String.fromCodePoint(rune).toLowerCase().codePointAt(0);
-        }
-        if (normalizeRune(pchar) !== normalizeRune(rune)) {
-          match = false;
-          break;
-        }
-      }
-    } else {
-      let runesStr = runesToStr(text).substring(trimmedLen, text.length - trimmedEndLen);
-      if (!caseSensitive) {
-        runesStr = runesStr.toLowerCase();
-      }
-      match = runesStr === runesToStr(pattern);
-    }
-    if (match) {
-      return [
-        {
-          start: trimmedLen,
-          end: trimmedLen + lenPattern,
-          score: (SCORE_MATCH + BONUS_BOUNDARY) * lenPattern + (BONUS_FIRST_CHAR_MULTIPLIER - 1) * BONUS_BOUNDARY
-        },
-        null
-      ];
-    }
-    return [{ start: -1, end: -1, score: 0 }, null];
-  };
   const SLAB_16_SIZE = 100 * 1024;
   const SLAB_32_SIZE = 2048;
   function makeSlab(size16, size32) {
@@ -1933,129 +1811,6 @@
     };
   }
   const slab = makeSlab(SLAB_16_SIZE, SLAB_32_SIZE);
-  var TermType = /* @__PURE__ */ ((TermType2) => {
-    TermType2[TermType2["Fuzzy"] = 0] = "Fuzzy";
-    TermType2[TermType2["Exact"] = 1] = "Exact";
-    TermType2[TermType2["Prefix"] = 2] = "Prefix";
-    TermType2[TermType2["Suffix"] = 3] = "Suffix";
-    TermType2[TermType2["Equal"] = 4] = "Equal";
-    return TermType2;
-  })(TermType || {});
-  const termTypeMap = {
-    [0]: fuzzyMatchV2,
-    [1]: exactMatchNaive,
-    [2]: prefixMatch,
-    [3]: suffixMatch,
-    [4]: equalMatch
-  };
-  function buildPatternForExtendedMatch(fuzzy, caseMode, normalize, str) {
-    let cacheable = true;
-    str = str.trimLeft();
-    {
-      const trimmedAtRightStr = str.trimRight();
-      if (trimmedAtRightStr.endsWith("\\") && str[trimmedAtRightStr.length] === " ") {
-        str = trimmedAtRightStr + " ";
-      } else {
-        str = trimmedAtRightStr;
-      }
-    }
-    let sortable = false;
-    let termSets = [];
-    termSets = parseTerms(fuzzy, caseMode, normalize, str);
-    Loop:
-      for (const termSet of termSets) {
-        for (const [idx, term] of termSet.entries()) {
-          if (!term.inv) {
-            sortable = true;
-          }
-          if (!cacheable || idx > 0 || term.inv || fuzzy && term.typ !== 0 || !fuzzy && term.typ !== 1) {
-            cacheable = false;
-            if (sortable) {
-              break Loop;
-            }
-          }
-        }
-      }
-    return {
-      str,
-      termSets,
-      sortable,
-      cacheable,
-      fuzzy
-    };
-  }
-  function parseTerms(fuzzy, caseMode, normalize, str) {
-    str = str.replace(/\\ /g, "	");
-    const tokens = str.split(/ +/);
-    const sets = [];
-    let set = [];
-    let switchSet = false;
-    let afterBar = false;
-    for (const token of tokens) {
-      let typ = 0, inv = false, text = token.replace(/\t/g, " ");
-      const lowerText = text.toLowerCase();
-      const caseSensitive = caseMode === "case-sensitive" || caseMode === "smart-case" && text !== lowerText;
-      const normalizeTerm = normalize && lowerText === runesToStr(strToRunes(lowerText).map(normalizeRune));
-      if (!caseSensitive) {
-        text = lowerText;
-      }
-      if (!fuzzy) {
-        typ = 1;
-      }
-      if (set.length > 0 && !afterBar && text === "|") {
-        switchSet = false;
-        afterBar = true;
-        continue;
-      }
-      afterBar = false;
-      if (text.startsWith("!")) {
-        inv = true;
-        typ = 1;
-        text = text.substring(1);
-      }
-      if (text !== "$" && text.endsWith("$")) {
-        typ = 3;
-        text = text.substring(0, text.length - 1);
-      }
-      if (text.startsWith("'")) {
-        if (fuzzy && !inv) {
-          typ = 1;
-        } else {
-          typ = 0;
-        }
-        text = text.substring(1);
-      } else if (text.startsWith("^")) {
-        if (typ === 3) {
-          typ = 4;
-        } else {
-          typ = 2;
-        }
-        text = text.substring(1);
-      }
-      if (text.length > 0) {
-        if (switchSet) {
-          sets.push(set);
-          set = [];
-        }
-        let textRunes = strToRunes(text);
-        if (normalizeTerm) {
-          textRunes = textRunes.map(normalizeRune);
-        }
-        set.push({
-          typ,
-          inv,
-          text: textRunes,
-          caseSensitive,
-          normalize: normalizeTerm
-        });
-        switchSet = true;
-      }
-    }
-    if (set.length > 0) {
-      sets.push(set);
-    }
-    return sets;
-  }
   const buildPatternForBasicMatch = (query, casing, normalize) => {
     let caseSensitive = false;
     switch (casing) {
@@ -2081,80 +1836,6 @@
       caseSensitive
     };
   };
-  function iter(algoFn, tokens, caseSensitive, normalize, forward, pattern, slab2) {
-    for (const part of tokens) {
-      const [res, pos] = algoFn(caseSensitive, normalize, forward, part.text, pattern, true, slab2);
-      if (res.start >= 0) {
-        const sidx = res.start + part.prefixLength;
-        const eidx = res.end + part.prefixLength;
-        if (pos !== null) {
-          const newPos = /* @__PURE__ */ new Set();
-          pos.forEach((v) => newPos.add(part.prefixLength + v));
-          return [[sidx, eidx], res.score, newPos];
-        }
-        return [[sidx, eidx], res.score, pos];
-      }
-    }
-    return [[-1, -1], 0, null];
-  }
-  function computeExtendedMatch(text, pattern, fuzzyAlgo, forward) {
-    const input = [
-      {
-        text,
-        prefixLength: 0
-      }
-    ];
-    const offsets = [];
-    let totalScore = 0;
-    const allPos = /* @__PURE__ */ new Set();
-    for (const termSet of pattern.termSets) {
-      let offset = [0, 0];
-      let currentScore = 0;
-      let matched = false;
-      for (const term of termSet) {
-        let algoFn = termTypeMap[term.typ];
-        if (term.typ === TermType.Fuzzy) {
-          algoFn = fuzzyAlgo;
-        }
-        const [off, score, pos] = iter(
-          algoFn,
-          input,
-          term.caseSensitive,
-          term.normalize,
-          forward,
-          term.text,
-          slab
-        );
-        const sidx = off[0];
-        if (sidx >= 0) {
-          if (term.inv) {
-            continue;
-          }
-          offset = off;
-          currentScore = score;
-          matched = true;
-          if (pos !== null) {
-            pos.forEach((v) => allPos.add(v));
-          } else {
-            for (let idx = off[0]; idx < off[1]; ++idx) {
-              allPos.add(idx);
-            }
-          }
-          break;
-        } else if (term.inv) {
-          offset = [0, 0];
-          currentScore = 0;
-          matched = true;
-          continue;
-        }
-      }
-      if (matched) {
-        offsets.push(offset);
-        totalScore += currentScore;
-      }
-    }
-    return { offsets, totalScore, allPos };
-  }
   function getResultFromScoreMap(scoreMap, limit) {
     const scoresInDesc = Object.keys(scoreMap).map((v) => parseInt(v, 10)).sort((a, b) => b - a);
     let result = [];
@@ -2199,30 +1880,6 @@
       });
     };
   }
-  function getExtendedMatchIter(scoreMap, pattern) {
-    return (idx) => {
-      const runes = this.runesList[idx];
-      const match = computeExtendedMatch(runes, pattern, this.algoFn, this.opts.forward);
-      if (match.offsets.length !== pattern.termSets.length)
-        return;
-      let sidx = -1, eidx = -1;
-      if (match.allPos.size > 0) {
-        sidx = Math.min(...match.allPos);
-        eidx = Math.max(...match.allPos) + 1;
-      }
-      const scoreKey = this.opts.sort ? match.totalScore : 0;
-      if (scoreMap[scoreKey] === void 0) {
-        scoreMap[scoreKey] = [];
-      }
-      scoreMap[scoreKey].push({
-        score: match.totalScore,
-        item: this.items[idx],
-        positions: match.allPos,
-        start: sidx,
-        end: eidx
-      });
-    };
-  }
   function basicMatch(query) {
     const { queryRunes, caseSensitive } = buildPatternForBasicMatch(
       query,
@@ -2235,20 +1892,6 @@
       queryRunes,
       caseSensitive
     );
-    for (let i = 0, len = this.runesList.length; i < len; ++i) {
-      iter2(i);
-    }
-    return getResultFromScoreMap(scoreMap, this.opts.limit);
-  }
-  function extendedMatch(query) {
-    const pattern = buildPatternForExtendedMatch(
-      Boolean(this.opts.fuzzy),
-      this.opts.casing,
-      this.opts.normalize,
-      query
-    );
-    const scoreMap = {};
-    const iter2 = getExtendedMatchIter.bind(this)(scoreMap, pattern);
     for (let i = 0, len = this.runesList.length; i < len; ++i) {
       iter2(i);
     }
@@ -2336,7 +1979,7 @@
       this.find = this.finder.find.bind(this.finder);
     }
   }
-  function NormalizeName(name) {
+  function NormalizeName(name, camelize = false) {
     const rules = [
       { input: "ä@âàáạåæā", output: "a" },
       { input: "ß", output: "b" },
@@ -2362,7 +2005,34 @@
     name.split("").forEach((c) => {
       ret += rule_map.get(c) ?? c;
     });
+    if (camelize) {
+      ret = ret.replace(/(:?^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase());
+    }
     return ret.replace(/\s\s+/g, " ");
+  }
+  const InvalidAbbrRegex = /[^A-Z0-9:-]/;
+  function Abbreviate(name) {
+    if (name.length == 0) {
+      return "";
+    }
+    let abbr = name[0], abbr_offset = [0];
+    for (let i = 1; i < name.length; ++i) {
+      let current = name[i];
+      let previous = name[i - 1];
+      let next = name[i + 1] || "";
+      if (InvalidAbbrRegex.test(current)) {
+        continue;
+      }
+      if (current == ":" && next != " ") {
+        continue;
+      }
+      if (current == "-" && previous != " " && next != " ") {
+        continue;
+      }
+      abbr += current;
+      abbr_offset.push(i);
+    }
+    return [abbr, abbr_offset];
   }
   function ToItemList(fzf_entries) {
     let items = [];
@@ -2371,54 +2041,215 @@
     }
     return items;
   }
+  function BuildTerms(input) {
+    input = input.trim();
+    input = input.replace(/\\ /g, "	");
+    let terms = input.split(/ +/);
+    for (let i in terms) {
+      terms[i] = terms[i].replace(/\t/g, " ");
+    }
+    return terms;
+  }
+  class FinderResult {
+    constructor(item) {
+      __privateAdd(this, _goodScore);
+      __privateAdd(this, _badScore);
+      __privateAdd(this, _normScore);
+      this.item = item;
+      this.positions = /* @__PURE__ */ new Set();
+      this.start = item.name.length;
+      this.end = 0;
+      this.matched = 0;
+      this.abbr_score = 0;
+      this.score = 0;
+      this.basic_score = 0;
+    }
+    reset() {
+      this.positions.clear();
+      this.start = this.item.name.length;
+      this.end = 0;
+      this.matched = 0;
+      this.abbr_score = 0;
+      this.score = 0;
+      this.basic_score = 0;
+    }
+    merge(result) {
+      for (const pos of result.positions) {
+        this.positions.add(pos);
+      }
+      this.start = this.start < result.start ? this.start : result.start;
+      this.end = this.end > result.end ? this.end : result.end;
+      this.score += result.score;
+      if (result.score > 0) {
+        this.matched += 1;
+      }
+    }
+    setAbbrResult(result) {
+      this.abbr_score = result.score;
+      this.positions.clear();
+      for (const pos of result.positions) {
+        if (!pos in this.item.abbr_offset) {
+          console.log(`{pos} is not in {this.item.abbr_offset}`);
+          continue;
+        }
+        this.positions.add(this.item.abbr_offset[pos]);
+      }
+    }
+    getNormScore(value) {
+      let score = this.abbr_score || this.score;
+      return __privateMethod(this, _normScore, normScore_fn).call(this, value, score);
+    }
+  }
+  _goodScore = new WeakSet();
+  goodScore_fn = function(terms) {
+    let concat_value = terms.join("");
+    let token_count = terms.length;
+    const score_match = 16;
+    const bonus_first = 8;
+    const bonus_consecutive = 8;
+    const len = concat_value.length;
+    return score_match * len + bonus_consecutive * (len - 1) + bonus_first * (token_count + 1);
+  };
+  _badScore = new WeakSet();
+  badScore_fn = function(terms) {
+    let concat_value = terms.join("");
+    const score_match = 16;
+    const score_gap_start = -3;
+    const len = concat_value.length;
+    return score_match * len + score_gap_start * (len - 1);
+  };
+  _normScore = new WeakSet();
+  normScore_fn = function(value, score) {
+    let terms = BuildTerms(value);
+    let good_score = __privateMethod(this, _goodScore, goodScore_fn).call(this, terms);
+    let bad_score = __privateMethod(this, _badScore, badScore_fn).call(this, terms);
+    return (score - bad_score) / (good_score - bad_score);
+  };
+  class Finder {
+    constructor(items) {
+      this.items = items;
+      this.selector = (item) => item.normalized;
+      this.abbr_selector = (item) => item.abbr;
+      this.finder_opt = {
+        casing: "case-insensitive",
+        selector: this.selector,
+        tiebreakers: [byLengthAsc, byStartAsc]
+      };
+      this.filter_opt = {
+        casing: "case-insensitive",
+        selector: this.selector,
+        sort: false
+      };
+      this.abbr_filter_opt = {
+        selector: this.abbr_selector,
+        sort: false
+      };
+      this.finder = new Fzf(items, this.finder_opt);
+      this.filter = new Fzf(items, this.filter_opt);
+      this.abbr_filter = new Fzf(items, this.abbr_filter_opt);
+    }
+    find(value) {
+      return this.finder.find(value);
+    }
+    filt(value) {
+      return this.filter.find(value);
+    }
+    abbr_filt(value) {
+      return this.abbr_filter.find(value);
+    }
+  }
   class CustomFzf {
     constructor(itemList) {
       let fzfList = [];
-      for (let item of itemList) {
-        fzfList.push({ name: item, NormalizedName: NormalizeName(item) });
+      for (let [idx, item] of itemList.entries()) {
+        let normalized2 = NormalizeName(item);
+        let camel_normalized = NormalizeName(item, true);
+        const [abbr, abbr_offset] = Abbreviate(camel_normalized);
+        fzfList.push({ index: idx, name: item, normalized: normalized2, abbr, abbr_offset });
       }
-      this.fzf_opt = {
-        casing: "case-insensitive",
-        selector: (item) => item.NormalizedName,
-        match: extendedMatch,
-        limit: 1e3,
-        tiebreakers: [byLengthAsc, byStartAsc]
-      };
-      this.default_fzf = new Fzf(fzfList, this.fzf_opt);
-      this.fzf_map = /* @__PURE__ */ new Map();
-      this.filter_opt = {
-        casing: "case-insensitive",
-        selector: (item) => item.NormalizedName,
-        match: extendedMatch,
-        tiebreakers: [byLengthAsc, byStartAsc]
-      };
-      let filter = new Fzf(fzfList, this.filter_opt);
+      this.default_finder = new Finder(fzfList);
+      this.finder_map = /* @__PURE__ */ new Map();
       const alphabet = [..."qxzjvwfpbycldgkmhutrsnoiea"];
       for (let a of alphabet) {
         setTimeout(() => {
-          let entries = filter.find(a);
+          let entries = this.default_finder.filt(a);
           let items = ToItemList(entries);
-          this.fzf_map.set(a, new Fzf(items, this.fzf_opt));
+          this.finder_map.set(a, new Finder(items));
         }, 10);
       }
+      this.default_entries = fzfList.map((item) => new FinderResult(item));
     }
-    find(value) {
-      let fzf = this.default_fzf;
-      for (let [k, _] of this.fzf_map) {
-        if (value.includes(k)) {
-          fzf = this.fzf_map.get(k);
-          break;
+    getFinder(input) {
+      for (let [k, _] of this.finder_map) {
+        if (input.includes(k)) {
+          return this.finder_map.get(k);
         }
       }
-      let entries = fzf.find(value);
+      return this.default_finder;
+    }
+    // Customized extended serach. There are some features inside original
+    // extended search that we would like to remove. Also, this helps further
+    // customize.
+    extendedFind(input, limit = 1e3) {
+      let finder = this.getFinder(input);
+      let terms = BuildTerms(input);
+      if (terms.length == 0) {
+        return;
+      }
+      let entries = this.default_entries;
+      for (let entry of entries) {
+        entry.reset();
+      }
+      for (let term of terms) {
+        let term_entries = finder.filt(term);
+        for (let entry of term_entries) {
+          let idx = entry.item.index;
+          entries[idx].merge(entry);
+        }
+      }
+      let filtered_entries;
+      if (terms.length == 1 && !InvalidAbbrRegex.test(input)) {
+        let abbr_term = input;
+        let abbr_entries = finder.abbr_filt(abbr_term);
+        for (let entry of abbr_entries) {
+          let idx = entry.item.index;
+          entries[idx].setAbbrResult(entry);
+        }
+        filtered_entries = entries.filter((e) => e.abbr_score > 0 || e.matched == terms.length);
+      } else {
+        filtered_entries = entries.filter((e) => e.matched == terms.length);
+      }
+      filtered_entries.sort(function(a, b) {
+        if (a.abbr_score != b.abbr_score) {
+          return b.abbr_score - a.abbr_score;
+        }
+        if (a.abbr_score > 0 && a.item.abbr.length != b.item.abbr.length) {
+          return a.item.abbr.length - b.item.abbr.length;
+        }
+        if (a.score != b.score) {
+          return b.score - a.score;
+        }
+        if (a.item.normalized.length != b.item.normalized.length) {
+          return a.item.normalized.length - b.item.normalized.length;
+        }
+        return a.start - b.start;
+      });
+      return filtered_entries.slice(0, limit);
+    }
+    find(value) {
+      let terms = BuildTerms(value);
+      let entries = this.extendedFind(value);
+      if (!entries) {
+        console.log("Nothing found in extendedFind()");
+      }
       let itemList = ToItemList(entries);
       let basic_fzf = new Fzf(itemList, {
         casing: "case-insensitive",
-        selector: (item) => item.NormalizedName,
+        selector: (item) => item.normalized,
         match: basicMatch,
         sort: false
       });
-      let concat_value = value.replace(/\s+/g, "");
+      let concat_value = terms.join("");
       let basic_entries = basic_fzf.find(concat_value);
       let e = 0, b = 0;
       for (; e < entries.length && b < basic_entries.length; ++e) {
@@ -2435,40 +2266,24 @@
         console.log("unmatched basic entires item");
       }
       entries.sort(function(a, b2) {
-        let factor_a = [-a.score, -a.basic_score, a.item.NormalizedName.length, a.start];
-        let factor_b = [-b2.score, -b2.basic_score, b2.item.NormalizedName.length, b2.start];
-        for (let i in factor_a) {
-          if (factor_a[i] > factor_b[i]) {
-            return 1;
-          }
-          if (factor_a[i] < factor_b[i]) {
-            return -1;
-          }
+        if (a.abbr_score != b2.abbr_score) {
+          return b2.abbr_score - a.abbr_score;
         }
-        return 0;
+        if (a.abbr_score > 0 && a.item.abbr.length != b2.item.abbr.length) {
+          return a.item.abbr.length - b2.item.abbr.length;
+        }
+        if (a.score != b2.score) {
+          return b2.score - a.score;
+        }
+        if (a.score != b2.basic_score) {
+          return b2.basic_score - a.basic_score;
+        }
+        if (a.item.normalized.length != b2.item.normalized.length) {
+          return a.item.normalized.length - b2.item.normalized.length;
+        }
+        return a.start - b2.start;
       });
       return entries;
-    }
-    goodScore(value) {
-      let concat_value = value.replace(/\s+/g, "");
-      let token_count = value.trim().split(/\s+/).length;
-      const score_match = 16;
-      const bonus_first = 8;
-      const bonus_consecutive = 8;
-      const len = concat_value.length;
-      return score_match * len + bonus_consecutive * (len - 1) + bonus_first * (token_count + 1);
-    }
-    badScore(value) {
-      let concat_value = value.replace(/\s+/g, "");
-      const score_match = 16;
-      const score_gap_start = -3;
-      const len = concat_value.length;
-      return score_match * len + score_gap_start * (len - 1);
-    }
-    normScore(value, score) {
-      let good_score = this.goodScore(value);
-      let bad_score = this.badScore(value);
-      return (score - bad_score) / (good_score - bad_score);
     }
   }
   function FzfAmqAwesomplete(input, o, scrollable) {
@@ -2582,7 +2397,7 @@
           label += name[i2];
         }
       }
-      let norm_score = this.customFzf.normScore(normalizedValue, entry.score);
+      let norm_score = entry.getNormScore(normalizedValue);
       norm_score = Math.min(1, norm_score);
       norm_score = Math.max(0, norm_score);
       let color_hue = 120 * (norm_score * norm_score);
