@@ -1047,7 +1047,7 @@
     }
   }
   async function fetchJPJsonData() {
-    const jsonUrl = "https://files.catbox.moe/o0l7q4.json";
+    const jsonUrl = "https://files.catbox.moe/noz6v0.json";
     try {
       let response = await fetch(jsonUrl);
       if (!response.ok) {
@@ -1067,6 +1067,7 @@
       __publicField(this, "hintListener");
       __publicField(this, "answerResultListener");
       __publicField(this, "titleToJA");
+      __publicField(this, "JAToTitle");
       __publicField(this, "animeData");
       __publicField(this, "currentSongInfo");
       this.options = new Options({
@@ -1088,26 +1089,33 @@
         saveIn: "Script",
         defaultValue: true
       }));
+      this.titleToJA = {};
+      this.JAToTitle = {};
       fetchJPJsonData().then((jsonData) => {
-        this.titleToJA = jsonData.reduce((acc, cur) => {
+        for (let i in jsonData) {
+          let cur = jsonData[i];
           if (!cur.JA) {
-            return acc;
+            continue;
           }
-          if (!(cur.EN in acc)) {
-            acc[cur.EN] = cur.JA;
+          if (cur.JA in this.JAToTitle) {
+            for (let title of cur.amqTitles) {
+              let name = title["name"];
+              for (let title2 of this.JAToTitle[cur.JA]) {
+                if (name.includes(title2)) {
+                  this.titleToJA[name] = name.replace(title2, cur.JA);
+                }
+              }
+            }
+            continue;
           }
-          if (!(cur.RO in acc)) {
-            acc[cur.RO] = cur.JA;
+          this.JAToTitle[cur.JA] = [];
+          for (let title of cur.amqTitles) {
+            let name = title["name"];
+            this.titleToJA[name] = cur.JA;
+            this.JAToTitle[cur.JA].push(name);
           }
-          return acc;
-        }, {});
-        this.animeData = jsonData.reduce((acc, cur) => {
-          if (!cur || !cur.annId) {
-            return acc;
-          }
-          acc[Number(cur.annId)] = cur;
-          return acc;
-        }, {});
+        }
+        this.animeData = jsonData;
       });
       this.hintListener = new Listener("quiz hint used", this.translateMC.bind(this));
       this.answerResultListener = new Listener("answer results", this.translateAnswer.bind(this));

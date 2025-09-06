@@ -12,7 +12,7 @@ declare var Listener: any;
 declare var fitTextToContainer: Function;
 
 async function fetchJPJsonData() {
-    const jsonUrl = 'https://files.catbox.moe/o0l7q4.json';
+    const jsonUrl = 'https://files.catbox.moe/noz6v0.json';
     try {
         let response = await fetch(jsonUrl);
         if (!response.ok) {
@@ -32,6 +32,7 @@ class JapaneseTitle implements IPlugin {
     private hintListener: any;
     private answerResultListener: any;
     private titleToJA: any;
+    private JAToTitle: any;
     private animeData: any;
     private currentSongInfo: any;
     
@@ -56,34 +57,37 @@ class JapaneseTitle implements IPlugin {
             saveIn: 'Script',
             defaultValue: true,
         }));
+        this.titleToJA = {}
+        this.JAToTitle = {}
         fetchJPJsonData().then(jsonData => {
-            this.titleToJA = jsonData.reduce((acc: any, cur: any) => {
+            for (let i in jsonData) {
+                let cur = jsonData[i];
                 if (!cur.JA) {
-                    return acc;
+                    continue;
                 }
-                /*if (!this.containsCJK(cur.JA)) {
-                    return acc;
-                }*/
-                if (!(cur.EN in acc)) {
-                    acc[cur.EN] = cur.JA;
+                if (cur.JA in this.JAToTitle) {
+                    for (let title of cur.amqTitles) {
+                        let name = title["name"]
+                        for (let title2 of this.JAToTitle[cur.JA]) {
+                            if (name.includes(title2)) {
+                                this.titleToJA[name] = name.replace(title2, cur.JA)
+                            }
+                        }
+                    }
+                    continue
                 }
-                if (!(cur.RO in acc)) {
-                    acc[cur.RO] = cur.JA;
+                this.JAToTitle[cur.JA] = []
+                for (let title of cur.amqTitles) {
+                    let name = title["name"]
+                    this.titleToJA[name] = cur.JA
+                    this.JAToTitle[cur.JA].push(name)
                 }
-                return acc;
-            }, {})
-            this.animeData = jsonData.reduce((acc: any, cur: any) => {
-                if (!cur || !cur.annId) {
-                    return acc;
-                }
-                acc[Number(cur.annId)] = cur;
-                return acc
-            }, {})
+            }
+            this.animeData = jsonData;
         })
         
         this.hintListener = new Listener("quiz hint used", this.translateMC.bind(this));
         this.answerResultListener = new Listener("answer results", this.translateAnswer.bind(this));
-
     }
     enable(): void {
         if (this._enabled) {
@@ -127,7 +131,6 @@ class JapaneseTitle implements IPlugin {
             console.log("jpTitle appended")
         }
         quiz.infoContainer.fitTextToContainer()
-
     }
     private translateMC(hintId: any, songValue: any) {
         if (!(this.options.get('japaneseMC') as CheckboxOption).getValue()) {
