@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Japanese title(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.1.0
+// @version      0.2.0
 // @author       JJJJoe
 // @description  AMQ Japanese title
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/japanese-title/script/japanese-title.user.js
