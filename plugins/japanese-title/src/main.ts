@@ -148,7 +148,7 @@ class JapaneseTitle implements IPlugin {
         let excludeOriginal =
             (this.options.get('japaneseExcludeOrignalAnswer') as CheckboxOption).getValue()
         if (!titles || !excludeOriginal) {
-            titles.push(titleNode.innerHTML)
+            titles.unshift(titleNode.innerHTML)
         }
 
         titleNode.innerHTML = titles.join("<br>");

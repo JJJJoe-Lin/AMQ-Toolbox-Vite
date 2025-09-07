@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Japanese title(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.1
+// @version      0.2.2
 // @author       JJJJoe
 // @description  AMQ Japanese title
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/japanese-title/script/japanese-title.user.js
@@ -1173,7 +1173,7 @@
       }
       let excludeOriginal = this.options.get("japaneseExcludeOrignalAnswer").getValue();
       if (!titles || !excludeOriginal) {
-        titles.push(titleNode.innerHTML);
+        titles.unshift(titleNode.innerHTML);
       }
       titleNode.innerHTML = titles.join("<br>");
       quiz.infoContainer.fitTextToContainer();
