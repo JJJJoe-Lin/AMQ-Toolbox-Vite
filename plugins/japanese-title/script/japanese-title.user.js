@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AMQ Japanese title(dev)
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.2.0
+// @version      0.2.1
 // @author       JJJJoe
 // @description  AMQ Japanese title
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/japanese-title/script/japanese-title.user.js
@@ -1064,19 +1064,27 @@
       __publicField(this, "name", "Japanese title");
       __publicField(this, "options");
       __publicField(this, "_enabled", false);
-      __publicField(this, "hintListener");
-      __publicField(this, "answerResultListener");
       __publicField(this, "titleToJA");
       __publicField(this, "JAToTitle");
       __publicField(this, "animeData");
       __publicField(this, "currentSongInfo");
+      __publicField(this, "oSetMultipleChoiceNames");
+      __publicField(this, "oResultCallback");
       this.options = new Options({
         title: this.name
       });
       this.options.push(new CheckboxOption({
         name: "japaneseAnswer",
         inputId: "amqtbJapaneseTitleJapaneseAnswer",
-        label: "Include answer in Japanese in result stage",
+        label: "Include answer in Japanese",
+        offset: 0,
+        saveIn: "Script",
+        defaultValue: true
+      }));
+      this.options.push(new CheckboxOption({
+        name: "japaneseExcludeOrignalAnswer",
+        inputId: "amqtbJapaneseTitleJapaneseExcludeOrignalAnswer",
+        label: "Exclude original answer",
         offset: 0,
         saveIn: "Script",
         defaultValue: true
@@ -1117,24 +1125,30 @@
         }
         this.animeData = jsonData;
       });
-      this.hintListener = new Listener("quiz hint used", this.translateMC.bind(this));
-      this.answerResultListener = new Listener("answer results", this.translateAnswer.bind(this));
+      this.oSetMultipleChoiceNames = quiz.answerInput.setMultipleChoiceNames;
+      this.oResultCallback = quiz._resultListner.callback;
     }
     enable() {
       if (this._enabled) {
         return;
       }
       this._enabled = true;
-      this.hintListener.bindListener();
-      this.answerResultListener.bindListener();
+      quiz.answerInput.setMultipleChoiceNames = function(names) {
+        this.oSetMultipleChoiceNames.bind(quiz.answerInput)(names);
+        this.translateMC();
+      }.bind(this);
+      quiz._resultListner.callback = function(result) {
+        this.oResultCallback(result);
+        this.translateAnswer(result);
+      }.bind(this);
     }
     disable() {
       if (!this._enabled) {
         return;
       }
       this._enabled = false;
-      this.hintListener.unbindListener();
-      this.answerResultListener.unbindListener();
+      quiz.answerInput.setMultipleChoiceNames = this.oSetMultipleChoiceNames;
+      quiz._resultListner.callback = this.oResultCallback;
     }
     enabled() {
       return this._enabled;
@@ -1143,10 +1157,6 @@
       if (!this.options.get("japaneseAnswer").getValue()) {
         return;
       }
-      this.currentSongInfo = result.songInfo;
-      setTimeout(this._translateAnswer.bind(this), 500);
-    }
-    _translateAnswer() {
       if (this.animeData == null) {
         return;
       }
@@ -1155,15 +1165,20 @@
         console.log("Title element is not found");
         return;
       }
-      let annId = Number(this.currentSongInfo.annId);
+      let annId = Number(result.songInfo.annId);
+      let titles = [];
       let jpTitle = this.animeData[annId]["JA"];
       if (jpTitle) {
-        titleNode.innerHTML += "<br>" + jpTitle;
-        console.log("jpTitle appended");
+        titles.push(jpTitle);
       }
+      let excludeOriginal = this.options.get("japaneseExcludeOrignalAnswer").getValue();
+      if (!titles || !excludeOriginal) {
+        titles.push(titleNode.innerHTML);
+      }
+      titleNode.innerHTML = titles.join("<br>");
       quiz.infoContainer.fitTextToContainer();
     }
-    translateMC(hintId, songValue) {
+    translateMC() {
       if (!this.options.get("japaneseMC").getValue()) {
         return;
       }

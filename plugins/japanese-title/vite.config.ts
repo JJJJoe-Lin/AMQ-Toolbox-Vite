@@ -11,7 +11,7 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Japanese title(dev)',
-                version: '0.2.0',
+                version: '0.2.1',
                 description: 'AMQ Japanese title',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',

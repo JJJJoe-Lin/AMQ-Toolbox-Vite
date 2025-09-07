@@ -29,12 +29,12 @@ class JapaneseTitle implements IPlugin {
     public name = 'Japanese title';
     public options;
     private _enabled = false;
-    private hintListener: any;
-    private answerResultListener: any;
     private titleToJA: any;
     private JAToTitle: any;
     private animeData: any;
     private currentSongInfo: any;
+    private oSetMultipleChoiceNames: Function
+    private oResultCallback: Function
     
     constructor() {
         // create options
@@ -44,7 +44,15 @@ class JapaneseTitle implements IPlugin {
         this.options.push(new CheckboxOption({
             name: 'japaneseAnswer',
             inputId: 'amqtbJapaneseTitleJapaneseAnswer',
-            label: 'Include answer in Japanese in result stage',
+            label: 'Include answer in Japanese',
+            offset: 0,
+            saveIn: 'Script',
+            defaultValue: true,
+        }));
+        this.options.push(new CheckboxOption({
+            name: 'japaneseExcludeOrignalAnswer',
+            inputId: 'amqtbJapaneseTitleJapaneseExcludeOrignalAnswer',
+            label: 'Exclude original answer',
             offset: 0,
             saveIn: 'Script',
             defaultValue: true,
@@ -85,25 +93,33 @@ class JapaneseTitle implements IPlugin {
             }
             this.animeData = jsonData;
         })
-        
-        this.hintListener = new Listener("quiz hint used", this.translateMC.bind(this));
-        this.answerResultListener = new Listener("answer results", this.translateAnswer.bind(this));
+        this.oSetMultipleChoiceNames = quiz.answerInput.setMultipleChoiceNames
+        this.oResultCallback = quiz._resultListner.callback
     }
     enable(): void {
         if (this._enabled) {
             return
         }
         this._enabled = true;
-        this.hintListener.bindListener();
-        this.answerResultListener.bindListener();
+        // translateMC() after setting multiple choice names
+        quiz.answerInput.setMultipleChoiceNames = function (this: JapaneseTitle, names: any) {
+            this.oSetMultipleChoiceNames.bind(quiz.answerInput)(names);
+            this.translateMC();
+        }.bind(this);
+        // translateAnswer() after original result listener callback
+        quiz._resultListner.callback = function(this: JapaneseTitle, result: any) {
+            this.oResultCallback(result)
+            this.translateAnswer(result)
+        }.bind(this);
     }
     disable(): void {
         if (!this._enabled) {
             return
         }
         this._enabled = false;
-        this.hintListener.unbindListener();
-        this.answerResultListener.unbindListener();
+        // Put back the original functions
+        quiz.answerInput.setMultipleChoiceNames = this.oSetMultipleChoiceNames
+        quiz._resultListner.callback = this.oResultCallback 
     }
     enabled(): boolean {
         return this._enabled;
@@ -112,32 +128,38 @@ class JapaneseTitle implements IPlugin {
         if (!(this.options.get('japaneseAnswer') as CheckboxOption).getValue()) {
             return;
         }
-        this.currentSongInfo = result.songInfo
-        setTimeout(this._translateAnswer.bind(this), 500);
-    }
-    private _translateAnswer() {
         if (this.animeData == null) {
             return;
         }
+
         let titleNode = document.getElementById('qpAnimeName');
         if (!titleNode) {
             console.log("Title element is not found");
             return;
         }
-        let annId = Number(this.currentSongInfo.annId)
+        let annId = Number(result.songInfo.annId)
+        let titles = []
+
         let jpTitle = this.animeData[annId]['JA']
         if (jpTitle) {
-            titleNode.innerHTML += "<br>" + jpTitle;
-            console.log("jpTitle appended")
+            titles.push(jpTitle)
         }
+
+        let excludeOriginal =
+            (this.options.get('japaneseExcludeOrignalAnswer') as CheckboxOption).getValue()
+        if (!titles || !excludeOriginal) {
+            titles.push(titleNode.innerHTML)
+        }
+
+        titleNode.innerHTML = titles.join("<br>");
         quiz.infoContainer.fitTextToContainer()
     }
-    private translateMC(hintId: any, songValue: any) {
+    private translateMC() {
         if (!(this.options.get('japaneseMC') as CheckboxOption).getValue()) {
             return;
         }
         if (this.titleToJA == null) {
-            return
+            return;
         }
 
         let choices = quiz.answerInput.multipleChoice.answerOptions
