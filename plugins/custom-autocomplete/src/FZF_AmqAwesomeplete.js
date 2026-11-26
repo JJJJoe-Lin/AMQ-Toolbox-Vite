@@ -187,7 +187,7 @@ class Finder {
     }
 }
 
-class CustomFzf {
+export class CustomFzf {
     constructor(itemList) {
         let fzfList = [];
         for (let [idx, item] of itemList.entries()) {
@@ -338,7 +338,7 @@ export function FzfAmqAwesomplete(input, o, scrollable) {
     this.currentSubList = null;
     this.o = o;
 
-    this.customFzf = new CustomFzf(this.o.list);
+    this.customFzf = o.customFzf ?? new CustomFzf(this.o.list);
 
     this.currentQuery = "";
     this.$ul = $(this.ul);

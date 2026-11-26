@@ -7,6 +7,7 @@ import {
     registerPlugin
 } from 'amq-toolbox';
 import {
+    CustomFzf,
     FzfAmqAwesomplete,
     FzfEvaluate
 } from './FZF_AmqAwesomeplete';
@@ -14,10 +15,10 @@ import {
 // Fake AMQ object type define
 interface AmqAwesomepleteConstructor {
     new (input: any, o: any, scrollable: any): any;
+    prototype: any;
 }
 declare var AmqAwesomeplete: AmqAwesomepleteConstructor;
-declare var Awesomplete: Function;
-declare var quiz: any;
+declare var autoCompleteController: any;
 
 type MatchMethod = 'Origin' | 'FZF';
 
@@ -26,8 +27,11 @@ class CustomAutocomplete implements IPlugin {
     public options;
     private _enabled = false;
     private _FZFAwesomeplete: AmqAwesomepleteConstructor;
-    private _originNewList: Function;
-    private _customNewList: Function;
+    private _originCreateNewInstance: ($input: any) => void;
+    private _customCreateNewInstance: ($input: any) => void;
+    private _cachedList: any[] | null = null;
+    private _cachedListLength = -1;
+    private _cachedFzf: CustomFzf | null = null;
     
     constructor() {
         // create options
@@ -72,27 +76,24 @@ class CustomAutocomplete implements IPlugin {
 
         // setup FZF Awesomeplete
         this._FZFAwesomeplete = FzfAmqAwesomplete;
-        this._FZFAwesomeplete.prototype = Object.create(Awesomplete.prototype);
+        this._FZFAwesomeplete.prototype = Object.create(AmqAwesomeplete.prototype);
         this._FZFAwesomeplete.prototype.constructor = FzfAmqAwesomplete;
         this._FZFAwesomeplete.prototype.evaluate = FzfEvaluate;
-        
-        // backup origin newList fuction
-        this._originNewList = quiz.answerInput.typingInput.autoCompleteController.newList;
-        // setup custom newList function
-        this._customNewList = () => {
-            let acc = quiz.answerInput.typingInput.autoCompleteController;
+
+        // backup origin createNewInstance function
+        this._originCreateNewInstance = autoCompleteController.createNewInstance;
+        // setup custom createNewInstance function
+        this._customCreateNewInstance = ($input: any) => {
+            let acc = autoCompleteController;
             let autoFirst: boolean = this.options.get('autoFirst')!.getValue();
             let redoOpt: boolean = this.options.get('redo')!.getValue();
             let matchMethod: MatchMethod = this.options.get('matchMethod')!.getValue();
 
-            console.log('[Custom Autocomplete] Do custom newList()');
-            // destroy old instance
-            if (acc.awesomepleteInstance) {
-                acc.awesomepleteInstance.destroy();
-            }
+            console.log('[Custom Autocomplete] Do custom createNewInstance()');
+            let instance: any;
             // create new instance
             if (matchMethod === 'Origin') {
-                acc.awesomepleteInstance = new AmqAwesomeplete(acc.$input[0],
+                instance = new AmqAwesomeplete($input[0],
                     {
                         list: acc.list,
                         minChars: 1,
@@ -100,33 +101,38 @@ class CustomAutocomplete implements IPlugin {
                     },
                     true);
             } else if (matchMethod === 'FZF') {
-                acc.awesomepleteInstance = new this._FZFAwesomeplete(acc.$input[0],
+                instance = new this._FZFAwesomeplete($input[0],
                     {
                         list: acc.list,
                         minChars: 1,
-                        maxItems: 25
+                        maxItems: 25,
+                        customFzf: this.getCustomFzf(acc.list),
                     },
                     true);
             }
+            if (!instance) {
+                return;
+            }
             // setup replace method
             if (redoOpt) {
-                acc.once_disable_evaluate = false;
-                acc.awesomepleteInstance.replace = function (suggestion: any) {
+                instance.once_disable_evaluate = false;
+                instance.replace = function (suggestion: any) {
                     (this as any).input.focus();
                     (this as any).input.select();
                     (this as any).once_disable_evaluate = true;
                     document.execCommand('insertText', false, suggestion.value);
-                }
+                };
             }
             // setup autoFirst
-            quiz.answerInput.typingInput.autoCompleteController.awesomepleteInstance.autoFirst = autoFirst;
+            instance.autoFirst = autoFirst;
+            acc.awesomepleteInstances.push(instance);
         };
 
         // option callback
         this.options.get('autoFirst')!.input.on('click', () => {
             let opt = this.options.get('autoFirst')!.getValue();
-            if (quiz.answerInput.typingInput.autoCompleteController.awesomepleteInstance) {
-                quiz.answerInput.typingInput.autoCompleteController.awesomepleteInstance.autoFirst = opt;
+            for (let instance of autoCompleteController.awesomepleteInstances) {
+                instance.autoFirst = opt;
             }
         });
         this.options.get('redo')!.input.on('click', () => {this.updateAutoComplete()});
@@ -134,19 +140,29 @@ class CustomAutocomplete implements IPlugin {
     }
     enable(): void {
         this._enabled = true;
-        quiz.answerInput.typingInput.autoCompleteController.newList = this._customNewList;
+        autoCompleteController.createNewInstance = this._customCreateNewInstance;
         this.updateAutoComplete();
     }
     disable(): void {
         this._enabled = false;
-        quiz.answerInput.typingInput.autoCompleteController.newList = this._originNewList;
+        autoCompleteController.createNewInstance = this._originCreateNewInstance;
         this.updateAutoComplete();
     }
     enabled(): boolean {
         return this._enabled;
     }
+    private getCustomFzf(list: any[]): CustomFzf {
+        if (!this._cachedFzf || this._cachedList !== list || this._cachedListLength !== list.length) {
+            this._cachedList = list;
+            this._cachedListLength = list.length;
+            this._cachedFzf = new CustomFzf(list);
+        }
+        return this._cachedFzf;
+    }
     private updateAutoComplete() {
-        quiz.answerInput.typingInput.autoCompleteController.newList();
+        if (autoCompleteController.version !== null || autoCompleteController.awesomepleteInstances.length > 0) {
+            autoCompleteController.newList();
+        }
     }
 }
 
