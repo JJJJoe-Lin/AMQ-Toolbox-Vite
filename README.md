@@ -28,6 +28,12 @@ It can merge any public anime lists to one list.
 #### Known issue
 * Merging to MAL account would got failed sometimes after overwrote and imported too many entries.
 
+### [Custom Autocomplete (custom-autocomplete.user.js)](https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/custom-autocomplete/script/custom-autocomplete.user.js)
+Customize AMQ's answer autocomplete behavior.
+* Switch match algorithm between original AMQ matching and fuzzy search (FZF, with multi-term and abbreviation support).
+* Option to auto-select the first matched answer.
+* Option to allow undo (`Ctrl-Z`) back to your previous input after selecting an autocomplete suggestion.
+
 ## Build
 You can build the plugins on your own. Before start, ensure that you have installed node.js 18 and npm 9 on your system.  
 

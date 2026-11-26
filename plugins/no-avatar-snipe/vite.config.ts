@@ -10,8 +10,8 @@ export default defineConfig({
             entry: 'src/main.ts',
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
-                name: 'AMQ No Avatar Snipe(dev)',
-                version: '0.4.2',
+                name: 'AMQ No Avatar Snipe',
+                version: '0.4.3',
                 description: 'Avatar would not change when players answered',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',

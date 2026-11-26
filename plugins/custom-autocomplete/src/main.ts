@@ -49,7 +49,7 @@ class CustomAutocomplete implements IPlugin {
         this.options.push(new CheckboxOption({
             name: 'redo',
             inputId: 'amqtbCustomAutocmpleteRedo',
-            label: 'Can redo after select a answer (experimental)',
+            label: 'Can redo after select a answer',
             offset: 0,
             saveIn: 'Script',
             defaultValue: false,

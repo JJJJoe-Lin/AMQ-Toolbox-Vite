@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         AMQ Custom Autocomplete(dev)
+// @name         AMQ Custom Autocomplete
 // @namespace    https://github.com/JJJJoe-Lin
-// @version      0.5.0
+// @version      0.5.1
 // @author       JJJJoe
 // @description  AMQ Custom Autocomplete
 // @downloadURL  https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/custom-autocomplete/script/custom-autocomplete.user.js
@@ -14,7 +14,7 @@
 // ==/UserScript==
 
 (function() {
-	// \0./main-BUIqMvG4.js
+	// \0./main-hXAMuem_.js
 	var Container = class {
 		self;
 		name;
@@ -769,8 +769,6 @@
 				content: "Toolbox Setting",
 				trigger: "hover"
 			}) };
-			const oldWidth = $("#qpOptionContainer").width();
-			$("#qpOptionContainer").width(oldWidth + 35);
 			$("#qpOptionContainer > div").append(settingBtn.self);
 			this.manageModal = new Modal({
 				title: "Toolbox Management",
@@ -2071,7 +2069,7 @@
 			this.options.push(new CheckboxOption({
 				name: "redo",
 				inputId: "amqtbCustomAutocmpleteRedo",
-				label: "Can redo after select a answer (experimental)",
+				label: "Can redo after select a answer",
 				offset: 0,
 				saveIn: "Script",
 				defaultValue: false,

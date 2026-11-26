@@ -10,8 +10,8 @@ export default defineConfig({
             entry: 'src/main.ts',
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
-                name: 'AMQ Quick Answer(dev)',
-                version: '0.4.2',
+                name: 'AMQ Quick Answer',
+                version: '0.4.3',
                 description: 'AMQ Quick-Answer Buttons',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',

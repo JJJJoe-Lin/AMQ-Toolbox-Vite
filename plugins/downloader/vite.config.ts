@@ -10,8 +10,8 @@ export default defineConfig({
             entry: 'src/main.ts',
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
-                name: 'AMQ Downloader(dev)',
-                version: '0.4.4',
+                name: 'AMQ Downloader',
+                version: '0.4.5',
                 description: 'AMQ song downloader',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',

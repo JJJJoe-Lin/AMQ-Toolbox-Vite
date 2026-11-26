@@ -10,8 +10,8 @@ export default defineConfig({
             entry: 'src/main.ts',
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
-                name: 'AMQ Custom Autocomplete(dev)',
-                version: '0.5.0',
+                name: 'AMQ Custom Autocomplete',
+                version: '0.5.1',
                 description: 'AMQ Custom Autocomplete',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',

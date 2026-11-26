@@ -10,8 +10,8 @@ export default defineConfig({
             entry: 'src/main.ts',
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
-                name: 'AMQ List Merging(dev)',
-                version: '0.2.3',
+                name: 'AMQ List Merging',
+                version: '0.2.4',
                 description: 'Merge multiple list to one',
                 author: 'JJJJoe',
                 include: [
