@@ -23,8 +23,8 @@ export default defineConfig({
                     'anilist.co',
                     'kitsu.io',
                 ],
-                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js',
-                downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/list-merging/script/list-merging.user.js',
+                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js',
+                downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/list-merging/script/list-merging.user.js',
             },
             server: {
                 open: false,
