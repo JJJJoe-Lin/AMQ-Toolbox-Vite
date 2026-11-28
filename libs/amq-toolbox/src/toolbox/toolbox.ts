@@ -67,8 +67,6 @@ export class Toolbox {
                 trigger: 'hover',
             }),
         };
-        const oldWidth = $('#qpOptionContainer').width()!;
-        $("#qpOptionContainer").width(oldWidth + 35);
         $("#qpOptionContainer > div").append(settingBtn.self);
         // create manage modal (plugin table)
         this.manageModal = new Modal({

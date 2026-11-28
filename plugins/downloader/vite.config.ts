@@ -11,13 +11,13 @@ export default defineConfig({
             userscript: {
                 namespace: 'https://github.com/JJJJoe-Lin',
                 name: 'AMQ Downloader',
-                version: '0.4.2',
+                version: '0.4.5',
                 description: 'AMQ song downloader',
                 author: 'JJJJoe',
                 include: '/^https:\\/\\/animemusicquiz\\.com\\/(\\?.*|#.*)?$/',
-                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js',
-                downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/master/plugins/downloader/script/downloader.user.js',
-                connect: 'cdn.animenewsnetwork.com',
+                updateURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js',
+                downloadURL: 'https://raw.githubusercontent.com/JJJJoe-Lin/AMQ-Toolbox-Vite/develop/plugins/downloader/script/downloader.user.js',
+                connect: ['cdn.animenewsnetwork.com', 'ladist1.catbox.video'],
             },
             server: {
                 open: false,

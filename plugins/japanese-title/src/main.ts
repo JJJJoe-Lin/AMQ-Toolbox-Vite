@@ -1,0 +1,189 @@
+import {
+    CheckboxOption,
+    IPlugin,
+    Options,
+    RadioOption,
+    onStartPageLoaded,
+    registerPlugin
+} from 'amq-toolbox';
+
+declare var quiz: any;
+declare var Listener: any; 
+declare var fitTextToContainer: Function;
+
+async function fetchJPJsonData() {
+    const jsonUrl = 'https://files.catbox.moe/noz6v0.json';
+    try {
+        let response = await fetch(jsonUrl);
+        if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+        }
+        let jsonData = await response.json();
+        return jsonData
+    } catch (error) {
+        console.error('Failed to fetch JSON data:', error);
+    }
+}
+
+class JapaneseTitle implements IPlugin {
+    public name = 'Japanese title';
+    public options;
+    private _enabled = false;
+    private titleToJA: any;
+    private JAToTitle: any;
+    private animeData: any;
+    private currentSongInfo: any;
+    private oSetMultipleChoiceNames: Function
+    private oResultCallback: Function
+    
+    constructor() {
+        // create options
+        this.options = new Options({
+            title: this.name,
+        });
+        this.options.push(new CheckboxOption({
+            name: 'japaneseAnswer',
+            inputId: 'amqtbJapaneseTitleJapaneseAnswer',
+            label: 'Include answer in Japanese',
+            offset: 0,
+            saveIn: 'Script',
+            defaultValue: true,
+        }));
+        this.options.push(new CheckboxOption({
+            name: 'japaneseExcludeOrignalAnswer',
+            inputId: 'amqtbJapaneseTitleJapaneseExcludeOrignalAnswer',
+            label: 'Exclude original answer',
+            offset: 0,
+            saveIn: 'Script',
+            defaultValue: true,
+        }));
+        this.options.push(new CheckboxOption({
+            name: 'japaneseMC',
+            inputId: 'amqtbJapaneseTitleJapaneseMC',
+            label: 'Mutliple choice in Japanese',
+            offset: 0,
+            saveIn: 'Script',
+            defaultValue: true,
+        }));
+        this.titleToJA = {}
+        this.JAToTitle = {}
+        fetchJPJsonData().then(jsonData => {
+            for (let i in jsonData) {
+                let cur = jsonData[i];
+                if (!cur.JA) {
+                    continue;
+                }
+                if (cur.JA in this.JAToTitle) {
+                    for (let title of cur.amqTitles) {
+                        let name = title["name"]
+                        for (let title2 of this.JAToTitle[cur.JA]) {
+                            if (name.includes(title2)) {
+                                this.titleToJA[name] = name.replace(title2, cur.JA)
+                            }
+                        }
+                    }
+                    continue
+                }
+                this.JAToTitle[cur.JA] = []
+                for (let title of cur.amqTitles) {
+                    let name = title["name"]
+                    this.titleToJA[name] = cur.JA
+                    this.JAToTitle[cur.JA].push(name)
+                }
+            }
+            this.animeData = jsonData;
+        })
+        this.oSetMultipleChoiceNames = quiz.answerInput.setMultipleChoiceNames
+        this.oResultCallback = quiz._resultListner.callback
+    }
+    enable(): void {
+        if (this._enabled) {
+            return
+        }
+        this._enabled = true;
+        // translateMC() after setting multiple choice names
+        quiz.answerInput.setMultipleChoiceNames = function (this: JapaneseTitle, names: any) {
+            this.oSetMultipleChoiceNames.bind(quiz.answerInput)(names);
+            this.translateMC();
+        }.bind(this);
+        // translateAnswer() after original result listener callback
+        quiz._resultListner.callback = function(this: JapaneseTitle, result: any) {
+            this.oResultCallback(result)
+            this.translateAnswer(result)
+        }.bind(this);
+    }
+    disable(): void {
+        if (!this._enabled) {
+            return
+        }
+        this._enabled = false;
+        // Put back the original functions
+        quiz.answerInput.setMultipleChoiceNames = this.oSetMultipleChoiceNames
+        quiz._resultListner.callback = this.oResultCallback 
+    }
+    enabled(): boolean {
+        return this._enabled;
+    }
+    private translateAnswer(result: any) {
+        if (!(this.options.get('japaneseAnswer') as CheckboxOption).getValue()) {
+            return;
+        }
+        if (this.animeData == null) {
+            return;
+        }
+
+        let titleNode = document.getElementById('qpAnimeName');
+        if (!titleNode) {
+            console.log("Title element is not found");
+            return;
+        }
+        let annId = Number(result.songInfo.annId)
+        let titles = []
+
+        let jpTitle = this.animeData[annId]['JA']
+        if (jpTitle) {
+            titles.push(jpTitle)
+        }
+
+        let excludeOriginal =
+            (this.options.get('japaneseExcludeOrignalAnswer') as CheckboxOption).getValue()
+        if (!titles || !excludeOriginal) {
+            titles.unshift(titleNode.innerHTML)
+        }
+
+        titleNode.innerHTML = titles.join("<br>");
+        quiz.infoContainer.fitTextToContainer()
+    }
+    private translateMC() {
+        if (!(this.options.get('japaneseMC') as CheckboxOption).getValue()) {
+            return;
+        }
+        if (this.titleToJA == null) {
+            return;
+        }
+
+        let choices = quiz.answerInput.multipleChoice.answerOptions
+        for (let i = 0; i < choices.length; i++) {
+            let text = choices[i].currentName;
+            if (text == null) {
+                continue;
+            }
+            if (text in this.titleToJA) {
+                choices[i].$text.text(this.titleToJA[text]);
+            }
+            fitTextToContainer(choices[i].$text, choices[i].$textContainer, 18, 8)
+        }
+    }
+    private containsCJK(text: string) {
+        // Common CJK Unified Ideographs range
+        return /[\u4E00-\u9FFF]/.test(text); 
+    }
+}
+
+function main() {
+    onStartPageLoaded(() => {
+        registerPlugin(new JapaneseTitle());
+    });
+}
+
+$(main);

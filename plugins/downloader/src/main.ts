@@ -8,6 +8,7 @@ import {
     RadioOption,
     registerPlugin,
 } from 'amq-toolbox';
+import { GM_xmlhttpRequest } from '$';
 import { getAnimeImage, Image } from './cover';
 import MP3Tag from 'mp3tag.js';
 
@@ -30,6 +31,8 @@ interface Mp3Info {
 }
 
 type MediaType = 'Audio' | 'Video';
+
+const CatboxUrlPrefix = 'https://ladist1.catbox.video/';
 
 class Downloader implements IPlugin {
     public name = 'Downloader';
@@ -170,16 +173,16 @@ class Downloader implements IPlugin {
         // update video URL
         videoDlBtn.self.removeData("url").addClass("disabled");
         for (let resolution of resolutions) {
-            let videoURL = result.songInfo.urlMap.catbox[resolution];
+            let videoURL = result.songInfo.videoTargetMap.catbox[resolution];
             if (videoURL !== undefined) {
-                videoDlBtn.self.data("url", videoURL).removeClass("disabled");
+                videoDlBtn.self.data("url", CatboxUrlPrefix + videoURL).removeClass("disabled");
                 break;
             }
         }
         // update audio URL
-        const audioURL = result.songInfo.urlMap.catbox["0"];
+        const audioURL = result.songInfo.videoTargetMap.catbox["0"];
         if (audioURL !== undefined) {
-            audioDlBtn.self.data("url", audioURL).removeClass("disabled");
+            audioDlBtn.self.data("url", CatboxUrlPrefix + audioURL).removeClass("disabled");
         } else {
             audioDlBtn.self.removeData("url").addClass("disabled");
         }
@@ -222,24 +225,26 @@ class Downloader implements IPlugin {
         if (interactive) {
             alert(`Downloading song: ${fileName}`);
         }
-        const response = await fetch(url);
-        let blob: Blob;
-        if (fileExt === 'mp3') {
-            const mp3 = await response.arrayBuffer();
-            mp3Info.cover = await getAnimeImage(mp3Info.annId);
-            const taggedMp3 = addMp3Tag(mp3, mp3Info);
-            if (taggedMp3 === null) {
-                console.warn(`Failed to add mp3 tag, download origin mp3...`);
-                blob = new Blob([mp3], {type: 'audio/mpeg'});
+        // const response = await fetch(url);
+        const rawMedia = await fetchRawMedia(url);
+        if (rawMedia) {
+            let blob: Blob;
+            if (fileExt === 'mp3') {
+                mp3Info.cover = await getAnimeImage(mp3Info.annId);
+                const taggedMp3 = addMp3Tag(rawMedia, mp3Info);
+                if (taggedMp3 === null) {
+                    console.warn(`Failed to add mp3 tag, download origin mp3...`);
+                    blob = new Blob([rawMedia], {type: 'audio/mpeg'});
+                } else {
+                    console.log('Download tagged mp3');
+                    blob = new Blob([taggedMp3], {type: 'audio/mpeg'});
+                }
+    
             } else {
-                console.log('Download tagged mp3');
-                blob = new Blob([taggedMp3], {type: 'audio/mpeg'});
+                blob = new Blob([rawMedia]);
             }
-
-        } else {
-            blob = await response.blob();
+            downloadBlob(blob, `${fileName}.${fileExt}`);
         }
-        downloadBlob(blob, `${fileName}.${fileExt}`);
     }
 
     private downloadSongInfo() {
@@ -258,8 +263,8 @@ class Downloader implements IPlugin {
     }
 
     private getMp3Info(): Mp3Info {
-        const catbox = this.currentSongInfo.urlMap['catbox'];
-        const opm = this.currentSongInfo.urlMap['openingsmoe'];
+        const catbox = this.currentSongInfo.videoTargetMap['catbox'];
+        const opm = this.currentSongInfo.videoTargetMap['openingsmoe'];
         return {
             animeName: this.currentSongInfo.animeNames.romaji,
             songName: this.currentSongInfo.songName,
@@ -268,9 +273,9 @@ class Downloader implements IPlugin {
             annId: this.currentSongInfo.annId,
             cover: null,
             videoUrl: {
-                'catbox_480': catbox ? (catbox['480'] ? catbox['480'] : undefined) : undefined,
-                'catbox_720': catbox ? (catbox['720'] ? catbox['720'] : undefined) : undefined,
-                'openingsmoe': opm ? (opm['720'] ? catbox['720'] : undefined) : undefined,
+                'catbox_480': catbox && catbox['480'] && CatboxUrlPrefix + catbox['480'],
+                'catbox_720': catbox && catbox['720'] && CatboxUrlPrefix + catbox['720'],
+                'openingsmoe': opm && opm['720'],
             },
         }
     }
@@ -287,6 +292,25 @@ class Downloader implements IPlugin {
                 return '';
         }
     }
+}
+
+async function fetchRawMedia (url: string): Promise<ArrayBuffer | null> {
+    return new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: url,
+            responseType: 'arraybuffer',
+            onload: (resp) => {
+                if (resp.status != 200) {
+                    console.warn('fetch media failed');
+                    resolve(null);
+                } else {
+                    resolve(resp.response);
+                }
+            },
+            
+        });
+    });
 }
 
 function downloadBlob(blob: Blob, fileName: string) {

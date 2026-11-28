@@ -9,10 +9,11 @@ import {
     Table,
     TextInput
 } from 'amq-toolbox';
+import { GM_addStyle } from '$';
 import { AnimeListSite, Entry, redirectPathName, redirectURLHandler, Status } from 'anime-list';
 import { EntrySet, Included } from './animeEntries';
 import { AnimeListAccount } from './component';
-import './style.css';
+import styles from './style.css?inline';
 
 declare var displayMessage: (title: string, msg: string, callback?: Function) => void;
 declare var displayHtmlMessage: (title: string, html: string, buttonText: string, callback?: Function) => void;
@@ -243,6 +244,7 @@ function genErrorMessage(errs: Error[]): string {
 }
 
 function main() {
+    GM_addStyle(styles);
     onStartPageLoaded(() => {
         registerPlugin(new ListMerging());
     });
